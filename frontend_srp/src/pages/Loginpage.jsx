@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 // 👇 LÍNEA CORREGIDA
-import "../components/Loginpage.css"; 
+import "../styles/Loginpage.css"; 
 
 // Importamos todas las imágenes desde la carpeta de assets
 import leaf01 from '../assets/leaf_01.png';

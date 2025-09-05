@@ -1,5 +1,5 @@
 from django.urls import path, include
-from backend import views
+from core import views
 from rest_framework import routers 
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
 
