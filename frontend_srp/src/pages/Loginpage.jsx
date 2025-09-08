@@ -29,6 +29,10 @@ function LoginPage() {
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const [userData, setUserData] = useState(null);
+    
+    // Hook para navegar a otra página
+    // 'navigate' es una función que podemos llamar para redirigir al usuario a otra ruta.
+    const navigate = useNavigate();
 
     const handleLogin = async (e) => {
       e.preventDefault();
@@ -36,17 +40,26 @@ function LoginPage() {
         const data = await validationUser(username, password);
         setUserData(data);
         setError("");
-        navigate("/home");
+        // Redirigir basado en el rol del usuario
+        // Asumimos que la respuesta de la API (el objeto 'data') incluye una propiedad 'rol'
+        switch (data.rol) {
+          case 'docente':
+            navigate("/docentes");
+            break;
+          case 'coordinacion':
+            navigate("/coordinacion");
+            break;
+          default:
+            // Para otros roles (secretaria, padres) o si no hay rol, ir a una página genérica
+            navigate("/home");
+            break;
+        }
       } catch (err) {
         setError(err.error || "Credenciales inválidas");
         console.log(err);
         setUserData(null);
         }
   };
-  // 3. Hook para navegar a otra página
-  // 'navigate' es una función que podemos llamar para redirigir al usuario a otra ruta.
-  const navigate = useNavigate();
-    
 
   // El JSX que renderiza el componente.
   return (
