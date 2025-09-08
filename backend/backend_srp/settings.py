@@ -27,6 +27,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+AUTH_USER_MODEL = 'core.User' 
 
 # Application definition
 
@@ -78,10 +79,16 @@ WSGI_APPLICATION = 'backend_srp.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+# settings.py (para MySQL)
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'srp_db',          # Nombre de tu base de datos
+        'USER': 'root',
+        'PASSWORD': 'Sergio990806',  # Tu contraseña de MySQL
+        'HOST': 'localhost',
+        'PORT': '3306',                   # El puerto por defecto de MySQL
     }
 }
 

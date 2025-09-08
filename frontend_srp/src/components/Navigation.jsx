@@ -7,13 +7,13 @@ export function Navigation() {
             <nav>
                 <ul>
                     <li>
-                        <Link to="/admin/dashboard">Dashboard</Link>
+                        <Link to="/home">Lista de administradores</Link>
                     </li>
                     <li>
-                        <Link to="/admin/users">Users</Link>
+                        
                     </li>
                     <li>
-                        <Link to="/settings">Settings</Link>
+                        
                     </li>
                 </ul>
             </nav>
