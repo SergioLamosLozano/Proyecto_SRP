@@ -1,0 +1,210 @@
+.dashboard {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.dashboard-header {
+    background-color: white;
+    padding: 20px;
+    text-align: center;
+}
+
+.dashboard-header h1 {
+    color: #dc3545;
+    margin: 0;
+}
+
+.dashboard-container {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+    flex-wrap: wrap; /* Para que en pantallas pequeñas se apilen */
+}
+
+.dashboard-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+.card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    width: auto;
+}
+
+.card-buttons {
+    display: flex;
+    justify-content: space-between; /* separa los botones */
+    gap: 1rem; /* espacio entre ellos (opcional si los quieres separados pero no pegados a los extremos) */
+}
+
+.card h3 {
+    color: #dc3545;
+    margin-top: 0;
+}
+
+.card .btn-primary {
+    margin-top: auto;
+    width: 40%;
+}
+
+.btn-primary {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.btn-primary:hover {
+    background-color: #b02a37;
+}
+
+.registro-asistencia {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    margin-bottom: 20px;
+}
+
+.contador {
+    color: #dc3545;
+    font-weight: bold;
+    margin-bottom: 15px;
+    text-align: center;
+    font-size: 1.5em;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.form-group p {
+    width: 100%;
+    margin: 0  ;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.error-message {
+    color: #dc3545;
+    background-color: #f8d7da;
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+}
+
+.user-info-container {
+    display: flex;
+    flex-direction: column; /* Primero título arriba */
+    gap: 20px;
+    padding: 20px;
+}
+
+.user-info-container h3 {
+    color: #dc3545;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.info-columns {
+    display: flex;
+    flex-wrap: wrap; /* Se ajusta en pantallas pequeñas */
+    gap: 20px;
+    justify-content: space-between;
+}
+
+.info-column {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 200px;
+    flex: 1; /* Ocupa espacio proporcional */
+}
+
+.user-photo {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0; /* Evita que se achique demasiado */
+    max-width: 180px; /* límite ancho para que no se desborde */
+}
+
+.user-photo img {
+    width: 150px;
+    height: 190px;
+    object-fit: cover;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
+.vigilancia-container {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+    flex: 1;
+}
+
+.vigilancia-container .card {
+    flex: 1;
+    display: flex;
+    flex-direction: column; /* contenido ordenado verticalmente */
+}
+
+.grafico {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.grafico h1 {
+    color: #dc3545;
+    text-align: center;
+}
+
+.grafico canvas {
+    max-width: 100%;
+    max-height: 80%;
+}
+
+.pdf-preview-container {
+    padding: 20px;
+    max-width: 80%;
+    margin: 0 auto;
+}
+
+.previewbutton {
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+}
+
+.previewbutton .btn-primary {
+    width: 10%;
+    margin-bottom: 10px;
+}

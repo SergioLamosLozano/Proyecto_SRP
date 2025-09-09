@@ -117,6 +117,12 @@ section .girl {
   transition: 0.5s;
 }
 
+.login material-symbols-outlined{
+  position: absolute;
+  top: 50%;
+  color: #8f2c24;
+}
+
 .login .inputBox #btn:hover {
   background: #d64c42;
 }

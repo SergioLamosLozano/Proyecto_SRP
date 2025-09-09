@@ -86,7 +86,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'srp_db',          # Nombre de tu base de datos
         'USER': 'root',
-        'PASSWORD': 'tedesoft',  # Tu contraseña de MySQL
+        'PASSWORD': 'Sergio990806',  # Tu contraseña de MySQL
         'HOST': 'localhost',
         'PORT': '3306',                   # El puerto por defecto de MySQL
     }

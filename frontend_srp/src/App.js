@@ -1,6 +1,8 @@
 import React from 'react';
 import './components/Loginpage.css'; // Puedes mantener o borrar los estilos por defecto de App.css
-import LoginPage from './pages/Loginpage';
+import LoginPage from './pages/LoginPage';
+import Secretaria from './pages/SecretariaPage';
+import NotFound from './pages/NotFound';
 import ProtectedRoute from './ProtectedRoute';
 import CoordinacionPage from './pages/CoordinacionPage';
 import Docentespage from './pages/DocentesPage';

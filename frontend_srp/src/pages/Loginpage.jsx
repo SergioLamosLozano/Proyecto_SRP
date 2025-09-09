@@ -9,6 +9,8 @@ import {login} from "../api/auth"
 import { jwtDecode } from 'jwt-decode';
 
 
+
+
 // Importamos todas las imágenes que se usarán en la página de login.
 // Esto es una buena práctica para que el sistema de empaquetado (como Webpack o Vite) las procese correctamente.
 import leaf01 from '../assets/leaf_01.png';
@@ -24,7 +26,7 @@ import Swal from 'sweetalert2';
 
 
 
-function LoginPage() {
+function LoginPage({ onLogin }) {
     const [form, setForm] = useState({ username: '', password: '' });
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -43,6 +45,7 @@ function LoginPage() {
             const res = await login(form.username, form.password);
             const token = res.data.access;
             localStorage.setItem('token', token);
+            onLogin();
             const decoded = jwtDecode(token);
             
             const rol = decoded.rol || decoded.role || decoded["user"]["rol"];
@@ -61,7 +64,7 @@ function LoginPage() {
               navigate('/coordinacion');
 
             } else if (rol === 'docente') {navigate('/docente');}
-            else navigate('/404');
+            else navigate('/NotFound');
         } catch (error) {
             //setError('Credenciales no válidas');
             Swal.fire({
@@ -126,11 +129,7 @@ function LoginPage() {
                                     onClick={() => setShowPassword(!showPassword)}
                                     aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
                                 >
-                                {showPassword ? (
-                                    <span>👁️</span>
-                                ) : (
-                                    <span>🔒</span>
-                                )}
+                              
                             </button>
         </div>
         <div className="inputBox">
