@@ -1,9 +1,6 @@
 import axios from 'axios';
 
-export const  api = axios.create({
-    baseURL: "http://127.0.0.1:8000/api/login/", 
-});
-
+const baseURL = 'http://127.0.0.1:8000/api';
 
 export const getAdministradores = async () => {
 
@@ -11,9 +8,13 @@ export const getAdministradores = async () => {
 
 }
 
+export const login = (username, password) =>
+    axios.post(`${baseURL}/token/`, { username, password });
+
+
 export  const validationUser = async (username, password) => {
 
-    return api.post('/', username, password);
+    return api.post('/login/', username, password);
 
 }
 

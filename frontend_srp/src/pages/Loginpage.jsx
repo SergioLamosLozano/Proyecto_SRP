@@ -5,6 +5,9 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 // Importamos la hoja de estilos CSS para este componente.
 import "../styles/Loginpage.css"; 
+import {login} from "../api/auth"
+import { jwtDecode } from 'jwt-decode';
+
 
 // Importamos todas las imágenes que se usarán en la página de login.
 // Esto es una buena práctica para que el sistema de empaquetado (como Webpack o Vite) las procese correctamente.
@@ -15,51 +18,62 @@ import leaf04 from '../assets/leaf_04.png';
 import bg from '../assets/bg.jpg';
 import girl from '../assets/girl.png';
 import trees from '../assets/trees.png';
-import { validationUser } from "../components/Cruds.jsx";
+import Swal from 'sweetalert2';
 
 
 
 
 
-
-// Definimos el componente LoginPage. Recibe una prop 'onLoginSuccess'.
-// 'onLoginSuccess' es una función que se llamará desde el componente padre (App.jsx) cuando el login sea exitoso.
 function LoginPage() {
-    const [username, setUsername] = useState("");
-    const [password, setPassword] = useState("");
-    const [error, setError] = useState("");
-    const [userData, setUserData] = useState(null);
-    
-    // Hook para navegar a otra página
-    // 'navigate' es una función que podemos llamar para redirigir al usuario a otra ruta.
+    const [form, setForm] = useState({ username: '', password: '' });
+    const [error, setError] = useState(null);
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
+    const [showPassword, setShowPassword] = useState(false);
+    
+    const handleChange = e => {
+        setForm({ ...form, [e.target.name]: e.target.value });
+    };
 
-    const handleLogin = async (e) => {
-      e.preventDefault();
-      try {
-        const data = await validationUser(username, password);
-        setUserData(data);
-        setError("");
-        // Redirigir basado en el rol del usuario
-        // Asumimos que la respuesta de la API (el objeto 'data') incluye una propiedad 'rol'
-        switch (data.rol) {
-          case 'docente':
-            navigate("/docentes");
-            break;
-          case 'coordinacion':
-            navigate("/coordinacion");
-            break;
-          default:
-            // Para otros roles (secretaria, padres) o si no hay rol, ir a una página genérica
-            navigate("/home");
-            break;
+    const handleSubmit = async e => {
+        e.preventDefault();
+        setLoading(true);
+        setError(null);
+        try {
+            const res = await login(form.username, form.password);
+            const token = res.data.access;
+            localStorage.setItem('token', token);
+            const decoded = jwtDecode(token);
+            
+            const rol = decoded.rol || decoded.role || decoded["user"]["rol"];
+
+            //alert('Inicio de sesión exitoso '+ decoded.username);
+            Swal.fire({
+                position: "top-end",
+                icon: "success",
+                title: `Inicio de sesión exitoso`,
+                text: `Bienvenido ${decoded.username}`,
+            });
+
+            if (rol === 'secretaria') {
+              navigate('/secretaria');
+            } else if (rol === 'coordinacion') {
+              navigate('/coordinacion');
+
+            } else if (rol === 'docente') {navigate('/docente');}
+            else navigate('/404');
+        } catch (error) {
+            //setError('Credenciales no válidas');
+            Swal.fire({
+                position: "top-end",
+                icon: "error",
+                title: "Credenciales no válidas",
+                text: `Por favor intente nuevamente.`,
+            });
+            setForm({ username: '', password: '' });
+            setLoading(false);
         }
-      } catch (err) {
-        setError(err.error || "Credenciales inválidas");
-        console.log(err);
-        setUserData(null);
-        }
-  };
+    };
 
   // El JSX que renderiza el componente.
   return (
@@ -82,20 +96,45 @@ function LoginPage() {
       <img src={girl} className="girl" alt="girl riding bike"/>
       <img src={trees} className="trees" alt="trees"/>
       {/* 4. Usamos una etiqueta <form> y asociamos el evento onSubmit con nuestra función handleLogin. */}
-      <form className="login" onSubmit={handleLogin}>
+      <form className="login" onSubmit={handleSubmit}>
         <h2>Sign In</h2>
         <div className="inputBox">
-          {/* 5. Conectamos los inputs con el estado de React. */}
-          {/* 'value={username}' asegura que el input siempre muestre el valor del estado 'username'. */}
-          {/* 'onChange' se dispara cada vez que el usuario escribe algo. La función actualiza el estado 'username'. */}
-          <input type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} />
+  
+          <input
+                            id = "username"
+                            name="username"
+                            placeholder="Usuario"
+                            value={form.username}
+                            onChange={handleChange}
+                            required
+                        />
         </div>
         <div className="inputBox">
           {/* Lo mismo para el campo de contraseña. */}
-          <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
+          <input
+                                    id="password"
+                                    type={showPassword ? "text" : "password"}
+                                    name="password"
+                                    placeholder="Contraseña"
+                                    value={form.password}
+                                    onChange={handleChange}
+                                    required
+                                />
+                                <button
+                                    type="button"
+                                    className="toggle-password"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                                >
+                                {showPassword ? (
+                                    <span>👁️</span>
+                                ) : (
+                                    <span>🔒</span>
+                                )}
+                            </button>
         </div>
         <div className="inputBox">
-          <input type="submit" value="Login" id="btn" />
+          <input type="submit" id="btn" />
         </div>
         {/* Renderizado condicional: Este párrafo solo se muestra si el estado 'error' tiene algún texto. */}
         {error && <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>}

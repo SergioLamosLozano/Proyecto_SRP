@@ -7,7 +7,7 @@ import DocentesPage from "./pages/DocentesPage.jsx";
 import CoordinacionPage from "./pages/CoordinacionPage.jsx";
 import "./App.css";
 import {BrowserRouter, Routes, Route, Navigate} from "react-router-dom";
-import { Navigation } from "./components/navigation.jsx";  
+
 
 
 function App() {
