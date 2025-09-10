@@ -1,37 +1,37 @@
 .breadcrumbs {
-    margin: 0 15px;
-    font-size: 14px;
+  margin: 10px 15px;
+  font-size: 14px;
 }
 
 .breadcrumbs ul {
-    list-style: none;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0;
 }
 
 .breadcrumbs li {
-    display: flex;
-    align-items: center;
+  display: flex;
+  align-items: center;
 }
 
 .breadcrumbs li::after {
-    content: "›";
-    margin: 0 6px;
-    color: #888;
+  content: "›";
+  margin: 0 6px;
+  color: #888;
 }
 
 .breadcrumbs li:last-child::after {
-    content: "";
+  content: "";
 }
 
 .breadcrumbs a {
-    text-decoration: none;
-    color: #007bff;
+  text-decoration: none;
+  color: #007bff;
 }
 
 .breadcrumbs span {
-    font-weight: bold;
-    color: #007bff;
+  font-weight: bold;
+  color: #007bff;
 }
