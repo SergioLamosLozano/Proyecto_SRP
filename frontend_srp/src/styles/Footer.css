@@ -1,5 +1,10 @@
 .footer {
-  background-color: #00184bc5;
+  background: linear-gradient(
+    to right,
+    #00184bc5 0%,
+    #00184bc5 20%,
+    rgb(1, 1, 70) 100%
+  );
   color: white;
   padding: 2rem 0 1rem 0;
   margin-top: auto;
