@@ -1,0 +1,187 @@
+.footer {
+  background-color: #00184bc5;
+  color: white;
+  padding: 2rem 0 1rem 0;
+  margin-top: auto;
+}
+
+strong {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+p {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10%, 1fr));
+  gap: 1rem;
+  align-items: start;
+  justify-content: space-between;
+}
+
+.footer-section {
+  display: flex;
+  gap: 10px;
+  flex-direction: column;
+}
+
+.logo-section {
+  justify-content: center;
+  max-width: 200px;
+}
+
+.contact-section {
+  align-items: flex-start;
+}
+
+.contact-section strong {
+  display: block;
+  color: white;
+  margin-bottom: 0.3rem;
+}
+
+.contact-section p {
+  margin: 0.3rem 0;
+  font-size: 0.9rem;
+}
+
+.addresses-section {
+  align-items: flex-start;
+}
+
+.addresses-section strong {
+  display: block;
+  color: white;
+  margin-bottom: 0.3rem;
+}
+
+.addresses-section p {
+  margin: 0.3rem 0;
+  font-size: 0.9rem;
+}
+
+.social-section {
+  align-items: flex-start;
+}
+
+.social-section strong {
+  display: block;
+  color: white;
+  margin-bottom: 0.3rem;
+}
+
+.social-icons {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.social-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 30%;
+  transition: all 0.5s ease;
+}
+
+.social-icon:hover {
+  background-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-5px);
+}
+
+.social-icon img {
+  width: 40px;
+  height: 40px;
+  filter: brightness(0) invert(1);
+}
+
+.footer-bottom {
+  margin: 2rem auto 0 auto;
+  padding: 1rem 1rem 0 1rem;
+  border-top: 2px solid rgba(255, 255, 255, 0.3);
+  text-align: center;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.footer-bottom p {
+  margin: 0.3rem 0;
+}
+
+/* Responsive design mejorado */
+@media (max-width: 768px) {
+  .footer {
+    padding: 1.5rem 0 0.5rem 0;
+  }
+
+  .footer-content {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    padding: 0 0.5rem;
+  }
+
+  .logo-section {
+    align-items: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .univalle-logo {
+    height: 60px;
+    margin-bottom: 0.5rem;
+  }
+
+  .contact-section,
+  .addresses-section,
+  .social-section {
+    align-items: center;
+    text-align: center;
+  }
+
+  .addresses-section {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: center;
+  }
+
+  .social-section {
+    align-items: center;
+  }
+
+  .social-icons {
+    justify-content: center;
+  }
+
+  .footer-bottom {
+    margin-top: 1.5rem;
+    padding: 1rem 0.5rem 0 0.5rem;
+    font-size: 0.7rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer-content {
+    gap: 1rem;
+  }
+
+  .contact-section h3 {
+    font-size: 1.1rem;
+  }
+
+  .social-icon {
+    width: 35px;
+    height: 35px;
+  }
+
+  .social-icon img {
+    width: 18px;
+    height: 18px;
+  }
+}
