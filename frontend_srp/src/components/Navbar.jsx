@@ -20,6 +20,7 @@ const Navbar = ({ username, onLogout }) => {
                 <div className="logo-container">
                     <a href="https://contableyfinancier7.wixsite.com/rafaelpombotulua" target="_blank" rel="noopener noreferrer" title="Rafael Pombo">
                         <img src={logo} alt="Rafael Pombo" className="rafaelpombo-logo"/>
+                        <span className="logo-text">Instituto Rafael Pombo - Tuluá</span>
                     </a>
                 </div>
                 

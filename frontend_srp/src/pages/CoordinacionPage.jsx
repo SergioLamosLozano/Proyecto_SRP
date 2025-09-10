@@ -1,10 +1,19 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import Logout from '../components/Logout';
 import Breadcrumbs from '../components/Breadcrumbs';
-//import Footer from '../components/Footer';
 import '../styles/Dashboard.css';
+import Footer from '../components/Footer';
+
+
 
 const Coordinacion = () => {
+    const navigate = useNavigate();
+
+    const handleVerPersonal = () => {
+        navigate('/coordinacion/gestion-usuarios');
+    };
+
     return (
         <div className="dashboard">
             <Logout />
@@ -19,7 +28,7 @@ const Coordinacion = () => {
                     <div className="card">
                         <h3>📋 Gestión de Personal</h3>
                         <p>Administrar usuarios y permisos del sistema</p>
-                        <button className="btn-primary">Ver Personal</button>
+                        <button className="btn-primary" onClick={handleVerPersonal}>Ver Personal</button>
                     </div>
                     
                     <div className="card">
@@ -35,7 +44,7 @@ const Coordinacion = () => {
                     </div>
                 </div>
             </main>
-            {/* <Footer /> */}
+            <Footer />
         </div>
     );
 };

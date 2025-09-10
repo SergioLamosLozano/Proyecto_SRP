@@ -1,9 +1,11 @@
 // src/App.jsx
 
-import React, { useState, lazy, Suspense } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import React, { useState, lazy, Suspense, useEffect } from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import "./App.css";
+import GestionUsuarios from './components/GestionUsuarios';
+import { disableBrowserNavigation } from './utils/navigationControl';
 
 // Lazy load de páginas
 const LoginPage = lazy(() => import("./pages/LoginPage.jsx"));
@@ -57,8 +59,19 @@ function App() {
   // El estado de autenticación ahora se inicializa verificando el token
   const [isAuthenticated, setIsAuthenticated] = useState(checkAuthToken());
 
+  // Deshabilitar navegación del navegador al montar el componente
+  useEffect(() => {
+    disableBrowserNavigation();
+    
+    // Cleanup function para rehabilitar la navegación si es necesario
+    return () => {
+      // Opcional: rehabilitar navegación al desmontar
+      // enableBrowserNavigation();
+    };
+  }, []);
+
   return (
-    <BrowserRouter>
+    <Router>
       <Suspense fallback={<div>Cargando...</div>}>
         <Routes>
           {/* Ruta pública */}
@@ -102,9 +115,11 @@ function App() {
           <Route path="/NotFound" element={<NotFound />} />
           {/* Redirección por defecto para cualquier otra ruta */}
           <Route path="*" element={<Navigate to="/NotFound" replace />} />
+          // Agregar esta ruta dentro de Routes:
+          <Route path="/coordinacion/gestion-usuarios" element={<GestionUsuarios />} />
         </Routes>
       </Suspense>
-    </BrowserRouter>
+    </Router>
   );
 }
 

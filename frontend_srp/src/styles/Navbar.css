@@ -1,20 +1,24 @@
 .navbar {
-    background-color: #dc3545;
-    padding: 0.5rem 1rem;
+    background-color: #685e5f;
+    padding: 0.5rem 0;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    position: sticky;
+    position: fixed;
     top: 0;
-    z-index: 1000;
-    border-radius: 20px;
-    height: 85px;
-    margin-top: 10px;
+    left: 0;
+    right: 0;
+    width: 100%;
+    z-index: 900;
+    display: flex;
+    margin: 0;
 }
 
 .navbar-content {
     display: flex;
     justify-content: space-between;
-    margin-top: -15px;
-
+    width: 100%;
+    max-width: 100%;
+    padding: 0 1rem;
+    margin: 0;
 }
 
 .logo-container {
@@ -25,9 +29,26 @@
     padding: 5px;
 }
 
+.logo-container a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: white;
+}
+
 .rafaelpombo-logo {
-    height: 85px;
+    height: 80px;
     width: auto;
+    margin-left: 0;
+    display: block;
+}
+
+.logo-text {
+    color: white;
+    font-size: 1.5rem;
+    font-weight: bold;
+    white-space: nowrap;
 }
 
 .user-info {
