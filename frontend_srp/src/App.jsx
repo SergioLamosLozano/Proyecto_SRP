@@ -9,7 +9,6 @@ import { disableBrowserNavigation } from './utils/navigationControl';
 
 // Lazy load de páginas
 const LoginPage = lazy(() => import("./pages/LoginPage.jsx"));
-const HomePage = lazy(() => import("./pages/HomePage.jsx"));
 const DocentesPage = lazy(() => import("./pages/DocentesPage.jsx"));
 const CoordinacionPage = lazy(() => import("./pages/CoordinacionPage.jsx"));
 const SecretariaPage = lazy(() => import("./pages/SecretariaPage.jsx"));
@@ -61,6 +60,8 @@ function App() {
 
   // Deshabilitar navegación del navegador al montar el componente
   useEffect(() => {
+    
+
     disableBrowserNavigation();
     
     // Cleanup function para rehabilitar la navegación si es necesario
@@ -78,14 +79,6 @@ function App() {
           <Route path="/" element={<LoginPage onLogin={() => setIsAuthenticated(true)} />} />
 
           {/* Rutas protegidas */}
-          <Route
-            path="/home"
-            element={
-              <RoleBasedRoute isAuthenticated={isAuthenticated} allowedRoles={['secretaria', 'coordinacion', 'docente']}>
-                <HomePage />
-              </RoleBasedRoute>
-            }
-          />
           <Route
             path="/docente"
             element={

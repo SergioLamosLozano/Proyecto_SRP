@@ -7,7 +7,7 @@ const Footer = () => {
             <div className="footer-content">
                 <div className="footer-section logo-section">
                     <a href="https://www.univalle.edu.co" target="_blank" rel="noopener noreferrer" title="Rafael Pombo">
-                        <img src="/logo-footer.png" alt="Logo Rafael Pombo" className="footer-logo" />
+                        <img src="/Logoprincipal.png" alt="Logo Rafael Pombo" className="footer-logo" />
                     </a>
                     <h3>Rafael Pombo </h3>
                     <p>Tuluá, Valle del Cauca, Colombia</p>
@@ -18,15 +18,15 @@ const Footer = () => {
                     <div className="contact-item">
                         <span className="contact-icon">📍</span>
                         <div>
-                            <p>Carrera 14 No 4 - 48</p>
-                            <p>Providencia, Sevilla - Valle</p>
+                            <p>Calle 27 # 32 A 25</p>
+                            <p>Tuluá - Valle del Cauca - Colombia</p>
                         </div>
                     </div>
                     <div className="contact-item">
                         <span className="contact-icon">📞</span>
                         <div>
-                            <p>PBX: +57 602 2165472</p>
-                            <p>Celular: +57 3237274398</p>
+                            <p>Teléfono: +57 315 200 5932</p>
+                            <p>Teléfono: +57 302 452 4859</p>
                         </div>
                     </div>
                     <div className="contact-item">
@@ -38,7 +38,7 @@ const Footer = () => {
                 <div className="footer-section social-section">
                     <h4>Síguenos</h4>
                     <div className="social-icons">
-                        <a href="https://www.facebook.com/CaicedoniaUnivalle" 
+                        <a href="https://www.facebook.com/irafaelpombo" 
                            target="_blank" 
                            rel="noopener noreferrer"
                            className="social-link facebook">
@@ -48,7 +48,7 @@ const Footer = () => {
                             <span>Facebook</span>
                         </a>
                         
-                        <a href="https://www.instagram.com/univallecaicedonia" 
+                        <a href="https://www.instagram.com/institutorafaelpombotulua/" 
                            target="_blank" 
                            rel="noopener noreferrer"
                            className="social-link instagram">
@@ -58,7 +58,7 @@ const Footer = () => {
                             <span>Instagram</span>
                         </a>
                         
-                        <a href="https://wa.me/573237274398" 
+                        <a href="https://api.whatsapp.com/message/E3XV7S5IKPXJD1?autoload=1&app_absent=0" 
                            target="_blank" 
                            rel="noopener noreferrer"
                            className="social-link whatsapp">
@@ -68,7 +68,7 @@ const Footer = () => {
                             <span>WhatsApp</span>
                         </a>
                         
-                        <a href="https://www.univalle.edu.co" 
+                        <a href="https://contableyfinancier7.wixsite.com/rafaelpombotulua" 
                            target="_blank" 
                            rel="noopener noreferrer"
                            className="social-link website">

@@ -13,7 +13,8 @@
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     gap: 40px;
-    align-items: start;
+    justify-items: center;
+    text-align: center;
 }
 
 .footer-section {
@@ -26,23 +27,22 @@
 }
 
 .footer-logo {
-    width: 80px;
-    height: 80px;
+    width: 150px;
+    height: 150px;
     margin-bottom: 15px;
     border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .logo-section h3 {
-    color: #3498db;
+    color: #ffffff;
     margin: 10px 0;
-    font-size: 1.2em;
+    font-size: 1.3em;
     font-weight: 600;
 }
 
 .logo-section p {
     color: #bdc3c7;
-    font-size: 0.9em;
+    font-size: 1em;
     margin: 5px 0;
 }
 
