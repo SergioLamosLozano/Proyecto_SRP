@@ -1,5 +1,5 @@
 .navbar {
-  background-color: #00184bc5;
+  background: linear-gradient(to right, #00184bc5 10%, rgb(1, 1, 70) 100%);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   position: sticky;
   top: 0;
@@ -39,9 +39,7 @@
 .user-info {
   display: flex;
   align-items: center;
-  background: linear-gradient(to left, rgb(1, 1, 70) 50%, transparent 100%);
   padding: 20px;
-  width: 50%;
   height: 120px;
   gap: 15px;
   justify-content: flex-end;
