@@ -5,7 +5,7 @@ import { allowNavigation } from '../utils/navigationControl';
 import "../styles/Breadcrumbs.css";
 import Coordinacion from "../pages/CoordinacionPage";
 
-const Breadcrumbs = () => {
+const Breadcrumbs = ({ currentSection, onSectionNavigation }) => {
     const location = useLocation();
     const navigate = useNavigate();
     const [rol, setRol] = useState(null);
@@ -15,7 +15,21 @@ const Breadcrumbs = () => {
         if (token) {
             try {
                 const decoded = jwtDecode(token);
-                setRol(decoded.rol || decoded.role || decoded["user"]["rol"]);
+                // Buscar el rol en diferentes posibles ubicaciones del token
+                let userRole = null;
+                if (decoded.rol) {
+                    userRole = decoded.rol;
+                } else if (decoded.role) {
+                    userRole = decoded.role;
+                } else if (decoded.user && decoded.user.rol) {
+                    userRole = decoded.user.rol;
+                } else if (decoded.user && decoded.user.role) {
+                    userRole = decoded.user.role;
+                }
+                
+                console.log('Token decodificado:', decoded);
+                console.log('Rol encontrado:', userRole);
+                setRol(userRole);
             } catch (error) {
                 console.error('Error al decodificar el token:', error);
                 localStorage.removeItem('token');
@@ -37,12 +51,18 @@ const Breadcrumbs = () => {
         });
     };
 
+    const handleSectionNavigation = (section) => {
+        if (onSectionNavigation) {
+            onSectionNavigation(section);
+        }
+    };
+
     return (
         <nav className="breadcrumbs">
             <ul>
                 <li>
                     <button 
-                        onClick={() => handleNavigation("/" + rol)}
+                        onClick={() => currentSection ? handleSectionNavigation('dashboard') : handleNavigation("/" + rol)}
                         className="breadcrumb-button home-button"
                     >
                         🏠 Inicio
@@ -55,11 +75,11 @@ const Breadcrumbs = () => {
                     
                     return (
                         <li key={index}>
-                            {isLast ? (
+                            {isLast && !currentSection ? (
                                 <span className="current-page">{formatPath(path)}</span>
                             ) : (
                                 <button 
-                                    onClick={() => handleNavigation(fullPath)}
+                                    onClick={() => currentSection ? handleSectionNavigation('dashboard') : handleNavigation(fullPath)}
                                     className="breadcrumb-button"
                                 >
                                     {formatPath(path)}
@@ -68,6 +88,12 @@ const Breadcrumbs = () => {
                         </li>
                     );
                 })}
+                
+                {currentSection && (
+                    <li>
+                        <span className="current-page">{currentSection}</span>
+                    </li>
+                )}
             </ul>
         </nav>
     );

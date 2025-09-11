@@ -2,13 +2,13 @@
     background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
     color: white;
     padding: 0.5rem 0;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     width: 100%;
-    z-index: 900;
+    z-index: 1000;
     display: flex;
     margin: 0;
 }
@@ -20,6 +20,7 @@
     max-width: 100%;
     padding: 0 1rem;
     margin: 0;
+    align-items: center;
 }
 
 .logo-container {
@@ -28,6 +29,7 @@
     gap: 15px;
     border-radius: 10px;
     padding: 5px;
+    flex-shrink: 0;
 }
 
 .logo-container a {
@@ -57,6 +59,7 @@
     align-items: center;
     gap: 15px;
     justify-content: flex-end;
+    flex-shrink: 0;
 }
 
 .user-welcome {
@@ -66,32 +69,185 @@
 }
 
 .logout-btn {
-    background-color: white;
-    color: #dc3545;
-    border: none;
+    background-color: #dc3545;
+    color: white;
+    border: 2px solid #dc3545;
     padding: 8px 16px;
-    border-radius: 4px;
+    border-radius: 25px;
     cursor: pointer;
     font-size: 0.9rem;
     font-weight: bold;
-    transition: background-color 0.3s ease, color 0.3s ease;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
 }
 
 .logout-btn:hover {
-    background-color: #b02a37;
-    color: white;
+    background-color: #c82333;
+    border-color: #c82333;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(220, 53, 69, 0.4);
+}
+
+.logout-icon {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
+}
+
+.logout-text {
+    display: inline;
 }
 
 /* Responsive design */
+@media (max-width: 1024px) {
+    .logo-text {
+        font-size: 1.3rem;
+    }
+    
+    .user-welcome {
+        font-size: 1.1rem;
+    }
+    
+    .rafaelpombo-logo {
+        height: 70px;
+    }
+}
+
 @media (max-width: 768px) {
+    .navbar {
+        padding: 0.4rem 0;
+    }
+    
+    .navbar-content {
+        padding: 0 0.5rem;
+        gap: 10px;
+    }
+    
+    .logo-container {
+        gap: 8px;
+    }
+    
+    .logo-text {
+        font-size: 1.1rem;
+    }
+    
+    .user-welcome {
+        font-size: 1rem;
+    }
+    
+    .rafaelpombo-logo {
+        height: 60px;
+    }
+    
+    .user-info {
+        gap: 10px;
+    }
+    
+    .logout-btn {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+        gap: 6px;
+    }
+    
+    .logout-icon {
+        width: 16px;
+        height: 16px;
+    }
+}
+
+@media (max-width: 640px) {
+    .navbar {
+        padding: 0.6rem 0;
+    }
+    
     .navbar-content {
         flex-direction: column;
-        gap: 10px;
-        align-items: flex-start;
+        gap: 12px;
+        align-items: center;
+        padding: 0 0.5rem;
     }
-
+    
+    .logo-container {
+        justify-content: center;
+        order: 1;
+    }
+    
+    .logo-text {
+        font-size: 1rem;
+    }
+    
     .user-info {
         width: 100%;
-        justify-content: space-between;
+        justify-content: center;
+        gap: 12px;
+        order: 2;
+    }
+    
+    .user-welcome {
+        font-size: 0.9rem;
+        text-align: center;
+    }
+    
+    .rafaelpombo-logo {
+        height: 50px;
+    }
+    
+    .logout-btn {
+        padding: 8px 16px;
+        font-size: 0.85rem;
+        border-radius: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .navbar {
+        padding: 0.5rem 0;
+    }
+    
+    .logo-text {
+        display: none;
+    }
+    
+    .user-welcome {
+        font-size: 0.8rem;
+    }
+    
+    .logout-btn {
+        padding: 6px 12px;
+        font-size: 0.75rem;
+        gap: 4px;
+    }
+    
+    .logout-text {
+        display: none;
+    }
+    
+    .logout-icon {
+        width: 20px;
+        height: 20px;
+    }
+    
+    .rafaelpombo-logo {
+        height: 45px;
+    }
+}
+
+@media (max-width: 360px) {
+    .navbar-content {
+        gap: 8px;
+    }
+    
+    .user-info {
+        gap: 8px;
+    }
+    
+    .logout-btn {
+        padding: 5px 10px;
+        min-width: 40px;
+        justify-content: center;
     }
 }
