@@ -5,36 +5,38 @@ import "../styles/Estadisticas.css";
 
 function Estadisticas() {
   return (
-    <div className="Estadistica-content-1">
-      <main className="Estadistica-content">
-        <div className="Estadistica-header">
-          <h1>Estadisticas</h1>
-          <p>Estadisticas de diferentes campos</p>
-        </div>
-
-        <div className="Estadistica-cards">
-          <div className="card-Estadistica">
-            <h3>Estadistica uno</h3>
-            <div>
-              <GraficoBarras />
-            </div>
+    <div className="Estadistica-content-2">
+      <div className="Estadistica-content-1">
+        <main className="Estadistica-content">
+          <div className="Estadistica-header">
+            <h1>Estadisticas</h1>
+            <p>Estadisticas de diferentes campos</p>
           </div>
 
-          <div className="card-Estadistica">
-            <h3>Estadistica dos</h3>
-            <div>
-              <GraficoLineas />
+          <div className="Estadistica-cards">
+            <div className="card-Estadistica">
+              <h3>Estadistica uno</h3>
+              <div>
+                <GraficoBarras />
+              </div>
             </div>
-          </div>
 
-          <div className="card-Estadistica">
-            <h3>Estadistica tres</h3>
-            <div>
-              <GraficoCircular />
+            <div className="card-Estadistica">
+              <h3>Estadistica dos</h3>
+              <div>
+                <GraficoLineas />
+              </div>
+            </div>
+
+            <div className="card-Estadistica">
+              <h3>Estadistica tres</h3>
+              <div>
+                <GraficoCircular />
+              </div>
             </div>
           </div>
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
 }
