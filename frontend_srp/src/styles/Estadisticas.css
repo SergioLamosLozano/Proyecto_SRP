@@ -1,0 +1,216 @@
+.Estadistica {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.Estadistica-header {
+  background-color: white;
+  padding: 20px;
+  text-align: center;
+  font-family: Arial, Helvetica, sans-serif;
+  color: #00184bc5;
+}
+
+.Estadistica-header h1 {
+  color: #00184bc5;
+  margin: 0;
+}
+
+.Estadistica-content-1 {
+  width: 1450px;
+  margin: 0 auto;
+  padding-bottom: 30px;
+  height: auto;
+  background-color: white;
+  margin-bottom: 20px;
+  border-radius: 15px;
+  box-shadow: 0px 5px 5px rgba(0, 0, 0, 0.416);
+}
+
+.Estadistica-container {
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+  flex-wrap: wrap; /* Para que en pantallas pequeñas se apilen */
+}
+
+.Estadistica-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  padding: 20px;
+}
+
+.card-Estadistica {
+  display: flex;
+  flex-direction: column;
+  font-family: Arial, Helvetica, sans-serif;
+  justify-content: space-between;
+  background: rgb(255, 255, 255);
+  border: 1px solid #dee2e6;
+  gap: 15px;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  width: auto;
+}
+
+.Estadistica-card-buttons {
+  display: flex;
+  justify-content: space-between; /* separa los botones */
+  gap: 1rem; /* espacio entre ellos (opcional si los quieres separados pero no pegados a los extremos) */
+}
+
+.Estadistica-card h3 {
+  color: #00184bc5;
+  margin-top: 0;
+}
+
+.Estadistica-card .btn-primary {
+  margin-top: auto;
+  width: 40%;
+}
+
+.Estadistica-btn-primary {
+  background-color: #00184bc5;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.Estadistica-btn-primary:hover {
+  background-color: #000e2dc5;
+}
+
+.Estadistica-registro-asistencia {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+  margin-bottom: 20px;
+}
+
+.Estadistica-contador {
+  color: #00184bc5;
+  font-weight: bold;
+  margin-bottom: 15px;
+  text-align: center;
+  font-size: 1.5em;
+}
+
+.Estadistica-form-group {
+  margin-bottom: 15px;
+}
+
+.Estadistica-form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.Estadistica-form-group p {
+  width: 100%;
+  margin: 0;
+}
+
+.Estadistica-form-group input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.Estadistica-error-message {
+  color: #00184bc5;
+  background-color: #f8d7da;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 15px;
+}
+
+.Estadistica-user-info-container {
+  display: flex;
+  flex-direction: column; /* Primero título arriba */
+  gap: 20px;
+  padding: 20px;
+}
+
+.Estadistica-user-info-container h3 {
+  color: #00184bc5;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.Estadistica-info-columns {
+  display: flex;
+  flex-wrap: wrap; /* Se ajusta en pantallas pequeñas */
+  gap: 20px;
+  justify-content: space-between;
+}
+
+.Estadistica-info-column {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 200px;
+  flex: 1; /* Ocupa espacio proporcional */
+}
+
+.Estadistica-user-photo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0; /* Evita que se achique demasiado */
+  max-width: 180px; /* límite ancho para que no se desborde */
+}
+
+.Estadistica-user-photo img {
+  width: 150px;
+  height: 190px;
+  object-fit: cover;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.Estadistica-vigilancia-container {
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+  flex: 1;
+}
+
+.Estadistica-vigilancia-container .card {
+  flex: 1;
+  display: flex;
+  flex-direction: column; /* contenido ordenado verticalmente */
+}
+
+.Estadistica-grafico {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.Estadistica-grafico h1 {
+  color: #00184bc5;
+  text-align: center;
+}
+
+.Estadistica-grafico canvas {
+  max-width: 100%;
+  max-height: 80%;
+}
+
+@media (max-width: 768px) {
+  .Estadistica-content-1 {
+    width: 100%;
+  }
+}
+
+

@@ -2,7 +2,9 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Breadcrumbs from './Breadcrumbs';
 import '../styles/Dashboard.css';
-import Navbar from './Navbar';
+// import Navbar from './Navbar';
+import Logout from './Logout';
+import Footer from './Footer';
 
 const GestionUsuarios = () => {
     const navigate = useNavigate();
@@ -13,7 +15,6 @@ const GestionUsuarios = () => {
 
     return (
         <div className="dashboard">
-            <Navbar />
             <Breadcrumbs />
             <main className="content">
                 <div className="dashboard-header">
@@ -41,6 +42,8 @@ const GestionUsuarios = () => {
                     </div>
                 </div>
             </main>
+            <Logout />
+            <Footer />
         </div>
     );
 };
