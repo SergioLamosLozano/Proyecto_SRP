@@ -30,7 +30,45 @@
     width: 150px;
     height: 150px;
     margin-bottom: 15px;
-    border-radius: 10px;
+}
+
+/* Responsive Design para Footer */
+@media (max-width: 768px) {
+    .footer {
+        padding: 15px 10px;
+        font-size: 0.9rem;
+    }
+    
+    .footer-content {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+    
+    .footer-section {
+        margin-bottom: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .footer {
+        padding: 12px 8px;
+        font-size: 0.8rem;
+    }
+    
+    .footer-content {
+        gap: 10px;
+    }
+    
+    .footer-section h3 {
+        font-size: 1rem;
+        margin-bottom: 8px;
+    }
+    
+    .footer-section p {
+        font-size: 0.8rem;
+        margin-bottom: 5px;
+    }
 }
 
 .logo-section h3 {

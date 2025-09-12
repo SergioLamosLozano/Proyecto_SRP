@@ -7,6 +7,7 @@ import "./App.css";
 import GestionUsuarios from './components/GestionUsuarios';
 import { disableBrowserNavigation } from './utils/navigationControl';
 
+
 // Lazy load de páginas
 const LoginPage = lazy(() => import("./pages/LoginPage.jsx"));
 const DocentesPage = lazy(() => import("./pages/DocentesPage.jsx"));
