@@ -307,3 +307,28 @@
     left: 88%;
   }
 }
+@media (max-width: 560px) {
+  .Login-container {
+    flex-direction: column-reverse;
+    height: 1000px;
+  }
+  .Login-container-2 {
+    width: 100%;
+    border-top-right-radius: 0px;
+    border-bottom-right-radius: 0px;
+  }
+
+  .Login-container-5 {
+    width: 100%;
+  }
+  .Login-conetendor-buttons {
+    max-width: 300px;
+  }
+  .show-password-btn {
+    top: 26%;
+    left: 81%;
+  }
+  .Login-fondo {
+    height: 1300px;
+  }
+}
