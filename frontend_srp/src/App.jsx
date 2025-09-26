@@ -109,7 +109,7 @@ function App() {
           <Route path="/NotFound" element={<NotFound />} />
           {/* Redirección por defecto para cualquier otra ruta */}
           <Route path="*" element={<Navigate to="/NotFound" replace />} />
-          // Agregar esta ruta dentro de Routes:
+          {/* Ruta para gestión de usuarios */}
           <Route path="/coordinacion/gestion-usuarios" element={<GestionUsuarios />} />
         </Routes>
       </Suspense>

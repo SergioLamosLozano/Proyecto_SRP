@@ -1,21 +1,33 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Breadcrumbs from './Breadcrumbs';
 import '../styles/Dashboard.css';
+import '../styles/GestionUsuarios.css';
 // import Navbar from './Navbar';
 import Logout from './Logout';
 import Footer from './Footer';
+import '../styles/Coordinacion.css';
 
-const GestionUsuarios = () => {
+const GestionUsuarios = ({ onBack }) => {
     const navigate = useNavigate();
 
+    const breadcrumbItems = [
+        { label: 'Inicio', path: '/coordinacion' },
+        { label: 'Coordinación Administrativa', path: '/coordinacion' },
+        { label: 'Gestión de Usuarios', path: '/coordinacion/gestion-usuarios' }
+    ];
+
     const handleVolver = () => {
-        navigate('/coordinacion');
+        if (onBack) {
+            onBack();
+        } else {
+            navigate('/coordinacion');
+        }
     };
 
     return (
         <div className="dashboard">
-            <Breadcrumbs />
+            <Breadcrumbs items={breadcrumbItems} onNavigate={onBack} />
             <main className="content">
                 <div className="dashboard-header">
                     <h1>Gestión de Usuarios</h1>
@@ -43,7 +55,6 @@ const GestionUsuarios = () => {
                 </div>
             </main>
             <Logout />
-            <Footer />
         </div>
     );
 };

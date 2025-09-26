@@ -81,7 +81,6 @@ function LoginPage({ onLogin }) {
 
   return (
     <>
-      <Logout />
       <section className="Login-padre">
         <div className="Login-fondo"></div>
         <div className="Login-container">

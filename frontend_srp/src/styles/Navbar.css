@@ -8,9 +8,10 @@
   left: 0;
   right: 0;
   width: 100%;
-  z-index: 1000;
+  z-index: 1001; /* Mayor que el sidebar */
   display: flex;
   margin: 0;
+  height: 100px; /* Altura fija para el navbar */
 }
 
 .navbar-content {
@@ -116,7 +117,9 @@
   }
 
   .logo-text {
-    font-size: 1.1rem;
+    font-size: 2rem;
+    color: white;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
   }
 
   .user-welcome {

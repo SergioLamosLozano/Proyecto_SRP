@@ -1,7 +1,7 @@
 .breadcrumbs {
-  margin: 15px;
+  margin: 5px 5px 5px 0px;
   font-size: 14px;
-  margin-top: 90px;
+  margin-top: 5px;
   padding: 12px 20px;
   border-radius: 8px;
   position: relative;
@@ -74,7 +74,7 @@
   .breadcrumbs {
     margin: 12px;
     padding: 10px 16px;
-    margin-top: 25px;
+    margin-top: 5px;
   }
 }
 
@@ -83,7 +83,7 @@
     margin: 10px;
     padding: 10px 15px;
     font-size: 13px;
-    margin-top: 80px;
+    margin-top: 110px;
     background-color: #ffffff;
     border: 2px solid #007bff;
   }
@@ -117,7 +117,7 @@
     margin: 8px;
     padding: 12px 16px;
     font-size: 12px;
-    margin-top: 110px;
+    margin-top: 120px;
     background-color: #ffffff;
     border: 2px solid #007bff;
     box-shadow: 0 4px 8px rgba(0, 123, 255, 0.2);
@@ -152,7 +152,7 @@
     margin: 5px;
     padding: 10px 12px;
     font-size: 11px;
-    margin-top: 95px;
+    margin-top: 110px;
     overflow-x: auto;
     white-space: nowrap;
     background-color: #ffffff;
@@ -195,7 +195,7 @@
     margin: 3px;
     padding: 8px 10px;
     font-size: 10px;
-    margin-top: 90px;
+    margin-top: 110px;
   }
 
   .breadcrumb-button,

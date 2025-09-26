@@ -2,10 +2,16 @@ import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { jwtDecode } from 'jwt-decode';
 import { allowNavigation } from '../utils/navigationControl';
+import '../styles/Coordinacion.css';
 import "../styles/Breadcrumbs.css";
-import Coordinacion from "../pages/CoordinacionPage";
 
-const Breadcrumbs = ({ currentSection, onSectionNavigation }) => {
+const colors = {
+  grisSecundario: 'var(--gris-secundario)',
+  rojoInstitucional: 'var(--rojo-institucional)',
+  grisPrincipal: 'var(--gris-principal)'
+};
+
+const Breadcrumbs = ({ items = [], onNavigate }) => {
     const location = useLocation();
     const navigate = useNavigate();
     const [rol, setRol] = useState(null);
@@ -37,63 +43,42 @@ const Breadcrumbs = ({ currentSection, onSectionNavigation }) => {
         }
     }, []);
 
-    const paths = location.pathname.split("/").filter((x) => x);
-    
-    const formatPath = (path) => {
-        return path
-            .replace(/-/g, " ")
-            .replace(/\b\w/g, (l) => l.toUpperCase());
-    };
-
     const handleNavigation = (path) => {
-        allowNavigation(() => {
-            navigate(path);
-        });
-    };
-
-    const handleSectionNavigation = (section) => {
-        if (onSectionNavigation) {
-            onSectionNavigation(section);
+        if (onNavigate) {
+            onNavigate(path);
+        } else {
+            allowNavigation(() => {
+                navigate(path);
+            });
         }
     };
+
+    if (!items || items.length === 0) {
+        return null;
+    }
 
     return (
         <nav className="breadcrumbs">
             <ul>
-                <li>
-                    <button 
-                        onClick={() => currentSection ? handleSectionNavigation('dashboard') : handleNavigation("/" + rol)}
-                        className="breadcrumb-button home-button"
-                    >
-                        🏠 Inicio
-                    </button>
-                </li>
-                
-                {paths.map((path, index) => {
-                    const fullPath = "/" + paths.slice(0, index + 1).join("/");
-                    const isLast = index === paths.length - 1;
+                {items.map((item, index) => {
+                    const isLast = index === items.length - 1;
                     
                     return (
                         <li key={index}>
-                            {isLast && !currentSection ? (
-                                <span className="current-page">{formatPath(path)}</span>
+                            {isLast ? (
+                                <span className="current-page">{item.label}</span>
                             ) : (
                                 <button 
-                                    onClick={() => currentSection ? handleSectionNavigation('dashboard') : handleNavigation(fullPath)}
+                                    onClick={() => handleNavigation(item.path)}
                                     className="breadcrumb-button"
                                 >
-                                    {formatPath(path)}
+                                    {item.label}
                                 </button>
                             )}
+                            {!isLast && <span className="separator"> / </span>}
                         </li>
                     );
                 })}
-                
-                {currentSection && (
-                    <li>
-                        <span className="current-page">{currentSection}</span>
-                    </li>
-                )}
             </ul>
         </nav>
     );

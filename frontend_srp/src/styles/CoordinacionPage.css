@@ -1,0 +1,42 @@
+/* Estilos para CoordinacionPage */
+.coordinacion-container {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f8f9fa;
+  padding-top: 100px; /* Espacio para el navbar fijo */
+}
+
+.coordinacion-content {
+  flex: 1;
+  margin-left: 250px; /* Ancho del sidebar */
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 100px);
+}
+
+.coordinacion-main-content {
+  flex: 1;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .coordinacion-container {
+    padding-top: 80px;
+  }
+  
+  .coordinacion-content {
+    margin-left: 0;
+    min-height: calc(100vh - 80px);
+  }
+}
+
+@media (max-width: 480px) {
+  .coordinacion-container {
+    padding-top: 70px;
+  }
+  
+  .coordinacion-content {
+    min-height: calc(100vh - 70px);
+  }
+}

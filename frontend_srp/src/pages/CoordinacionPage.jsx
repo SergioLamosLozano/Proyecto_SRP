@@ -1,75 +1,60 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import Sidebar from '../components/Sidebar';
+import Dashboard from '../components/Dashboard';
+import GestionAcademica from '../components/GestionAcademica';
+import GestionUsuarios from '../components/GestionUsuarios';
+import Calificaciones from '../components/Calificaciones';
+import ReportesEstadisticas from '../components/ReportesEstadisticas';
 import Logout from '../components/Logout';
-import Breadcrumbs from '../components/Breadcrumbs';
-import '../styles/Dashboard.css';
 import Footer from '../components/Footer';
-import Estadisticas from '../components/Estadisticas';
+import '../styles/Dashboard.css';
+import '../styles/CoordinacionPage.css';
 
-const Coordinacion = () => {
-    const navigate = useNavigate();
-    const [ESTADISTICAS, setESTADISTICAS] = useState(false);
+const CoordinacionPage = () => {
+  const [currentView, setCurrentView] = useState('dashboard');
 
-    const handleVerPersonal = () => {
-        navigate('/coordinacion/gestion-usuarios');
-    };
+  const handleNavigation = (view) => {
+    setCurrentView(view);
+  };
 
-    const handleVerEstadisticas = () => {
-        setESTADISTICAS(true);
-    };
+  const handleBackToDashboard = () => {
+    setCurrentView('dashboard');
+  };
 
-    const handleBackFromEstadisticas = () => {
-        setESTADISTICAS(false);
-    };
+  const renderContent = () => {
+    switch (currentView) {
+      case 'dashboard':
+        return <Dashboard onNavigate={handleNavigation} />;
+      case 'gestion-academica':
+        return <GestionAcademica onBack={handleBackToDashboard} />;
+      case 'gestion-usuarios':
+        return <GestionUsuarios onBack={handleBackToDashboard} />;
+      case 'calificaciones':
+        return <Calificaciones onBack={handleBackToDashboard} />;
+      case 'reportes':
+        return <ReportesEstadisticas onBack={handleBackToDashboard} />;
+      default:
+        return <Dashboard onNavigate={handleNavigation} />;
+    }
+  };
 
-    const handleSectionNavigation = (section) => {
-        if (section === 'dashboard') {
-            setESTADISTICAS(false);
-        }
-    };
-
-    return (
-        <div className="dashboard">
-            <Logout />
-            <Breadcrumbs 
-                currentSection={ESTADISTICAS ? 'Estadísticas' : null}
-                onSectionNavigation={handleSectionNavigation}
-            />
-            
-            {!ESTADISTICAS && (
-                <main className="content">
-                    <div className="dashboard-header">
-                        <h1>Coordinación Administrativa</h1>
-                        <p>Panel de control - Gestión administrativa y recursos</p>
-                    </div>
-                    
-                    <div className="dashboard-cards">
-                        <div className="card">
-                            <h3>📋 Gestión de Personal</h3>
-                            <p>Administrar usuarios y permisos del sistema</p>
-                            <button className="btn-primary" onClick={handleVerPersonal}>Ver Personal</button>
-                        </div>
-                        
-                        <div className="card">
-                            <h3>⚙️ Configuración del Sistema</h3>
-                            <p>Parámetros y ajustes generales</p>
-                            <button className="btn-primary">Configurar</button>
-                        </div>
-                        
-                        <div className="card">
-                            <h3>📈 Estadísticas</h3>
-                            <p>Resumen de actividades y métricas</p>
-                            <button className="btn-primary" onClick={handleVerEstadisticas}>Ver Estadísticas</button>
-                        </div>
-                    </div>
-                </main>
-            )}
-            
-            {ESTADISTICAS && <Estadisticas onBack={handleBackFromEstadisticas} />}
-            
-            <Footer />
+  return (
+    <>
+      <Logout />
+      <div className="coordinacion-container">
+        <Sidebar 
+          currentView={currentView} 
+          onNavigate={handleNavigation} 
+        />
+        <div className="coordinacion-content">
+          <div className="coordinacion-main-content">
+            {renderContent()}
+          </div>
+          <Footer />
         </div>
-    );
+      </div>
+    </>
+  );
 };
 
-export default Coordinacion;
+export default CoordinacionPage;
