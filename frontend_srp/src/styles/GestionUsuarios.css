@@ -8,7 +8,7 @@
 .gestion-usuarios-container {
     min-height: 100vh;
     background-color: var(--gris-claro-fondo);
-    padding-top: 100px;
+    padding-top: 160px; /* Espacio para navbar + breadcrumb */
 }
 
 .gestion-usuarios-content {

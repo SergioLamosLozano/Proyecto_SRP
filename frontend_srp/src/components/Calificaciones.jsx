@@ -1,15 +1,36 @@
 import React, { useState } from 'react';
 import '../styles/Coordinacion.css';
+import '../styles/Calificaciones.css';
 import Breadcrumbs from './Breadcrumbs';
 
 const Calificaciones = ({ onBack }) => {
   const [currentSubSection, setCurrentSubSection] = useState(null);
 
+  
   const breadcrumbItems = [
     { label: 'Inicio', path: '/coordinacion' },
     { label: 'Coordinación Administrativa', path: '/coordinacion' },
-    { label: 'Calificaciones', path: '/coordinacion/calificaciones' }
+    { label: 'Calificaciones', path: '/coordinacion/calificaciones' },
+    ...(currentSubSection ? [{ 
+      label: currentSubSection === 'cno' ? 'CNO' :
+             currentSubSection === 'carga masiva' ? 'Carga Masiva' : 'Carga Masiva',
+      path: `/coordinacion/calificaciones/${currentSubSection}` 
+    }] : [])
+    
   ];
+
+  const handleNavigate = (path) => {
+    if (path === '/coordinacion') {
+      onBack();
+    } else if (path === '/coordinacion/calificaciones') {
+      setCurrentSubSection(null);
+    } else {
+      const subsection = path.split('/').pop();
+      if (['cno', 'carga masiva'].includes(subsection)) {
+        setCurrentSubSection(subsection);
+      }
+    }
+  };
 
   const calificationSections = [
     {
@@ -55,6 +76,7 @@ const Calificaciones = ({ onBack }) => {
 
   const containerStyle = {
     padding: '20px',
+    paddingTop: '160px', /* Espacio para navbar + breadcrumb */
     backgroundColor: 'var(--gris-claro-fondo)',
     minHeight: '100vh'
   };
@@ -293,56 +315,40 @@ const Calificaciones = ({ onBack }) => {
   };
 
   return (
-    <div style={containerStyle}>
-      <Breadcrumbs items={breadcrumbItems} onNavigate={onBack} />
+    <div className="dashboard-container">
+      <Breadcrumbs items={breadcrumbItems} onNavigate={handleNavigate} />
       
-      {currentSubSection ? (
-        renderSubSection()
-      ) : (
-        <>
-          <div style={headerStyle}>
-            <h2 style={titleStyle}>Calificaciones</h2>
-            <p style={subtitleStyle}>Gestión de calificaciones y certificaciones académicas</p>
-          </div>
+      <div className="dashboard-content">
+        {currentSubSection ? (
+          renderSubSection()
+        ) : (
+          <>
+            <div className="dashboard-header">
+              <h1 className="dashboard-title">Calificaciones</h1>
+              <p className="dashboard-subtitle">Gestión de calificaciones y certificaciones académicas</p>
+            </div>
 
-          <div style={gridStyle}>
-            {calificationSections.map((section) => (
-              <div
-                key={section.id}
-                style={cardStyle}
-                onMouseEnter={(e) => {
-                  Object.assign(e.currentTarget.style, cardHoverStyle);
-                }}
-                onMouseLeave={(e) => {
-                  Object.assign(e.currentTarget.style, cardStyle);
-                }}
-                onClick={() => handleSectionClick(section.id)}
-              >
-                <div style={cardHeaderStyle}>
-                  <span style={iconStyle}>{section.icon}</span>
-                  <h3 style={cardTitleStyle}>{section.title}</h3>
-                </div>
-                <p style={descriptionStyle}>{section.description}</p>
-                <button
-                  style={buttonStyle}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = 'var(--rojo-hover)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'var(--rojo-institucional)';
-                  }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleSectionClick(section.id);
-                  }}
+            <div className="dashboard-grid">
+              {calificationSections.map((section) => (
+                <div
+                  key={section.id}
+                  className="dashboard-card"
+                  onClick={() => handleSectionClick(section.id)}
                 >
-                  {section.buttonText}
-                </button>
-              </div>
-            ))}
-          </div>
-        </>
-      )}
+                  <div className="card-header">
+                    <span className="card-icon">{section.icon}</span>
+                    <h3 className="card-title">{section.title}</h3>
+                  </div>
+                  <p className="card-description">{section.description}</p>
+                  <button className="card-button">
+                    {section.buttonText}
+                  </button>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 };

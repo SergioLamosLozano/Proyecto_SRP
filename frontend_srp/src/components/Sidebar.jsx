@@ -1,52 +1,30 @@
-import React, { useState } from 'react';
-import '../styles/Coordinacion.css';
+import React from 'react';
 import '../styles/Sidebar.css';
 
-const Sidebar = ({ currentView, onNavigate }) => {
-  const [hoveredItem, setHoveredItem] = useState(null);
-
+const Sidebar = ({ currentView, onNavigate, isMobile, isOpen }) => {
   const menuItems = [
-    {
-      id: 'dashboard',
-      label: 'Dashboard (Inicio)',
-      icon: '🏠'
-    },
-    {
-      id: 'gestion-academica',
-      label: 'Gestión Académica',
-      icon: '📚'
-    },
-    {
-      id: 'gestion-usuarios',
-      label: 'Gestión de Usuarios',
-      icon: '👥'
-    },
-    {
-      id: 'calificaciones',
-      label: 'Calificaciones',
-      icon: '📊'
-    },
-    {
-      id: 'reportes',
-      label: 'Reportes y Estadísticas',
-      icon: '📈'
-    }
+    { id: 'dashboard', label: 'Dashboard', icon: '📊' },
+    { id: 'gestion-academica', label: 'Gestión Académica', icon: '📚' },
+    { id: 'gestion-usuarios', label: 'Gestión de Usuarios', icon: '👥' },
+    { id: 'calificaciones', label: 'Calificaciones', icon: '📝' },
+    { id: 'reportes', label: 'Reportes y Estadísticas', icon: '📈' }
   ];
 
+  const sidebarClasses = `sidebar ${isMobile ? 'mobile' : ''} ${isOpen ? 'open' : ''}`;
+
   return (
-    <div className="sidebar">
+    <div className={sidebarClasses}>
       <div className="sidebar-header">
-        <p className="sidebar-subtitle">Panel de Coordinación Administrativa</p>
+        <h2 className="sidebar-title">SRP Univalle</h2>
+        <p className="sidebar-subtitle">Sistema de Registro de Programas</p>
       </div>
       
-      <nav>
+      <nav className="sidebar-nav">
         {menuItems.map((item) => (
           <div
             key={item.id}
             className={`menu-item ${currentView === item.id ? 'active' : ''}`}
             onClick={() => onNavigate(item.id)}
-            onMouseEnter={() => setHoveredItem(item.id)}
-            onMouseLeave={() => setHoveredItem(null)}
           >
             <span className="menu-icon">{item.icon}</span>
             <span className="menu-text">{item.label}</span>

@@ -7,6 +7,7 @@
 
 .coordinacion-container {
     padding: 0 20px 20px 20px;
+    padding-top: 160px; /* Espacio para navbar + breadcrumb */
     background-color: var(--gris-claro-fondo);
     min-height: 100vh;
 }

@@ -11,6 +11,17 @@
   box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
   z-index: 100;
   overflow-y: auto;
+  transition: transform 0.3s ease;
+}
+
+/* Sidebar móvil */
+.sidebar.mobile {
+  transform: translateX(-100%);
+  z-index: 101;
+}
+
+.sidebar.mobile.open {
+  transform: translateX(0);
 }
 
 .sidebar-header {
@@ -64,4 +75,41 @@
 .menu-text {
   font-size: 14px;
   font-weight: 500;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 280px;
+    height: 100vh;
+    top: 0;
+    transform: translateX(-100%);
+    z-index: 101;
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  .sidebar-header {
+    padding-top: 120px; /* Espacio para el navbar */
+  }
+}
+
+@media (max-width: 480px) {
+  .sidebar {
+    width: 260px;
+  }
+
+  .sidebar-header {
+    padding-top: 100px;
+  }
+
+  .menu-item {
+    padding: 15px 20px;
+  }
+
+  .menu-text {
+    font-size: 15px;
+  }
 }

@@ -3,6 +3,7 @@ import '../styles/Coordinacion.css';
 import '../styles/Dashboard.css';
 import Breadcrumbs from './Breadcrumbs';
 
+
 const Dashboard = ({ onNavigate }) => {
   const breadcrumbItems = [
     { label: 'Inicio', path: '/coordinacion' },

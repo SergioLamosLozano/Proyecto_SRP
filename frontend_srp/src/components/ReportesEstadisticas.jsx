@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import '../styles/Coordinacion.css';
 import Breadcrumbs from './Breadcrumbs';
+import GraficaCircular from './GraficaCircular';
+import GraficaLinea from './GraficaLinea';
 
 const ReportesEstadisticas = ({ onBack }) => {
   const [currentSubSection, setCurrentSubSection] = useState(null);
@@ -8,7 +10,58 @@ const ReportesEstadisticas = ({ onBack }) => {
   const breadcrumbItems = [
     { label: 'Inicio', path: '/coordinacion' },
     { label: 'Coordinación Administrativa', path: '/coordinacion' },
-    { label: 'Reportes y Estadísticas', path: '/coordinacion/reportes' }
+    { label: 'Reportes y Estadísticas', path: '/coordinacion/reportes' },
+    ...(currentSubSection ? [{ 
+      label: currentSubSection === 'reportes' ? 'Reportes Académicos' :
+             currentSubSection === 'estadistica' ? 'Estadísticas Académicas' : 'Estadísticas Académicas',
+      path: `/coordinacion/reportes/${currentSubSection}` 
+    }] : [])
+    
+  ];
+  const handleNavigate = (path) => {
+    if (path === '/coordinacion') {
+      onBack();
+    } else if (path === '/coordinacion/reportes') {
+      setCurrentSubSection(null);
+    } else {
+      const subsection = path.split('/').pop();
+      if (['reportes', 'estadistica'].includes(subsection)) {
+        setCurrentSubSection(subsection);
+      }
+    }
+  };
+  // Datos de ejemplo para las gráficas
+  const datosGraficaCircular = [
+    { label: 'Aprobados', value: 75, color: '#28a745' },
+    { label: 'Reprobados', value: 15, color: '#dc3545' },
+    { label: 'Pendientes', value: 10, color: '#ffc107' }
+  ];
+
+  const datosGraficaLinea = [
+    {
+      name: 'Rendimiento 2023',
+      color: '#007bff',
+      data: [
+        { label: 'Ene', value: 85 },
+        { label: 'Feb', value: 78 },
+        { label: 'Mar', value: 92 },
+        { label: 'Abr', value: 88 },
+        { label: 'May', value: 95 },
+        { label: 'Jun', value: 90 }
+      ]
+    },
+    {
+      name: 'Rendimiento 2024',
+      color: '#28a745',
+      data: [
+        { label: 'Ene', value: 82 },
+        { label: 'Feb', value: 85 },
+        { label: 'Mar', value: 89 },
+        { label: 'Abr', value: 93 },
+        { label: 'May', value: 91 },
+        { label: 'Jun', value: 96 }
+      ]
+    }
   ];
 
   const reportSections = [
@@ -30,6 +83,7 @@ const ReportesEstadisticas = ({ onBack }) => {
 
   const containerStyle = {
     padding: '20px',
+    paddingTop: '160px', /* Espacio para navbar + breadcrumb */
     backgroundColor: 'var(--gris-claro-fondo)',
     minHeight: '100vh'
   };
@@ -158,12 +212,69 @@ const ReportesEstadisticas = ({ onBack }) => {
       case 'estadisticas':
         return (
           <div>
-            <div style={headerStyle}>
-              <h2 style={titleStyle}>Estadísticas Académicas</h2>
-              <p style={subtitleStyle}>Consulta estadísticas y análisis comparativos</p>
+            <div className="dashboard-header">
+              <h2 className="dashboard-title">Estadísticas Académicas</h2>
+              <p className="dashboard-subtitle">Consulta estadísticas y análisis comparativos</p>
             </div>
-            <div style={contentStyle}>
-              <p>Funcionalidad de estadísticas en desarrollo...</p>
+            <div className="dashboard-content">
+              {/* Gráficas de estadísticas */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '30px', marginBottom: '30px' }}>
+                <GraficaCircular 
+                  data={datosGraficaCircular} 
+                  title="Distribución de Calificaciones"
+                  width={350}
+                  height={350}
+                />
+                <GraficaLinea 
+                  data={datosGraficaLinea} 
+                  title="Tendencia de Rendimiento Académico"
+                  width={450}
+                  height={300}
+                />
+              </div>
+              
+              {/* Estadísticas adicionales */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
+                <div className="dashboard-card">
+                  <div className="card-header">
+                    <span className="card-icon">👥</span>
+                    <h3 className="card-title">Total Estudiantes</h3>
+                  </div>
+                  <div style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--rojo-institucional)', textAlign: 'center', margin: '20px 0' }}>
+                    1,247
+                  </div>
+                </div>
+                
+                <div className="dashboard-card">
+                  <div className="card-header">
+                    <span className="card-icon">📚</span>
+                    <h3 className="card-title">Materias Activas</h3>
+                  </div>
+                  <div style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--rojo-institucional)', textAlign: 'center', margin: '20px 0' }}>
+                    45
+                  </div>
+                </div>
+                
+                <div className="dashboard-card">
+                  <div className="card-header">
+                    <span className="card-icon">🎓</span>
+                    <h3 className="card-title">Promedio General</h3>
+                  </div>
+                  <div style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--rojo-institucional)', textAlign: 'center', margin: '20px 0' }}>
+                    87.5
+                  </div>
+                </div>
+                
+                <div className="dashboard-card">
+                  <div className="card-header">
+                    <span className="card-icon">📊</span>
+                    <h3 className="card-title">Tasa de Aprobación</h3>
+                  </div>
+                  <div style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--rojo-institucional)', textAlign: 'center', margin: '20px 0' }}>
+                    92%
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         );
@@ -302,56 +413,40 @@ const ReportesEstadisticas = ({ onBack }) => {
   };
 
   return (
-    <div style={containerStyle}>
-      <Breadcrumbs items={breadcrumbItems} onNavigate={onBack} />
+    <div className="dashboard-container">
+      <Breadcrumbs items={breadcrumbItems} onNavigate={handleNavigate} />
       
-      {currentSubSection ? (
-        renderSubSection()
-      ) : (
-        <>
-          <div style={headerStyle}>
-            <h2 style={titleStyle}>Reportes y Estadísticas</h2>
-            <p style={subtitleStyle}>Genera reportes y consulta estadísticas académicas</p>
-          </div>
+      <div className="dashboard-content">
+        {currentSubSection ? (
+          renderSubSection()
+        ) : (
+          <>
+            <div className="dashboard-header">
+              <h1 className="dashboard-title">Reportes y Estadísticas</h1>
+              <p className="dashboard-subtitle">Genera reportes y consulta estadísticas académicas</p>
+            </div>
 
-          <div style={gridStyle}>
-            {reportSections.map((section) => (
-              <div
-                key={section.id}
-                style={cardStyle}
-                onMouseEnter={(e) => {
-                  Object.assign(e.currentTarget.style, cardHoverStyle);
-                }}
-                onMouseLeave={(e) => {
-                  Object.assign(e.currentTarget.style, cardStyle);
-                }}
-                onClick={() => handleSectionClick(section.id)}
-              >
-                <div style={cardHeaderStyle}>
-                  <span style={iconStyle}>{section.icon}</span>
-                  <h3 style={cardTitleStyle}>{section.title}</h3>
-                </div>
-                <p style={descriptionStyle}>{section.description}</p>
-                <button
-                  style={buttonStyle}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = 'var(--rojo-hover)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'var(--rojo-institucional)';
-                  }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleSectionClick(section.id);
-                  }}
+            <div className="dashboard-grid">
+              {reportSections.map((section) => (
+                <div
+                  key={section.id}
+                  className="dashboard-card"
+                  onClick={() => handleSectionClick(section.id)}
                 >
-                  {section.buttonText}
-                </button>
-              </div>
-            ))}
-          </div>
-        </>
-      )}
+                  <div className="card-header">
+                    <span className="card-icon">{section.icon}</span>
+                    <h3 className="card-title">{section.title}</h3>
+                  </div>
+                  <p className="card-description">{section.description}</p>
+                  <button className="card-button">
+                    {section.buttonText}
+                  </button>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 };
