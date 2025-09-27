@@ -16,10 +16,10 @@ const Navbar = ({ username, onLogout }) => {
     return (
         <nav className="navbar">
             <div className="navbar-content">
-                <div className="logo-container">
-                    <a href="https://contableyfinancier7.wixsite.com/rafaelpombotulua" target="_blank" rel="noopener noreferrer" title="Rafael Pombo">
+                <div>
+                    <a className='logo-container'>
                         <img src={logo} alt="Rafael Pombo" className="rafaelpombo-logo"/>
-                        <span className="logo-text">Instituto Rafael Pombo - Tuluá</span>
+                        <h1 className="logo-text">Instituto Rafael Pombo - Tuluá</h1>
                     </a>
                 </div>
                 

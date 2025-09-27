@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import '../styles/GestionAcademica.css';
 import Breadcrumbs from './Breadcrumbs';
+import Table from './Table';
 
 const GestionAcademica = ({ onBack }) => {
   const [currentSubSection, setCurrentSubSection] = useState(null);
@@ -81,33 +82,54 @@ const GestionAcademica = ({ onBack }) => {
     switch (currentSubSection) {
       case 'materias':
         return (
-          <div className="gestion-academica-content">
+          <div className="gestion-academica-subsection">
             <div className="gestion-academica-header">
               <h2 className="gestion-academica-title">Gestión de Materias</h2>
               <p className="gestion-academica-subtitle">Administra las materias del programa académico</p>
             </div>
-            <p>Funcionalidad de gestión de materias en desarrollo...</p>
+            {/* Contenido de materias se implementará próximamente */}
           </div>
         );
       case 'profesores':
         return (
-          <div className="gestion-academica-content">
+          <div className="gestion-academica-subsection">
             <div className="gestion-academica-header">
               <h2 className="gestion-academica-title">Gestión de Profesores</h2>
               <p className="gestion-academica-subtitle">Administra la información de los profesores</p>
             </div>
-            <p>Funcionalidad de gestión de profesores en desarrollo...</p>
+            {/* Contenido de profesores se implementará próximamente */}
           </div>
         );
       case 'estudiantes':
+        // Configuración de columnas - Cambia los 'label' para modificar los títulos de las columnas
+        const estudiantesColumns = [
+          { key: 'nombre', label: 'NOMBRE' },
+          { key: 'identificacion', label: 'IDENTIFICACIÓN' },
+          { key: 'curso', label: 'CURSO' },
+          { key: 'estado', label: 'ESTADO' }
+        ];
+
+        // Configuración de acciones - Cambia los 'label' para modificar el texto de los botones
+        const estudiantesActions = [
+          { key: 'view', label: 'Ver Detalles', type: 'view' },
+          { key: 'edit', label: 'Editar', type: 'edit' },
+          { key: 'delete', label: 'Eliminar', type: 'delete' }
+        ];
+
         return (
-          <div className="gestion-academica-content">
-            <div className="gestion-academica-header">
-              <h2 className="gestion-academica-title">Gestión de Estudiantes</h2>
-              <p className="gestion-academica-subtitle">Administra los registros de estudiantes</p>
-            </div>
-            <p>Funcionalidad de gestión de estudiantes en desarrollo...</p>
-          </div>
+            <Table
+              title="Lista de Estudiantes"
+              columns={estudiantesColumns}
+              data={estudiantes}
+              searchPlaceholder="Buscar por nombre..."
+              filterOptions={cursos}
+              filterPlaceholder="Filtrar por Curso"
+              addButtonText="Añadir Estudiante"
+              actions={estudiantesActions}
+              onAdd={() => console.log('Añadir estudiante')}
+              onAction={(action, item) => console.log(action, item)}
+            />
+          
         );
       default:
         return null;
@@ -118,31 +140,31 @@ const GestionAcademica = ({ onBack }) => {
     <div className="dashboard-container">
       <Breadcrumbs items={breadcrumbItems} onNavigate={handleNavigate} />
       
-      <div className="dashboard-content">
+      <div className="gestion-academica-content">
         {currentSubSection ? (
           renderSubSection()
         ) : (
           <>
-            <div className="dashboard-header">
-              <h1 className="dashboard-title">Gestión Académica</h1>
-              <p className="dashboard-subtitle">Administra cursos, materias, asignaciones de profesores y la estructura académica general</p>
+            <div className="gestion-academica-header">
+              <h1 className="gestion-academica-title">Gestión Académica</h1>
+              <p className="gestion-academica-subtitle">Administra cursos, materias, asignaciones de profesores y la estructura académica general</p>
             </div>
 
-            <div className="dashboard-grid">
+            <div className="gestion-academica-grid">
               {academicSections.map((section) => (
                 <div
                   key={section.id}
-                  className="dashboard-card"
+                  className="gestion-academica-card"
                   onClick={() => handleSectionClick(section.id)}
                 >
-                  <div className="card-header">
-                    <span className="card-icon">{section.icon}</span>
-                    <h3 className="card-title">{section.title}</h3>
+                  <div className="gestion-academica-card-header">
+                    <span className="gestion-academica-icon">{section.icon}</span>
+                    <h3 className="gestion-academica-card-title">{section.title}</h3>
                   </div>
                   
-                  <p className="card-description">{section.description}</p>
+                  <p className="gestion-academica-description">{section.description}</p>
                   
-                  <button className="card-button">
+                  <button className="gestion-academica-button">
                     {section.buttonText}
                   </button>
                 </div>

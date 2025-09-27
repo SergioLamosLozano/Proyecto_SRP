@@ -3,7 +3,7 @@ import '../styles/Sidebar.css';
 
 const Sidebar = ({ currentView, onNavigate, isMobile, isOpen }) => {
   const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: '📊' },
+    { id: 'dashboard', label: 'Inicio', icon: '📊' },
     { id: 'gestion-academica', label: 'Gestión Académica', icon: '📚' },
     { id: 'gestion-usuarios', label: 'Gestión de Usuarios', icon: '👥' },
     { id: 'calificaciones', label: 'Calificaciones', icon: '📝' },
@@ -15,8 +15,7 @@ const Sidebar = ({ currentView, onNavigate, isMobile, isOpen }) => {
   return (
     <div className={sidebarClasses}>
       <div className="sidebar-header">
-        <h2 className="sidebar-title">SRP Univalle</h2>
-        <p className="sidebar-subtitle">Sistema de Registro de Programas</p>
+        <p className="sidebar-subtitle">Sistema de Gestión Académica</p>
       </div>
       
       <nav className="sidebar-nav">
