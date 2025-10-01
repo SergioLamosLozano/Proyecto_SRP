@@ -1,0 +1,41 @@
+/* Estilos para el componente GestionUsuarios */
+
+/* Sobrescribir el padding-top del dashboard para evitar conflicto con breadcrumbs */
+.dashboard {
+    padding-top: 0 !important;
+}
+
+.gestion-usuarios-container {
+    min-height: 100vh;
+    background-color: var(--gris-claro-fondo);
+    padding-top: 160px; /* Espacio para navbar + breadcrumb */
+}
+
+.gestion-usuarios-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: var(--blanco);
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 40px;
+}
+
+.gestion-usuarios-header {
+    text-align: center;
+    margin-bottom: 30px;
+    color: var(--gris-principal);
+}
+
+.gestion-usuarios-title {
+    font-size: 28px;
+    font-weight: bold;
+    color: var(--rojo-institucional);
+    margin-bottom: 10px;
+}
+
+.gestion-usuarios-subtitle {
+    font-size: 16px;
+    color: var(--gris-secundario);
+    margin-bottom: 30px;
+}

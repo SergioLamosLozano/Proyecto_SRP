@@ -1,39 +1,49 @@
-.breadcrumbs {
-  margin: 15px;
+.breadcrumbs {/* Solo margen inferior */
   font-size: 14px;
-  margin-top: 90px;
   padding: 12px 20px;
   border-radius: 8px;
-  position: relative;
   background-color: #f8f9fa;
   border: 1px solid #e9ecef;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  z-index: 100;
+  z-index: 99;
+  width: 100%; /* Ocupa el 100% del contenedor padre */
+  position: sticky;
+  top: 100px; /* Posición fija debajo del navbar */
+  box-sizing: border-box;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
 }
 
 .breadcrumbs ul {
   list-style: none;
   display: flex;
-  flex-wrap: wrap;
-  gap: px;
+  flex-wrap: nowrap; /* Evita que se envuelva */
+  gap: 8px; /* Espacio fijo entre elementos */
   padding: 0;
   margin: 0;
   align-items: center;
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .breadcrumbs li {
   display: flex;
   align-items: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .breadcrumbs li::after {
-  content: "›";
-  margin: 0 6px;
+  content: ""; /* Separador fijo */
+  margin: 0 1px;
   color: #888;
 }
 
 .breadcrumbs li:last-child::after {
-  content: "";
+  content: ""; /* No hay separador en el último */
 }
 
 .breadcrumb-button {
@@ -72,25 +82,43 @@
 /* Responsive */
 @media (max-width: 1024px) {
   .breadcrumbs {
-    margin: 12px;
+    margin: 0 0 20px 0;
     padding: 10px 16px;
-    margin-top: 25px;
+    font-size: 13px;
+  }
+
+  .breadcrumbs ul {
+    gap: 6px;
+  }
+
+  .breadcrumbs li::after {
+    margin: 0 4px;
+    font-size: 12px;
+  }
+
+  .breadcrumb-button {
+    font-size: 12px;
+    padding: 4px 8px;
+    font-weight: 600;
+  }
+
+  .current-page {
+    font-size: 12px;
+    padding: 4px 8px;
   }
 }
 
 @media (max-width: 768px) {
   .breadcrumbs {
-    margin: 10px;
+    margin: 0 0 20px 0;
     padding: 10px 15px;
     font-size: 13px;
-    margin-top: 80px;
     background-color: #ffffff;
     border: 2px solid #007bff;
   }
 
   .breadcrumbs ul {
     gap: 6px;
-    justify-content: center;
   }
 
   .breadcrumbs li::after {
@@ -114,10 +142,9 @@
 
 @media (max-width: 640px) {
   .breadcrumbs {
-    margin: 8px;
+    margin: 0 0 20px 0;
     padding: 12px 16px;
     font-size: 12px;
-    margin-top: 110px;
     background-color: #ffffff;
     border: 2px solid #007bff;
     box-shadow: 0 4px 8px rgba(0, 123, 255, 0.2);
@@ -125,7 +152,6 @@
 
   .breadcrumbs ul {
     gap: 6px;
-    justify-content: center;
   }
 
   .breadcrumbs li::after {
@@ -149,10 +175,9 @@
 
 @media (max-width: 480px) {
   .breadcrumbs {
-    margin: 5px;
+    margin: 0 0 20px 0;
     padding: 10px 12px;
     font-size: 11px;
-    margin-top: 95px;
     overflow-x: auto;
     white-space: nowrap;
     background-color: #ffffff;
@@ -164,7 +189,6 @@
     gap: 4px;
     flex-wrap: nowrap;
     min-width: max-content;
-    justify-content: center;
   }
 
   .breadcrumbs li::after {
@@ -184,18 +208,13 @@
     background-color: #007bff;
     color: white;
   }
-
-  .home-button {
-    min-width: max-content;
-  }
 }
 
 @media (max-width: 360px) {
   .breadcrumbs {
-    margin: 3px;
+    margin: 0 0 20px 0;
     padding: 8px 10px;
     font-size: 10px;
-    margin-top: 90px;
   }
 
   .breadcrumb-button,

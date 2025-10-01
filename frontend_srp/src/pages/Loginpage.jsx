@@ -6,6 +6,7 @@ import { jwtDecode } from "jwt-decode";
 import Swal from "sweetalert2";
 import "boxicons/css/boxicons.min.css";
 import Logout from "../components/Logout";
+import Footer from '../components/Footer';
 
 function LoginPage({ onLogin }) {
   const RP = () =>
@@ -81,7 +82,6 @@ function LoginPage({ onLogin }) {
 
   return (
     <>
-      <Logout />
       <section className="Login-padre">
         <div className="Login-fondo"></div>
         <div className="Login-container">

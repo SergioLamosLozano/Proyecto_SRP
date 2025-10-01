@@ -1,75 +1,113 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import Sidebar from '../components/Sidebar';
+import Dashboard from '../components/Dashboard';
+import GestionAcademica from '../components/GestionAcademica';
+import GestionUsuarios from '../components/GestionUsuarios';
+import Calificaciones from '../components/Calificaciones';
+import ReportesEstadisticas from '../components/ReportesEstadisticas';
 import Logout from '../components/Logout';
-import Breadcrumbs from '../components/Breadcrumbs';
-import '../styles/Dashboard.css';
 import Footer from '../components/Footer';
-import Estadisticas from '../components/Estadisticas';
+import '../styles/Dashboard.css';
+import '../styles/CoordinacionPage.css';
 
-const Coordinacion = () => {
-    const navigate = useNavigate();
-    const [ESTADISTICAS, setESTADISTICAS] = useState(false);
+const CoordinacionPage = () => {
+  const [currentView, setCurrentView] = useState('dashboard');
+  const [isMobile, setIsMobile] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
-    const handleVerPersonal = () => {
-        navigate('/coordinacion/gestion-usuarios');
+  const handleNavigation = (view) => {
+    setCurrentView(view);
+    // Cerrar sidebar en móvil después de navegar
+    if (isMobile) {
+      setSidebarOpen(false);
+    }
+  };
+
+  const handleBackToDashboard = () => {
+    setCurrentView('dashboard');
+    // Cerrar sidebar en móvil después de navegar
+    if (isMobile) {
+      setSidebarOpen(false);
+    }
+  };
+
+  // Detectar si es móvil
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
     };
 
-    const handleVerEstadisticas = () => {
-        setESTADISTICAS(true);
-    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
 
-    const handleBackFromEstadisticas = () => {
-        setESTADISTICAS(false);
-    };
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
-    const handleSectionNavigation = (section) => {
-        if (section === 'dashboard') {
-            setESTADISTICAS(false);
-        }
-    };
+  // Funciones para controlar el menú hamburguesa
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
 
-    return (
-        <div className="dashboard">
-            <Logout />
-            <Breadcrumbs 
-                currentSection={ESTADISTICAS ? 'Estadísticas' : null}
-                onSectionNavigation={handleSectionNavigation}
-            />
-            
-            {!ESTADISTICAS && (
-                <main className="content">
-                    <div className="dashboard-header">
-                        <h1>Coordinación Administrativa</h1>
-                        <p>Panel de control - Gestión administrativa y recursos</p>
-                    </div>
-                    
-                    <div className="dashboard-cards">
-                        <div className="card">
-                            <h3>📋 Gestión de Personal</h3>
-                            <p>Administrar usuarios y permisos del sistema</p>
-                            <button className="btn-primary" onClick={handleVerPersonal}>Ver Personal</button>
-                        </div>
-                        
-                        <div className="card">
-                            <h3>⚙️ Configuración del Sistema</h3>
-                            <p>Parámetros y ajustes generales</p>
-                            <button className="btn-primary">Configurar</button>
-                        </div>
-                        
-                        <div className="card">
-                            <h3>📈 Estadísticas</h3>
-                            <p>Resumen de actividades y métricas</p>
-                            <button className="btn-primary" onClick={handleVerEstadisticas}>Ver Estadísticas</button>
-                        </div>
-                    </div>
-                </main>
-            )}
-            
-            {ESTADISTICAS && <Estadisticas onBack={handleBackFromEstadisticas} />}
-            
-            <Footer />
+  const closeSidebar = () => {
+    setSidebarOpen(false);
+  };
+
+  const renderContent = () => {
+    switch (currentView) {
+      case 'dashboard':
+        return <Dashboard onNavigate={handleNavigation} />;
+      case 'gestion-academica':
+        return <GestionAcademica onBack={handleBackToDashboard} />;
+      case 'gestion-usuarios':
+        return <GestionUsuarios onBack={handleBackToDashboard} />;
+      case 'calificaciones':
+        return <Calificaciones onBack={handleBackToDashboard} />;
+      case 'reportes':
+        return <ReportesEstadisticas onBack={handleBackToDashboard} />;
+      default:
+        return <Dashboard onNavigate={handleNavigation} />;
+    }
+  };
+
+  return (
+    <>
+      <Logout />
+      {/* Botón hamburguesa para móvil */}
+      {isMobile && (
+        <button 
+          className="hamburger-button" 
+          onClick={toggleSidebar}
+          aria-label="Abrir menú"
+        >
+          ☰
+        </button>
+      )}
+      
+      {/* Overlay para cerrar sidebar en móvil */}
+      {isMobile && sidebarOpen && (
+        <div 
+          className="sidebar-overlay active" 
+          onClick={closeSidebar}
+        />
+      )}
+      
+      <div className="coordinacion-container">
+        <Sidebar 
+          currentView={currentView} 
+          onNavigate={handleNavigation}
+          isMobile={isMobile}
+          isOpen={sidebarOpen}
+        />
+        <div className="coordinacion-content">
+          <div className="coordinacion-main-content">
+            {renderContent()}
+          </div>
         </div>
-    );
+      </div>
+      <Footer />
+    </>
+    
+  );
 };
 
-export default Coordinacion;
+export default CoordinacionPage;
