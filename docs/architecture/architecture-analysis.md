@@ -10,8 +10,8 @@ La aplicación está construida siguiendo principios de arquitectura limpia, sep
 
 ## Métricas del Proyecto
 
-- **Total de archivos:** 142 archivos
-- **Total de líneas de código:** ~70,467 líneas
+- **Total de archivos:** 152 archivos
+- **Total de líneas de código:** ~95,948 líneas
 - **Lenguajes detectados:** 7 lenguajes
 
 ## Tecnologías Utilizadas
@@ -19,6 +19,15 @@ La aplicación está construida siguiendo principios de arquitectura limpia, sep
 ### Framework y Librerías Core
 
 - **React** ^19.1.1: Framework de UI con concurrent features
+- **Axios** ^1.11.0: Cliente HTTP para APIs
+- **React Router DOM** ^7.8.2: Enrutamiento para aplicaciones React
+- **Chart.js** ^4.5.0: Librería de gráficos y visualización
+- **React Chart.js 2** ^5.3.0: Wrapper de Chart.js para React
+- **React Hook Form** ^7.62.0: Gestión de formularios con validación
+- **React Hot Toast** ^2.6.0: Notificaciones toast para React
+- **SweetAlert2** ^11.23.0: Modales y alertas personalizadas
+- **Boxicons** ^2.1.4: Librería de iconos
+- **JWT Decode** ^4.0.0: Decodificación de tokens JWT
 
 ### Build Tools y Dev Server
 
@@ -27,31 +36,56 @@ La aplicación está construida siguiendo principios de arquitectura limpia, sep
 ### Gestión de Estado
 
 
+### Backend Technologies
+
+- **Django** 5.2.4: Framework web Python con ORM integrado
+- **Django CORS Headers** 4.7.0: Manejo de CORS para APIs
+- **Django REST Framework** 3.16.0: API RESTful y serialización
+- **Simple JWT** 5.5.1: Autenticación JWT para Django REST
+- **DRF-YASG** 1.21.10: Documentación automática de API (Swagger)
+- **Pandas** 2.3.1: Análisis y manipulación de datos
+- **Pillow** 11.3.0: Procesamiento de imágenes
+- **Python Decouple** 3.8: Gestión de variables de entorno
+
+### Bases de Datos
+
+- **MySQL** 2.2.7: Base de datos relacional principal
+
 
 ## Estructura de Carpetas y Archivos
 
 ### Directorios Principales
 
 - **agents/**: Sistema de agentes de desarrollo automatizado
-- **backend/**: Código fuente de la aplicación - Django Backend
+- **backend/**: Django Backend - API REST y lógica de negocio
   - **backend_srp/**: Configuración principal de Django
   - **core/**: Aplicación principal con modelos y vistas
-  - **venv/**: Directorio venv
+    - `admin.py`: Configuración del panel de administración
+    - `apps.py`: Configuración de la aplicación Django
+    - `models.py`: Modelos de base de datos
+    - `serializer.py`: 
+    - `tests.py`: Pruebas unitarias
+  - **venv/**: Entorno virtual de Python
 - **docs/**: Documentación del proyecto
-- **frontend_srp/**: Entry point de la aplicación - React Frontend
-  - **dist/**: Directorio dist
-  - **public/**: Archivos estáticos públicos
-  - **src/**: Componentes UI compartidos/reutilizables
+- **frontend_srp/**: React Frontend - Interfaz de usuario moderna
+  - **dist/**: Build de producción
+  - **public/**: Archivos públicos del frontend
+  - **src/**: Código fuente de React
+    - `App.css`: 
+    - `App.js`: 
+    - `App.jsx`: Componente principal de React
+    - `index.css`: Estilos principales
+    - `main.jsx`: Punto de entrada de React
 - **logs/**: Archivos de registro del sistema
-- **venv/**: Directorio venv
+- **venv/**: Entorno virtual de Python
 
 
 ### Distribución por Lenguaje
 
 - **Other**: 7 archivos, 499 líneas
-- **Markdown**: 15 archivos, 966 líneas
-- **JSON**: 13 archivos, 58,360 líneas
-- **Python**: 23 archivos, 4,480 líneas
+- **Markdown**: 18 archivos, 1,118 líneas
+- **JSON**: 18 archivos, 83,280 líneas
+- **Python**: 25 archivos, 4,889 líneas
 - **JavaScript**: 31 archivos, 2,840 líneas
 - **HTML**: 1 archivos, 13 líneas
 - **CSS**: 17 archivos, 3,309 líneas
@@ -72,4 +106,4 @@ La aplicación está construida siguiendo principios de arquitectura limpia, sep
 ---
 
 *Análisis generado automáticamente por Architecture Reviewer Agent*  
-*Fecha: 2025-10-01 13:20:45*
+*Fecha: 2025-10-01 13:58:18*

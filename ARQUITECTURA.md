@@ -7,7 +7,7 @@
 ## 📊 Métricas del Proyecto
 
 - 📁 **Total de archivos TypeScript/TSX:** 0 archivos
-- 📈 **Total de líneas de código:** ~70,467 líneas  
+- 📈 **Total de líneas de código:** ~95,948 líneas  
 - ✅ **Cobertura de tests:** No disponible
 
 ## 🛠️ Tecnologías Utilizadas
@@ -17,6 +17,15 @@
 | Tecnología | Versión | Propósito |
 |------------|---------|-----------|
 | React | ^19.1.1 | Framework de UI con concurrent features |
+| Axios | ^1.11.0 | Cliente HTTP para APIs |
+| React Router DOM | ^7.8.2 | Enrutamiento para aplicaciones React |
+| Chart.js | ^4.5.0 | Librería de gráficos y visualización |
+| React Chart.js 2 | ^5.3.0 | Wrapper de Chart.js para React |
+| React Hook Form | ^7.62.0 | Gestión de formularios con validación |
+| React Hot Toast | ^2.6.0 | Notificaciones toast para React |
+| SweetAlert2 | ^11.23.0 | Modales y alertas personalizadas |
+| Boxicons | ^2.1.4 | Librería de iconos |
+| JWT Decode | ^4.0.0 | Decodificación de tokens JWT |
 
 ### Build Tools y Dev Server
 
@@ -24,34 +33,59 @@
 |------------|---------|-----------||
 | Vite | ^7.1.2 | Build tool y dev server con HMR |
 
+### Backend Technologies
+
+| Tecnología | Versión | Propósito |
+|------------|---------|-----------||
+| Django | 5.2.4 | Framework web Python con ORM integrado |
+| Django CORS Headers | 4.7.0 | Manejo de CORS para APIs |
+| Django REST Framework | 3.16.0 | API RESTful y serialización |
+| Simple JWT | 5.5.1 | Autenticación JWT para Django REST |
+| DRF-YASG | 1.21.10 | Documentación automática de API (Swagger) |
+| Pandas | 2.3.1 | Análisis y manipulación de datos |
+| Pillow | 11.3.0 | Procesamiento de imágenes |
+| Python Decouple | 3.8 | Gestión de variables de entorno |
+
+### Bases de Datos
+
+| Tecnología | Versión | Propósito |
+|------------|---------|-----------||
+| MySQL | 2.2.7 | Base de datos relacional principal |
+
 
 ## 📁 Estructura de Carpetas y Archivos
 
 ```
 task-manager/
 ├── agents/                     # Sistema de agentes de desarrollo automatizado
-├── backend/                     # Código fuente de la aplicación - Django Backend
+├── backend/                     # Django Backend - API REST y lógica de negocio
 │   ├── backend_srp/                # Configuración principal de Django
 │   ├── core/                # Aplicación principal con modelos y vistas
-│   └── venv/                # Directorio venv
+│   │   ├── admin.py           # Configuración del panel de administración
+│   │   ├── apps.py           # Configuración de la aplicación Django
+│   │   └── models.py           # Modelos de base de datos
+│   └── venv/                # Entorno virtual de Python
 ├── docs/                     # Documentación del proyecto
-├── frontend_srp/                     # Entry point de la aplicación - React Frontend
-│   ├── dist/                # Directorio dist
-│   ├── public/                # Archivos estáticos públicos
-│   └── src/                # Componentes UI compartidos/reutilizables
+├── frontend_srp/                     # React Frontend - Interfaz de usuario moderna
+│   ├── dist/                # Build de producción
+│   ├── public/                # Archivos públicos del frontend
+│   └── src/                # Código fuente de React
+│   │   ├── App.css           # 
+│   │   ├── App.js           # 
+│   │   └── App.jsx           # Componente principal de React
 ├── logs/                     # Archivos de registro del sistema
-├── venv/                     # Directorio venv
+├── venv/                     # Entorno virtual de Python
 ```
 
 ## 📊 Distribución por Lenguaje
 
-- **Other**: 7 archivos, 499 líneas (0.7%)
-- **Markdown**: 15 archivos, 966 líneas (1.4%)
-- **JSON**: 13 archivos, 58,360 líneas (82.8%)
-- **Python**: 23 archivos, 4,480 líneas (6.4%)
-- **JavaScript**: 31 archivos, 2,840 líneas (4.0%)
+- **Other**: 7 archivos, 499 líneas (0.5%)
+- **Markdown**: 18 archivos, 1,118 líneas (1.2%)
+- **JSON**: 18 archivos, 83,280 líneas (86.8%)
+- **Python**: 25 archivos, 4,889 líneas (5.1%)
+- **JavaScript**: 31 archivos, 2,840 líneas (3.0%)
 - **HTML**: 1 archivos, 13 líneas (0.0%)
-- **CSS**: 17 archivos, 3,309 líneas (4.7%)
+- **CSS**: 17 archivos, 3,309 líneas (3.4%)
 
 
 ## 🚀 Características Arquitectónicas
@@ -100,4 +134,4 @@ python manage.py runserver
 ---
 
 *Documentación generada automáticamente por Architecture Reviewer Agent*  
-*Última actualización: 2025-10-01 13:20:45*
+*Última actualización: 2025-10-01 13:58:18*

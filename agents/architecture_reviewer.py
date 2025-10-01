@@ -52,7 +52,9 @@ class ArchitectureReviewerAgent(BaseAgent):
                 analysis_result["project_summary"] = {"error": str(e)}
             
             try:
-                analysis_result["technologies"] = self._analyze_technologies()
+                technologies = self._analyze_technologies()
+                self.logger.info(f"Technologies analysis result: {technologies}")
+                analysis_result["technologies"] = technologies
             except Exception as e:
                 self.logger.error(f"Error in technologies analysis: {e}")
                 analysis_result["technologies"] = {"error": str(e)}
@@ -174,8 +176,78 @@ class ArchitectureReviewerAgent(BaseAgent):
                 if "vite" in deps or "@vitejs/plugin-react" in deps:
                     technologies["build_tools"].append({
                         "name": "Vite",
-                        "version": deps.get("vite", "Latest"),
+                        "version": deps.get("vite", deps.get("@vitejs/plugin-react", "Latest")),
                         "purpose": "Build tool y dev server con HMR"
+                    })
+                
+                # HTTP Client
+                if "axios" in deps:
+                    technologies["core_frameworks"].append({
+                        "name": "Axios",
+                        "version": deps["axios"],
+                        "purpose": "Cliente HTTP para APIs"
+                    })
+                
+                # Routing
+                if "react-router-dom" in deps:
+                    technologies["core_frameworks"].append({
+                        "name": "React Router DOM",
+                        "version": deps["react-router-dom"],
+                        "purpose": "Enrutamiento para aplicaciones React"
+                    })
+                
+                # Charts and Visualization
+                if "chart.js" in deps:
+                    technologies["core_frameworks"].append({
+                        "name": "Chart.js",
+                        "version": deps["chart.js"],
+                        "purpose": "Librería de gráficos y visualización"
+                    })
+                
+                if "react-chartjs-2" in deps:
+                    technologies["core_frameworks"].append({
+                        "name": "React Chart.js 2",
+                        "version": deps["react-chartjs-2"],
+                        "purpose": "Wrapper de Chart.js para React"
+                    })
+                
+                # Forms
+                if "react-hook-form" in deps:
+                    technologies["core_frameworks"].append({
+                        "name": "React Hook Form",
+                        "version": deps["react-hook-form"],
+                        "purpose": "Gestión de formularios con validación"
+                    })
+                
+                # UI/UX Libraries
+                if "react-hot-toast" in deps:
+                    technologies["core_frameworks"].append({
+                        "name": "React Hot Toast",
+                        "version": deps["react-hot-toast"],
+                        "purpose": "Notificaciones toast para React"
+                    })
+                
+                if "sweetalert2" in deps:
+                    technologies["core_frameworks"].append({
+                        "name": "SweetAlert2",
+                        "version": deps["sweetalert2"],
+                        "purpose": "Modales y alertas personalizadas"
+                    })
+                
+                # Icons
+                if "boxicons" in deps:
+                    technologies["core_frameworks"].append({
+                        "name": "Boxicons",
+                        "version": deps["boxicons"],
+                        "purpose": "Librería de iconos"
+                    })
+                
+                # Authentication
+                if "jwt-decode" in deps:
+                    technologies["core_frameworks"].append({
+                        "name": "JWT Decode",
+                        "version": deps["jwt-decode"],
+                        "purpose": "Decodificación de tokens JWT"
                     })
                 
                 # State Management
@@ -203,20 +275,66 @@ class ArchitectureReviewerAgent(BaseAgent):
         
         # Análisis del Backend
         backend_path = self.project_root / "backend"
+        self.logger.info(f"Checking backend path: {backend_path}")
         if backend_path.exists():
+            self.logger.info("Backend directory found")
             requirements_file = backend_path / "requirements.txt"
+            self.logger.info(f"Checking requirements file: {requirements_file}")
             if requirements_file.exists():
+                self.logger.info("Requirements.txt found, reading...")
                 try:
-                    with open(requirements_file, 'r', encoding='utf-8', errors='ignore') as f:
-                        requirements = f.read().splitlines()
-                except (UnicodeDecodeError, PermissionError, OSError) as e:
+                    # Leer el archivo como binario primero para detectar BOM
+                    with open(requirements_file, 'rb') as f:
+                        raw_content = f.read()
+                    
+                    # Detectar y manejar BOM
+                    if raw_content.startswith(b'\xff\xfe'):
+                        # UTF-16 LE BOM
+                        content = raw_content[2:].decode('utf-16le')
+                        self.logger.info("Detected UTF-16 LE BOM, decoded successfully")
+                    elif raw_content.startswith(b'\xfe\xff'):
+                        # UTF-16 BE BOM
+                        content = raw_content[2:].decode('utf-16be')
+                        self.logger.info("Detected UTF-16 BE BOM, decoded successfully")
+                    elif raw_content.startswith(b'\xef\xbb\xbf'):
+                        # UTF-8 BOM
+                        content = raw_content[3:].decode('utf-8')
+                        self.logger.info("Detected UTF-8 BOM, decoded successfully")
+                    else:
+                        # Sin BOM, intentar UTF-8
+                        try:
+                            content = raw_content.decode('utf-8')
+                            self.logger.info("Decoded as UTF-8 without BOM")
+                        except UnicodeDecodeError:
+                            # Fallback a latin-1
+                            content = raw_content.decode('latin-1')
+                            self.logger.info("Decoded as latin-1")
+                    
+                    requirements = content.splitlines()
+                    self.logger.info(f"Requirements read: {len(requirements)} lines")
+                        
+                except (PermissionError, OSError) as e:
                     self.logger.warning(f"Could not read requirements.txt: {e}")
                     requirements = []
                 
                 for req in requirements:
-                    if req.strip() and not req.startswith("#"):
-                        package = req.split("==")[0].split(">=")[0].strip()
-                        version = req.split("==")[1] if "==" in req else "Latest"
+                    req = req.strip()
+                    if req and not req.startswith("#"):
+                        # Limpiar caracteres de control y espacios extra
+                        req = ''.join(char for char in req if ord(char) >= 32 or char in '\t\n\r')
+                        req = req.strip()
+                        
+                        if "==" in req:
+                            package = req.split("==")[0].strip()
+                            version = req.split("==")[1].strip()
+                        elif ">=" in req:
+                            package = req.split(">=")[0].strip()
+                            version = "Latest"
+                        else:
+                            package = req.strip()
+                            version = "Latest"
+                        
+                        self.logger.info(f"Processing package: '{package}' version: '{version}'")
                         
                         if package.lower() == "django":
                             technologies["backend_technologies"].append({
@@ -224,18 +342,21 @@ class ArchitectureReviewerAgent(BaseAgent):
                                 "version": version,
                                 "purpose": "Framework web Python con ORM integrado"
                             })
+                            self.logger.info("Django detected and added")
                         elif package.lower() == "djangorestframework":
                             technologies["backend_technologies"].append({
                                 "name": "Django REST Framework",
                                 "version": version,
                                 "purpose": "API RESTful y serialización"
                             })
+                            self.logger.info("Django REST Framework detected and added")
                         elif package.lower() == "mysqlclient":
                             technologies["databases"].append({
                                 "name": "MySQL",
                                 "version": version,
                                 "purpose": "Base de datos relacional principal"
                             })
+                            self.logger.info("MySQL detected and added")
                         elif package.lower() == "django-cors-headers":
                             technologies["backend_technologies"].append({
                                 "name": "Django CORS Headers",
@@ -272,7 +393,12 @@ class ArchitectureReviewerAgent(BaseAgent):
                                 "version": version,
                                 "purpose": "Procesamiento de imágenes"
                             })
+            else:
+                self.logger.warning("Requirements.txt not found in backend directory")
+        else:
+            self.logger.warning("Backend directory not found")
         
+        self.logger.info(f"Final technologies detected: {technologies}")
         return technologies
     
     def _analyze_file_structure(self) -> Dict[str, Any]:
@@ -321,19 +447,36 @@ class ArchitectureReviewerAgent(BaseAgent):
                 dir_info = {
                     "name": item.name,
                     "path": str(item),
-                    "description": self._get_directory_description(item.name)
+                    "description": self._get_directory_description(item.name, str(item))
                 }
                 
-                # Agregar subdirectorios importantes
+                # Agregar subdirectorios importantes con más detalle
                 if item.name in ['backend', 'frontend_srp']:
                     subdirs = []
                     try:
                         for subitem in item.iterdir():
-                            if subitem.is_dir() and not subitem.name.startswith('.') and subitem.name not in ['__pycache__', 'node_modules']:
-                                subdirs.append({
+                            if subitem.is_dir() and not subitem.name.startswith('.') and subitem.name not in ['__pycache__', 'node_modules', '.git']:
+                                subdir_info = {
                                     "name": subitem.name,
-                                    "description": self._get_directory_description(subitem.name)
-                                })
+                                    "description": self._get_directory_description(subitem.name, str(subitem))
+                                }
+                                
+                                # Para directorios importantes, agregar archivos clave
+                                if subitem.name in ['src', 'core', 'components', 'pages']:
+                                    key_files = []
+                                    try:
+                                        for file_item in subitem.iterdir():
+                                            if file_item.is_file() and self._is_important_file(file_item.name):
+                                                key_files.append({
+                                                    "name": file_item.name,
+                                                    "description": self._get_file_description(file_item.name)
+                                                })
+                                        if key_files:
+                                            subdir_info["key_files"] = key_files[:5]  # Limitar a 5 archivos
+                                    except PermissionError:
+                                        pass
+                                
+                                subdirs.append(subdir_info)
                         dir_info["subdirectories"] = subdirs
                     except PermissionError:
                         pass
@@ -346,26 +489,103 @@ class ArchitectureReviewerAgent(BaseAgent):
         
         return structure
     
-    def _get_directory_description(self, dir_name: str) -> str:
-        """Obtiene descripción de directorios comunes"""
+    def _get_file_description(self, filename: str) -> str:
+        """Obtiene descripción para archivos importantes"""
         descriptions = {
-            "backend": "Código fuente de la aplicación - Django Backend",
-            "frontend_srp": "Entry point de la aplicación - React Frontend",
+            "manage.py": "Script de gestión de Django",
+            "requirements.txt": "Dependencias de Python",
+            "package.json": "Configuración y dependencias de Node.js",
+            "package-lock.json": "Lockfile de dependencias de Node.js",
+            "vite.config.js": "Configuración de Vite (build tool)",
+            "tsconfig.json": "Configuración de TypeScript",
+            "tailwind.config.js": "Configuración de Tailwind CSS",
+            "postcss.config.js": "Configuración de PostCSS",
+            "eslint.config.js": "Configuración de ESLint",
+            ".gitignore": "Archivos ignorados por Git",
+            "README.md": "Documentación principal del proyecto",
+            "settings.py": "Configuración principal de Django",
+            "urls.py": "Configuración de URLs",
+            "wsgi.py": "Configuración WSGI para despliegue",
+            "asgi.py": "Configuración ASGI para aplicaciones asíncronas",
+            "models.py": "Modelos de base de datos",
+            "views.py": "Vistas y lógica de controladores",
+            "serializers.py": "Serializadores para API REST",
+            "admin.py": "Configuración del panel de administración",
+            "apps.py": "Configuración de la aplicación Django",
+            "tests.py": "Pruebas unitarias",
+            "index.html": "Página principal HTML",
+            "main.jsx": "Punto de entrada de React",
+            "App.jsx": "Componente principal de React",
+            "index.css": "Estilos principales"
+        }
+        return descriptions.get(filename, "")
+    
+    def _is_important_file(self, filename: str) -> bool:
+        """Determina si un archivo es importante para mostrar en la estructura"""
+        important_extensions = {'.py', '.js', '.jsx', '.ts', '.tsx', '.json', '.md', '.txt', '.html', '.css', '.scss'}
+        important_files = {
+            'manage.py', 'requirements.txt', 'package.json', 'package-lock.json',
+            'vite.config.js', 'tsconfig.json', 'tailwind.config.js', 'postcss.config.js',
+            'eslint.config.js', '.gitignore', 'README.md', 'index.html'
+        }
+        
+        return (filename in important_files or 
+                any(filename.endswith(ext) for ext in important_extensions) or
+                filename.startswith('settings') or
+                filename.startswith('urls') or
+                filename.startswith('wsgi') or
+                filename.startswith('asgi'))
+    
+    def _get_directory_description(self, dir_name: str, full_path: str = "") -> str:
+        """Obtiene descripción detallada de directorios comunes"""
+        descriptions = {
+            "backend": "Django Backend - API REST y lógica de negocio",
+            "frontend_srp": "React Frontend - Interfaz de usuario moderna",
             "backend_srp": "Configuración principal de Django",
             "core": "Aplicación principal con modelos y vistas",
-            "src": "Componentes UI compartidos/reutilizables",
+            "src": "Código fuente de la aplicación React",
             "public": "Archivos estáticos públicos",
-            "assets": "Recursos estáticos (imágenes, etc.)",
-            "components": "Componentes UI compartidos/reutilizables",
+            "assets": "Recursos estáticos (imágenes, iconos, etc.)",
+            "components": "Componentes reutilizables de React",
             "pages": "Páginas principales de la aplicación",
-            "styles": "Archivos CSS y estilos",
+            "hooks": "Custom hooks de React",
+            "services": "Servicios para APIs y lógica de negocio",
+            "context": "Context API de React para estado global",
+            "styles": "Archivos de estilos CSS/SCSS",
             "utils": "Utilidades y funciones auxiliares",
             "api": "Configuración de APIs y servicios",
             "migrations": "Migraciones de base de datos Django",
+            "static": "Archivos estáticos de Django",
+            "media": "Archivos multimedia subidos por usuarios",
+            "templates": "Plantillas HTML de Django",
             "agents": "Sistema de agentes de desarrollo automatizado",
             "docs": "Documentación del proyecto",
-            "logs": "Archivos de registro del sistema"
+            "logs": "Archivos de registro del sistema",
+            "tests": "Pruebas unitarias y de integración",
+            "node_modules": "Dependencias de Node.js",
+            "dist": "Archivos compilados para producción",
+            "venv": "Entorno virtual de Python",
+            "__pycache__": "Cache de Python compilado"
         }
+        
+        # Verificar contexto específico del backend
+        if "backend" in full_path.lower():
+            if dir_name == "core":
+                return "Aplicación principal con modelos y vistas"
+            elif dir_name == "migrations":
+                return "Migraciones de base de datos"
+            elif dir_name == "static":
+                return "Archivos estáticos del backend"
+        
+        # Verificar contexto específico del frontend
+        if "frontend" in full_path.lower():
+            if dir_name == "src":
+                return "Código fuente de React"
+            elif dir_name == "public":
+                return "Archivos públicos del frontend"
+            elif dir_name == "dist":
+                return "Build de producción"
+        
         return descriptions.get(dir_name, f"Directorio {dir_name}")
     
     def _calculate_metrics(self) -> Dict[str, Any]:
@@ -576,6 +796,10 @@ La aplicación está construida siguiendo principios de arquitectura limpia, sep
             if 'subdirectories' in directory and directory['subdirectories']:
                 for subdir in directory['subdirectories']:
                     arch_doc += f"  - **{subdir['name']}/**: {subdir['description']}\n"
+                    # Mostrar archivos clave si existen
+                    if 'key_files' in subdir and subdir['key_files']:
+                        for key_file in subdir['key_files']:
+                            arch_doc += f"    - `{key_file['name']}`: {key_file['description']}\n"
         
         arch_doc += f"""
 
@@ -669,6 +893,11 @@ task-manager/
                 for i, subdir in enumerate(directory['subdirectories']):
                     prefix = "│   ├── " if i < len(directory['subdirectories']) - 1 else "│   └── "
                     readme_content += f"{prefix}{subdir['name']}/{'':15} # {subdir['description']}\n"
+                    # Mostrar archivos clave importantes
+                    if 'key_files' in subdir and subdir['key_files']:
+                        for j, key_file in enumerate(subdir['key_files'][:3]):  # Solo mostrar 3 archivos
+                            file_prefix = "│   │   ├── " if j < len(subdir['key_files'][:3]) - 1 else "│   │   └── "
+                            readme_content += f"{file_prefix}{key_file['name']}{'':10} # {key_file['description']}\n"
         
         readme_content += f"""```
 
