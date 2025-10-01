@@ -10,8 +10,8 @@ La aplicación está construida siguiendo principios de arquitectura limpia, sep
 
 ## Métricas del Proyecto
 
-- **Total de archivos:** 152 archivos
-- **Total de líneas de código:** ~95,948 líneas
+- **Total de archivos:** 140 archivos
+- **Total de líneas de código:** ~154,171 líneas
 - **Lenguajes detectados:** 7 lenguajes
 
 ## Tecnologías Utilizadas
@@ -65,10 +65,10 @@ La aplicación está construida siguiendo principios de arquitectura limpia, sep
     - `models.py`: Modelos de base de datos
     - `serializer.py`: 
     - `tests.py`: Pruebas unitarias
+  - **media/**: Archivos multimedia subidos por usuarios
   - **venv/**: Entorno virtual de Python
 - **docs/**: Documentación del proyecto
 - **frontend_srp/**: React Frontend - Interfaz de usuario moderna
-  - **dist/**: Build de producción
   - **public/**: Archivos públicos del frontend
   - **src/**: Código fuente de React
     - `App.css`: 
@@ -77,18 +77,17 @@ La aplicación está construida siguiendo principios de arquitectura limpia, sep
     - `index.css`: Estilos principales
     - `main.jsx`: Punto de entrada de React
 - **logs/**: Archivos de registro del sistema
-- **venv/**: Entorno virtual de Python
 
 
 ### Distribución por Lenguaje
 
-- **Other**: 7 archivos, 499 líneas
-- **Markdown**: 18 archivos, 1,118 líneas
-- **JSON**: 18 archivos, 83,280 líneas
-- **Python**: 25 archivos, 4,889 líneas
-- **JavaScript**: 31 archivos, 2,840 líneas
+- **Other**: 8 archivos, 613 líneas
+- **Markdown**: 21 archivos, 1,294 líneas
+- **JSON**: 22 archivos, 140,259 líneas
+- **Python**: 25 archivos, 4,985 líneas
+- **JavaScript**: 31 archivos, 3,421 líneas
 - **HTML**: 1 archivos, 13 líneas
-- **CSS**: 17 archivos, 3,309 líneas
+- **CSS**: 17 archivos, 3,586 líneas
 
 
 ## Recomendaciones de Mejora
@@ -106,4 +105,4 @@ La aplicación está construida siguiendo principios de arquitectura limpia, sep
 ---
 
 *Análisis generado automáticamente por Architecture Reviewer Agent*  
-*Fecha: 2025-10-01 13:58:18*
+*Fecha: 2025-10-01 17:07:22*

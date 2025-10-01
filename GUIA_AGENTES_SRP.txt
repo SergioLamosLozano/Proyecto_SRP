@@ -353,6 +353,25 @@ DEPLOYMENT:
 python run_agents.py deploy-check
 
 ===============================================================================
+Guia para subir cambios al repositorio remoto
+# 1. Verificar el estado actual del repositorio
+python -m agents.coordinator --agent github_manager --action status
+
+# 2. Ejecutar verificaciones pre-commit
+python -m agents.coordinator --agent github_manager --action pre_commit
+
+# 3. Si las verificaciones pasan, actualizar documentación
+python -m agents.coordinator --agent github_manager --action update_docs
+
+# 4. Generar changelog si es necesario
+python -m agents.coordinator --agent github_manager --action generate_changelog
+
+# 5. Comandos Git tradicionales
+git add .
+git commit -m "tu mensaje de commit"
+git push origin "tu rama"
+
+===============================================================================
 ¡LISTO PARA USAR! 🚀
 ===============================================================================
 

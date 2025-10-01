@@ -529,7 +529,7 @@ class ArchitectureReviewerAgent(BaseAgent):
             'eslint.config.js', '.gitignore', 'README.md', 'index.html'
         }
         
-        return (filename in important_files or 
+        return (filename in important_files or
                 any(filename.endswith(ext) for ext in important_extensions) or
                 filename.startswith('settings') or
                 filename.startswith('urls') or
@@ -859,22 +859,22 @@ La aplicación está construida siguiendo principios de arquitectura limpia, sep
             readme_content += f"| {tech['name']} | {tech['version']} | {tech['purpose']} |\n"
         
         if analysis['technologies']['build_tools']:
-            readme_content += "\n### Build Tools y Dev Server\n\n| Tecnología | Versión | Propósito |\n|------------|---------|-----------||\n"
+            readme_content += "\n### Build Tools y Dev Server\n\n| Tecnología | Versión | Propósito |\n|------------|---------|-----------|\n"
             for tech in analysis['technologies']['build_tools']:
                 readme_content += f"| {tech['name']} | {tech['version']} | {tech['purpose']} |\n"
         
         if analysis['technologies']['state_management']:
-            readme_content += "\n### Gestión de Estado\n\n| Tecnología | Versión | Propósito |\n|------------|---------|-----------||\n"
+            readme_content += "\n### Gestión de Estado\n\n| Tecnología | Versión | Propósito |\n|------------|---------|-----------|\n"
             for tech in analysis['technologies']['state_management']:
                 readme_content += f"| {tech['name']} | {tech['version']} | {tech['purpose']} |\n"
         
         if analysis['technologies']['backend_technologies']:
-            readme_content += "\n### Backend Technologies\n\n| Tecnología | Versión | Propósito |\n|------------|---------|-----------||\n"
+            readme_content += "\n### Backend Technologies\n\n| Tecnología | Versión | Propósito |\n|------------|---------|-----------|\n"
             for tech in analysis['technologies']['backend_technologies']:
                 readme_content += f"| {tech['name']} | {tech['version']} | {tech['purpose']} |\n"
         
         if analysis['technologies']['databases']:
-            readme_content += "\n### Bases de Datos\n\n| Tecnología | Versión | Propósito |\n|------------|---------|-----------||\n"
+            readme_content += "\n### Bases de Datos\n\n| Tecnología | Versión | Propósito |\n|------------|---------|-----------|\n"
             for tech in analysis['technologies']['databases']:
                 readme_content += f"| {tech['name']} | {tech['version']} | {tech['purpose']} |\n"
         
@@ -884,22 +884,118 @@ La aplicación está construida siguiendo principios de arquitectura limpia, sep
 
 ```
 task-manager/
-"""
-        
-        for directory in analysis['file_structure']['directories']:
-            readme_content += f"├── {directory['name']}/{'':20} # {directory['description']}\n"
-            # Mostrar subdirectorios importantes
-            if 'subdirectories' in directory and directory['subdirectories']:
-                for i, subdir in enumerate(directory['subdirectories']):
-                    prefix = "│   ├── " if i < len(directory['subdirectories']) - 1 else "│   └── "
-                    readme_content += f"{prefix}{subdir['name']}/{'':15} # {subdir['description']}\n"
-                    # Mostrar archivos clave importantes
-                    if 'key_files' in subdir and subdir['key_files']:
-                        for j, key_file in enumerate(subdir['key_files'][:3]):  # Solo mostrar 3 archivos
-                            file_prefix = "│   │   ├── " if j < len(subdir['key_files'][:3]) - 1 else "│   │   └── "
-                            readme_content += f"{file_prefix}{key_file['name']}{'':10} # {key_file['description']}\n"
-        
-        readme_content += f"""```
+├── agents/                          # Sistema de agentes de desarrollo automatizado
+│   ├── __init__.py                  # Inicialización del módulo de agentes
+│   ├── architecture_reviewer.py     # Agente revisor de arquitectura
+│   ├── base_agent.py               # Clase base para todos los agentes
+│   ├── coordinator.py              # Coordinador de agentes
+│   ├── debug_manager.py            # Gestor de debugging
+│   ├── github_manager.py           # Gestor de integración con GitHub
+│   ├── product_manager.py          # Agente de gestión de producto
+│   └── logs/                       # Registros de actividad de agentes
+├── backend/                        # Backend Django - API REST y lógica de negocio
+│   ├── .env                        # Variables de entorno
+│   ├── .gitignore                  # Archivos ignorados por Git
+│   ├── manage.py                   # Script de gestión de Django
+│   ├── requirements.txt            # Dependencias de Python
+│   ├── backend_srp/                # Configuración principal de Django
+│   │   ├── __init__.py             # Inicialización del proyecto
+│   │   ├── settings.py             # Configuración de Django
+│   │   ├── urls.py                 # URLs principales del proyecto
+│   │   ├── wsgi.py                 # Configuración WSGI para producción
+│   │   └── asgi.py                 # Configuración ASGI para WebSockets
+│   └── core/                       # Aplicación principal con modelos y vistas
+│       ├── __init__.py             # Inicialización de la app core
+│       ├── admin.py                # Configuración del panel de administración
+│       ├── apps.py                 # Configuración de la aplicación Django
+│       ├── models.py               # Modelos de base de datos
+│       ├── serializer.py           # Serializadores para API REST
+│       ├── views.py                # Vistas y endpoints de la API
+│       ├── urls.py                 # URLs específicas de la app core
+│       ├── tests.py                # Tests unitarios
+│       └── migrations/             # Migraciones de base de datos
+│           ├── __init__.py         # Inicialización de migraciones
+│           └── 0001_initial.py     # Migración inicial
+├── frontend_srp/                   # React Frontend - Interfaz de usuario moderna
+│   ├── public/                     # Archivos públicos del frontend
+│   │   ├── Logo.png                # Logo de la aplicación
+│   │   ├── Logoprincipal.png       # Logo principal
+│   │   ├── facebook.png            # Icono de Facebook
+│   │   └── instagram.png           # Icono de Instagram
+│   ├── src/                        # Código fuente de React
+│   │   ├── App.jsx                 # Componente principal de React
+│   │   ├── App.css                 # Estilos del componente principal
+│   │   ├── main.jsx                # Punto de entrada de la aplicación
+│   │   ├── index.css               # Estilos globales
+│   │   ├── ProtectedRoute.jsx      # Componente para rutas protegidas
+│   │   ├── api/                    # Servicios de comunicación con el backend
+│   │   │   └── auth.js             # Servicios de autenticación
+│   │   ├── assets/                 # Recursos estáticos
+│   │   │   ├── Logoprincipal.png   # Logo principal
+│   │   │   └── react.svg           # Logo de React
+│   │   ├── components/             # Componentes reutilizables de React
+│   │   │   ├── Breadcrumbs.jsx     # Navegación de migas de pan
+│   │   │   ├── Calificaciones.jsx  # Gestión de calificaciones
+│   │   │   ├── Cruds.jsx           # Operaciones CRUD genéricas
+│   │   │   ├── Dashboard.jsx       # Panel de control principal
+│   │   │   ├── Estadisticas.jsx    # Componente de estadísticas
+│   │   │   ├── Footer.jsx          # Pie de página
+│   │   │   ├── GestionAcademica.jsx # Gestión académica
+│   │   │   ├── GestionUsuarios.jsx # Gestión de usuarios
+│   │   │   ├── Navbar.jsx          # Barra de navegación
+│   │   │   ├── Sidebar.jsx         # Barra lateral de navegación
+│   │   │   ├── Table.jsx           # Componente de tabla genérica
+│   │   │   ├── Logout.jsx          # Componente de cierre de sesión
+│   │   │   ├── ReportesEstadisticas.jsx # Reportes y estadísticas
+│   │   │   ├── GraficaCircular.jsx # Gráficos circulares
+│   │   │   ├── GraficaLinea.jsx    # Gráficos de línea
+│   │   │   ├── Gaficas_barras.jsx  # Gráficos de barras
+│   │   │   ├── Graficas_circular.jsx # Gráficos circulares alternativos
+│   │   │   └── Graficas_linea.jsx  # Gráficos de línea alternativos
+│   │   ├── pages/                  # Páginas principales de la aplicación
+│   │   │   ├── Loginpage.jsx       # Página de inicio de sesión
+│   │   │   ├── CoordinacionPage.jsx # Página de coordinación
+│   │   │   ├── DocentesPage.jsx    # Página de gestión de docentes
+│   │   │   ├── SecretariaPage.jsx  # Página de secretaría
+│   │   │   └── NotFound.jsx        # Página de error 404
+│   │   ├── styles/                 # Archivos de estilos CSS
+│   │   │   ├── Breadcrumbs.css     # Estilos para migas de pan
+│   │   │   ├── Calificaciones.css  # Estilos para calificaciones
+│   │   │   ├── Coordinacion.css    # Estilos para coordinación
+│   │   │   ├── CoordinacionPage.css # Estilos para página de coordinación
+│   │   │   ├── Dashboard.css       # Estilos para dashboard
+│   │   │   ├── Estadisticas.css    # Estilos para estadísticas
+│   │   │   ├── Footer.css          # Estilos para footer
+│   │   │   ├── GestionAcademica.css # Estilos para gestión académica
+│   │   │   ├── GestionUsuarios.css # Estilos para gestión de usuarios
+│   │   │   ├── Graficas.css        # Estilos para gráficas
+│   │   │   ├── Loginpage.css       # Estilos para página de login
+│   │   │   ├── Navbar.css          # Estilos para navbar
+│   │   │   ├── NotFound.css        # Estilos para página 404
+│   │   │   ├── Sidebar.css         # Estilos para sidebar
+│   │   │   └── Table.css           # Estilos para tablas
+│   │   └── utils/                  # Utilidades y funciones auxiliares
+│   │       └── navigationControl.js # Control de navegación
+│   ├── package.json                # Dependencias y scripts de npm
+│   ├── package-lock.json           # Versiones exactas de dependencias
+│   ├── vite.config.js              # Configuración de Vite
+│   ├── eslint.config.js            # Configuración de ESLint
+│   ├── index.html                  # Archivo HTML principal
+│   └── README.md                   # Documentación del frontend
+├── docs/                           # Documentación del proyecto
+│   ├── AGENT_EXAMPLES.md           # Ejemplos de uso de agentes
+│   ├── QUICK_START.md              # Guía de inicio rápido
+│   ├── architecture/               # Documentación de arquitectura
+│   ├── product/                    # Documentación de producto
+│   └── reports/                    # Reportes del sistema
+├── logs/                           # Archivos de registro del sistema
+├── run_agents.py                   # Script para ejecutar agentes
+├── setup_agents.py                 # Script de configuración de agentes
+├── agents_config.json              # Configuración de agentes
+├── agents_requirements.txt         # Dependencias de agentes
+├── ARQUITECTURA.md                 # Documentación de arquitectura
+└── agents.md                       # Documentación de agentes
+```
 
 ## 📊 Distribución por Lenguaje
 
