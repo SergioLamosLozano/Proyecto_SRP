@@ -1,0 +1,107 @@
+{
+  "project_info": {
+    "name": "Task Manager SRP",
+    "version": "1.0.0",
+    "start_date": "2025-10-01T12:56:05.913563",
+    "target_completion": "2025-12-30T12:56:05.913569"
+  },
+  "phases": [
+    {
+      "id": "phase_1",
+      "name": "Fundación y Arquitectura",
+      "status": "in_progress",
+      "priority": "high",
+      "start_date": "2025-10-01T12:56:05.913577",
+      "estimated_duration": 14,
+      "features": [
+        {
+          "id": "arch_setup",
+          "name": "Configuración de arquitectura base",
+          "status": "completed",
+          "priority": "high",
+          "estimated_hours": 8
+        },
+        {
+          "id": "auth_system",
+          "name": "Sistema de autenticación",
+          "status": "in_progress",
+          "priority": "high",
+          "estimated_hours": 16
+        },
+        {
+          "id": "task_crud",
+          "name": "CRUD básico de tareas",
+          "status": "pending",
+          "priority": "high",
+          "estimated_hours": 12
+        }
+      ]
+    },
+    {
+      "id": "phase_2",
+      "name": "Funcionalidades Core",
+      "status": "pending",
+      "priority": "high",
+      "estimated_duration": 21,
+      "features": [
+        {
+          "id": "task_management",
+          "name": "Gestión avanzada de tareas",
+          "status": "pending",
+          "priority": "high",
+          "estimated_hours": 20
+        },
+        {
+          "id": "collaboration",
+          "name": "Funcionalidades de colaboración",
+          "status": "pending",
+          "priority": "medium",
+          "estimated_hours": 24
+        },
+        {
+          "id": "notifications",
+          "name": "Sistema de notificaciones",
+          "status": "pending",
+          "priority": "medium",
+          "estimated_hours": 16
+        }
+      ]
+    },
+    {
+      "id": "phase_3",
+      "name": "Optimización y Deployment",
+      "status": "pending",
+      "priority": "medium",
+      "estimated_duration": 14,
+      "features": [
+        {
+          "id": "performance",
+          "name": "Optimización de rendimiento",
+          "status": "pending",
+          "priority": "medium",
+          "estimated_hours": 12
+        },
+        {
+          "id": "testing",
+          "name": "Testing completo",
+          "status": "pending",
+          "priority": "high",
+          "estimated_hours": 16
+        },
+        {
+          "id": "deployment",
+          "name": "Configuración de deployment",
+          "status": "pending",
+          "priority": "high",
+          "estimated_hours": 8
+        }
+      ]
+    }
+  ],
+  "metrics": {
+    "total_features": 9,
+    "completed_features": 1,
+    "completion_percentage": 11.11111111111111,
+    "last_updated": "2025-10-01T13:06:52.193301"
+  }
+}

@@ -1,0 +1,12 @@
+2025-10-01 12:44:50,355 - agents.github_manager - WARNING - Could not get repository info: 'GitHubManagerAgent' object has no attribute 'project_root'
+2025-10-01 12:45:14,196 - agents.github_manager - WARNING - Could not get repository info: 'GitHubManagerAgent' object has no attribute 'project_root'
+2025-10-01 12:56:14,778 - agents.github_manager - INFO - Starting GitHub management tasks
+2025-10-01 12:56:18,331 - agents.github_manager - INFO - Execution successful: GitHub management completed - Action: status
+2025-10-01 12:58:25,974 - agents.github_manager - INFO - Starting GitHub management tasks
+2025-10-01 12:58:29,503 - agents.github_manager - INFO - Execution successful: GitHub management completed - Action: status
+2025-10-01 13:00:00,247 - agents.github_manager - INFO - Starting GitHub management tasks
+2025-10-01 13:00:03,673 - agents.github_manager - INFO - Execution successful: GitHub management completed - Action: status
+2025-10-01 13:06:52,499 - agents.github_manager - INFO - Starting GitHub management tasks
+2025-10-01 13:06:56,586 - agents.github_manager - INFO - Execution successful: GitHub management completed - Action: status
+2025-10-01 13:07:10,702 - agents.github_manager - INFO - Starting GitHub management tasks
+2025-10-01 13:07:14,244 - agents.github_manager - INFO - Execution successful: GitHub management completed - Action: status

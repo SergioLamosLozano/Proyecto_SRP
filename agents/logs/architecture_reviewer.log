@@ -1,0 +1,54 @@
+2025-10-01 12:45:14,204 - agents.architecture_reviewer - INFO - Starting architecture analysis
+2025-10-01 12:45:14,206 - agents.architecture_reviewer - ERROR - Execution failed: Architecture analysis failed: 'utf-8' codec can't decode byte 0xff in position 0: invalid start byte
+2025-10-01 12:49:45,056 - agents.architecture_reviewer - INFO - Starting architecture analysis
+2025-10-01 12:49:45,057 - agents.architecture_reviewer - ERROR - Execution failed: Architecture analysis failed: 'utf-8' codec can't decode byte 0xff in position 0: invalid start byte
+2025-10-01 12:50:29,298 - agents.architecture_reviewer - INFO - Starting architecture analysis
+2025-10-01 12:50:29,299 - agents.architecture_reviewer - ERROR - Error in technologies analysis: 'utf-8' codec can't decode byte 0xff in position 0: invalid start byte
+2025-10-01 12:50:33,143 - agents.architecture_reviewer - ERROR - Error generating documentation: 'code_lines'
+2025-10-01 12:50:33,144 - agents.architecture_reviewer - INFO - Execution successful: Architecture analysis completed with partial results
+2025-10-01 12:51:21,622 - agents.architecture_reviewer - INFO - Starting architecture analysis
+2025-10-01 12:51:24,917 - agents.architecture_reviewer - ERROR - Error generating documentation: 'code_lines'
+2025-10-01 12:51:24,917 - agents.architecture_reviewer - INFO - Execution successful: Architecture analysis completed with partial results
+2025-10-01 12:51:59,186 - agents.architecture_reviewer - INFO - Starting architecture analysis
+2025-10-01 12:52:02,262 - agents.architecture_reviewer - ERROR - Error generating documentation: 'files_by_language'
+2025-10-01 12:52:02,262 - agents.architecture_reviewer - INFO - Execution successful: Architecture analysis completed with partial results
+2025-10-01 12:53:35,160 - agents.architecture_reviewer - INFO - Starting architecture analysis
+2025-10-01 12:53:38,090 - agents.architecture_reviewer - INFO - Architecture documentation generated
+2025-10-01 12:53:38,090 - agents.architecture_reviewer - ERROR - Error generating documentation: 'code_lines'
+2025-10-01 12:53:38,091 - agents.architecture_reviewer - INFO - Execution successful: Architecture analysis completed with partial results
+2025-10-01 12:54:17,930 - agents.architecture_reviewer - INFO - Starting architecture analysis
+2025-10-01 12:54:21,071 - agents.architecture_reviewer - INFO - Architecture documentation generated
+2025-10-01 12:54:21,082 - agents.architecture_reviewer - ERROR - Error generating documentation: 'test_coverage'
+2025-10-01 12:54:21,083 - agents.architecture_reviewer - INFO - Execution successful: Architecture analysis completed with partial results
+2025-10-01 12:54:53,455 - agents.architecture_reviewer - INFO - Starting architecture analysis
+2025-10-01 12:54:56,764 - agents.architecture_reviewer - INFO - Architecture documentation generated
+2025-10-01 12:54:56,765 - agents.architecture_reviewer - INFO - Architecture README generated
+2025-10-01 12:54:56,765 - agents.architecture_reviewer - INFO - Execution successful: Architecture analysis completed with partial results
+2025-10-01 12:56:02,229 - agents.architecture_reviewer - INFO - Starting architecture analysis
+2025-10-01 12:56:05,469 - agents.architecture_reviewer - INFO - Architecture documentation generated
+2025-10-01 12:56:05,470 - agents.architecture_reviewer - INFO - Architecture README generated
+2025-10-01 12:56:05,470 - agents.architecture_reviewer - INFO - Execution successful: Architecture analysis completed with partial results
+2025-10-01 12:58:29,505 - agents.architecture_reviewer - INFO - Starting architecture analysis
+2025-10-01 12:58:32,602 - agents.architecture_reviewer - INFO - Architecture documentation generated
+2025-10-01 12:58:32,603 - agents.architecture_reviewer - INFO - Architecture README generated
+2025-10-01 12:58:32,603 - agents.architecture_reviewer - INFO - Execution successful: Architecture analysis completed with partial results
+2025-10-01 12:58:50,352 - agents.architecture_reviewer - INFO - Starting architecture analysis
+2025-10-01 12:58:53,395 - agents.architecture_reviewer - INFO - Architecture documentation generated
+2025-10-01 12:58:53,395 - agents.architecture_reviewer - INFO - Architecture README generated
+2025-10-01 12:58:53,395 - agents.architecture_reviewer - INFO - Execution successful: Architecture analysis completed with partial results
+2025-10-01 12:59:42,611 - agents.architecture_reviewer - INFO - Starting architecture analysis
+2025-10-01 12:59:45,573 - agents.architecture_reviewer - INFO - Architecture documentation generated
+2025-10-01 12:59:45,574 - agents.architecture_reviewer - INFO - Architecture README generated
+2025-10-01 12:59:45,574 - agents.architecture_reviewer - INFO - Execution successful: Architecture analysis completed with partial results
+2025-10-01 13:00:03,673 - agents.architecture_reviewer - INFO - Starting architecture analysis
+2025-10-01 13:00:06,556 - agents.architecture_reviewer - INFO - Architecture documentation generated
+2025-10-01 13:00:06,557 - agents.architecture_reviewer - INFO - Architecture README generated
+2025-10-01 13:00:06,557 - agents.architecture_reviewer - INFO - Execution successful: Architecture analysis completed with partial results
+2025-10-01 13:06:43,445 - agents.architecture_reviewer - INFO - Starting architecture analysis
+2025-10-01 13:06:47,032 - agents.architecture_reviewer - INFO - Architecture documentation generated
+2025-10-01 13:06:47,033 - agents.architecture_reviewer - INFO - Architecture README generated
+2025-10-01 13:06:47,033 - agents.architecture_reviewer - INFO - Execution successful: Architecture analysis completed with partial results
+2025-10-01 13:06:56,586 - agents.architecture_reviewer - INFO - Starting architecture analysis
+2025-10-01 13:06:59,895 - agents.architecture_reviewer - INFO - Architecture documentation generated
+2025-10-01 13:06:59,895 - agents.architecture_reviewer - INFO - Architecture README generated
+2025-10-01 13:06:59,895 - agents.architecture_reviewer - INFO - Execution successful: Architecture analysis completed with partial results
