@@ -10,8 +10,8 @@ La aplicación está construida siguiendo principios de arquitectura limpia, sep
 
 ## Métricas del Proyecto
 
-- **Total de archivos:** 10327 archivos
-- **Total de líneas de código:** ~64,332 líneas
+- **Total de archivos:** 142 archivos
+- **Total de líneas de código:** ~70,467 líneas
 - **Lenguajes detectados:** 7 lenguajes
 
 ## Tecnologías Utilizadas
@@ -34,18 +34,24 @@ La aplicación está construida siguiendo principios de arquitectura limpia, sep
 
 - **agents/**: Sistema de agentes de desarrollo automatizado
 - **backend/**: Código fuente de la aplicación - Django Backend
+  - **backend_srp/**: Configuración principal de Django
+  - **core/**: Aplicación principal con modelos y vistas
+  - **venv/**: Directorio venv
 - **docs/**: Documentación del proyecto
 - **frontend_srp/**: Entry point de la aplicación - React Frontend
-- **logs/**: Directorio logs
+  - **dist/**: Directorio dist
+  - **public/**: Archivos estáticos públicos
+  - **src/**: Componentes UI compartidos/reutilizables
+- **logs/**: Archivos de registro del sistema
 - **venv/**: Directorio venv
 
 
 ### Distribución por Lenguaje
 
 - **Other**: 7 archivos, 499 líneas
-- **Markdown**: 14 archivos, 926 líneas
-- **JSON**: 12 archivos, 52,360 líneas
-- **Python**: 23 archivos, 4,385 líneas
+- **Markdown**: 15 archivos, 966 líneas
+- **JSON**: 13 archivos, 58,360 líneas
+- **Python**: 23 archivos, 4,480 líneas
 - **JavaScript**: 31 archivos, 2,840 líneas
 - **HTML**: 1 archivos, 13 líneas
 - **CSS**: 17 archivos, 3,309 líneas
@@ -66,4 +72,4 @@ La aplicación está construida siguiendo principios de arquitectura limpia, sep
 ---
 
 *Análisis generado automáticamente por Architecture Reviewer Agent*  
-*Fecha: 2025-10-01 13:06:59*
+*Fecha: 2025-10-01 13:20:45*

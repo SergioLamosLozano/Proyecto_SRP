@@ -7,7 +7,7 @@
 ## 📊 Métricas del Proyecto
 
 - 📁 **Total de archivos TypeScript/TSX:** 0 archivos
-- 📈 **Total de líneas de código:** ~64,332 líneas  
+- 📈 **Total de líneas de código:** ~70,467 líneas  
 - ✅ **Cobertura de tests:** No disponible
 
 ## 🛠️ Tecnologías Utilizadas
@@ -31,21 +31,27 @@
 task-manager/
 ├── agents/                     # Sistema de agentes de desarrollo automatizado
 ├── backend/                     # Código fuente de la aplicación - Django Backend
+│   ├── backend_srp/                # Configuración principal de Django
+│   ├── core/                # Aplicación principal con modelos y vistas
+│   └── venv/                # Directorio venv
 ├── docs/                     # Documentación del proyecto
 ├── frontend_srp/                     # Entry point de la aplicación - React Frontend
-├── logs/                     # Directorio logs
+│   ├── dist/                # Directorio dist
+│   ├── public/                # Archivos estáticos públicos
+│   └── src/                # Componentes UI compartidos/reutilizables
+├── logs/                     # Archivos de registro del sistema
 ├── venv/                     # Directorio venv
 ```
 
 ## 📊 Distribución por Lenguaje
 
-- **Other**: 7 archivos, 499 líneas (0.8%)
-- **Markdown**: 14 archivos, 926 líneas (1.4%)
-- **JSON**: 12 archivos, 52,360 líneas (81.4%)
-- **Python**: 23 archivos, 4,385 líneas (6.8%)
-- **JavaScript**: 31 archivos, 2,840 líneas (4.4%)
+- **Other**: 7 archivos, 499 líneas (0.7%)
+- **Markdown**: 15 archivos, 966 líneas (1.4%)
+- **JSON**: 13 archivos, 58,360 líneas (82.8%)
+- **Python**: 23 archivos, 4,480 líneas (6.4%)
+- **JavaScript**: 31 archivos, 2,840 líneas (4.0%)
 - **HTML**: 1 archivos, 13 líneas (0.0%)
-- **CSS**: 17 archivos, 3,309 líneas (5.1%)
+- **CSS**: 17 archivos, 3,309 líneas (4.7%)
 
 
 ## 🚀 Características Arquitectónicas
@@ -94,4 +100,4 @@ python manage.py runserver
 ---
 
 *Documentación generada automáticamente por Architecture Reviewer Agent*  
-*Última actualización: 2025-10-01 13:06:59*
+*Última actualización: 2025-10-01 13:20:45*

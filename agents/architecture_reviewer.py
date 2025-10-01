@@ -230,6 +230,48 @@ class ArchitectureReviewerAgent(BaseAgent):
                                 "version": version,
                                 "purpose": "API RESTful y serialización"
                             })
+                        elif package.lower() == "mysqlclient":
+                            technologies["databases"].append({
+                                "name": "MySQL",
+                                "version": version,
+                                "purpose": "Base de datos relacional principal"
+                            })
+                        elif package.lower() == "django-cors-headers":
+                            technologies["backend_technologies"].append({
+                                "name": "Django CORS Headers",
+                                "version": version,
+                                "purpose": "Manejo de CORS para APIs"
+                            })
+                        elif package.lower() == "djangorestframework_simplejwt":
+                            technologies["backend_technologies"].append({
+                                "name": "Simple JWT",
+                                "version": version,
+                                "purpose": "Autenticación JWT para Django REST"
+                            })
+                        elif package.lower() == "drf-yasg":
+                            technologies["backend_technologies"].append({
+                                "name": "DRF-YASG",
+                                "version": version,
+                                "purpose": "Documentación automática de API (Swagger)"
+                            })
+                        elif package.lower() == "python-decouple":
+                            technologies["backend_technologies"].append({
+                                "name": "Python Decouple",
+                                "version": version,
+                                "purpose": "Gestión de variables de entorno"
+                            })
+                        elif package.lower() == "pandas":
+                            technologies["backend_technologies"].append({
+                                "name": "Pandas",
+                                "version": version,
+                                "purpose": "Análisis y manipulación de datos"
+                            })
+                        elif package.lower() == "pillow":
+                            technologies["backend_technologies"].append({
+                                "name": "Pillow",
+                                "version": version,
+                                "purpose": "Procesamiento de imágenes"
+                            })
         
         return technologies
     
@@ -239,7 +281,8 @@ class ArchitectureReviewerAgent(BaseAgent):
             "total_files": 0,
             "by_type": {},
             "directories": [],
-            "key_files": []
+            "key_files": [],
+            "detailed_structure": {}
         }
         
         # Contar archivos por tipo
@@ -248,7 +291,7 @@ class ArchitectureReviewerAgent(BaseAgent):
         
         for root, dirs, files in os.walk(self.project_root):
             # Ignorar directorios comunes
-            dirs[:] = [d for d in dirs if d not in ['.git', 'node_modules', '__pycache__', '.venv']]
+            dirs[:] = [d for d in dirs if d not in ['.git', 'node_modules', '__pycache__', '.venv', 'venv']]
             
             for file in files:
                 structure["total_files"] += 1
@@ -259,7 +302,7 @@ class ArchitectureReviewerAgent(BaseAgent):
                     file_types[ext] = file_types.get(ext, 0) + 1
                 
                 # Identificar archivos clave
-                if file in ['package.json', 'requirements.txt', 'manage.py', 'vite.config.js', 'tsconfig.json']:
+                if file in ['package.json', 'requirements.txt', 'manage.py', 'vite.config.js', 'tsconfig.json', 'settings.py']:
                     key_files.append({
                         "name": file,
                         "path": str(Path(root) / file),
@@ -269,17 +312,37 @@ class ArchitectureReviewerAgent(BaseAgent):
         structure["by_type"] = file_types
         structure["key_files"] = key_files
         
-        # Estructura de directorios principales
+        # Estructura de directorios principales con detalles
         main_dirs = []
+        detailed_structure = {}
+        
         for item in self.project_root.iterdir():
             if item.is_dir() and not item.name.startswith('.'):
-                main_dirs.append({
+                dir_info = {
                     "name": item.name,
                     "path": str(item),
                     "description": self._get_directory_description(item.name)
-                })
+                }
+                
+                # Agregar subdirectorios importantes
+                if item.name in ['backend', 'frontend_srp']:
+                    subdirs = []
+                    try:
+                        for subitem in item.iterdir():
+                            if subitem.is_dir() and not subitem.name.startswith('.') and subitem.name not in ['__pycache__', 'node_modules']:
+                                subdirs.append({
+                                    "name": subitem.name,
+                                    "description": self._get_directory_description(subitem.name)
+                                })
+                        dir_info["subdirectories"] = subdirs
+                    except PermissionError:
+                        pass
+                
+                main_dirs.append(dir_info)
+                detailed_structure[item.name] = dir_info
         
         structure["directories"] = main_dirs
+        structure["detailed_structure"] = detailed_structure
         
         return structure
     
@@ -288,12 +351,20 @@ class ArchitectureReviewerAgent(BaseAgent):
         descriptions = {
             "backend": "Código fuente de la aplicación - Django Backend",
             "frontend_srp": "Entry point de la aplicación - React Frontend",
+            "backend_srp": "Configuración principal de Django",
+            "core": "Aplicación principal con modelos y vistas",
             "src": "Componentes UI compartidos/reutilizables",
             "public": "Archivos estáticos públicos",
             "assets": "Recursos estáticos (imágenes, etc.)",
             "components": "Componentes UI compartidos/reutilizables",
+            "pages": "Páginas principales de la aplicación",
+            "styles": "Archivos CSS y estilos",
+            "utils": "Utilidades y funciones auxiliares",
+            "api": "Configuración de APIs y servicios",
+            "migrations": "Migraciones de base de datos Django",
             "agents": "Sistema de agentes de desarrollo automatizado",
-            "docs": "Documentación del proyecto"
+            "docs": "Documentación del proyecto",
+            "logs": "Archivos de registro del sistema"
         }
         return descriptions.get(dir_name, f"Directorio {dir_name}")
     
@@ -486,6 +557,11 @@ La aplicación está construida siguiendo principios de arquitectura limpia, sep
             for tech in analysis['technologies']['backend_technologies']:
                 arch_doc += f"- **{tech['name']}** {tech['version']}: {tech['purpose']}\n"
         
+        if analysis['technologies'].get('databases'):
+            arch_doc += "\n### Bases de Datos\n\n"
+            for tech in analysis['technologies']['databases']:
+                arch_doc += f"- **{tech['name']}** {tech['version']}: {tech['purpose']}\n"
+        
         arch_doc += f"""
 
 ## Estructura de Carpetas y Archivos
@@ -496,6 +572,10 @@ La aplicación está construida siguiendo principios de arquitectura limpia, sep
         
         for directory in analysis['file_structure']['directories']:
             arch_doc += f"- **{directory['name']}/**: {directory['description']}\n"
+            # Mostrar subdirectorios si existen
+            if 'subdirectories' in directory and directory['subdirectories']:
+                for subdir in directory['subdirectories']:
+                    arch_doc += f"  - **{subdir['name']}/**: {subdir['description']}\n"
         
         arch_doc += f"""
 
@@ -564,6 +644,16 @@ La aplicación está construida siguiendo principios de arquitectura limpia, sep
             for tech in analysis['technologies']['state_management']:
                 readme_content += f"| {tech['name']} | {tech['version']} | {tech['purpose']} |\n"
         
+        if analysis['technologies']['backend_technologies']:
+            readme_content += "\n### Backend Technologies\n\n| Tecnología | Versión | Propósito |\n|------------|---------|-----------||\n"
+            for tech in analysis['technologies']['backend_technologies']:
+                readme_content += f"| {tech['name']} | {tech['version']} | {tech['purpose']} |\n"
+        
+        if analysis['technologies']['databases']:
+            readme_content += "\n### Bases de Datos\n\n| Tecnología | Versión | Propósito |\n|------------|---------|-----------||\n"
+            for tech in analysis['technologies']['databases']:
+                readme_content += f"| {tech['name']} | {tech['version']} | {tech['purpose']} |\n"
+        
         readme_content += f"""
 
 ## 📁 Estructura de Carpetas y Archivos
@@ -574,6 +664,11 @@ task-manager/
         
         for directory in analysis['file_structure']['directories']:
             readme_content += f"├── {directory['name']}/{'':20} # {directory['description']}\n"
+            # Mostrar subdirectorios importantes
+            if 'subdirectories' in directory and directory['subdirectories']:
+                for i, subdir in enumerate(directory['subdirectories']):
+                    prefix = "│   ├── " if i < len(directory['subdirectories']) - 1 else "│   └── "
+                    readme_content += f"{prefix}{subdir['name']}/{'':15} # {subdir['description']}\n"
         
         readme_content += f"""```
 
