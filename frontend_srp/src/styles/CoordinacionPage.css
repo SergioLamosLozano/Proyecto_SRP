@@ -16,6 +16,11 @@
   min-height: calc(100vh - 100px);
 }
 
+/* Si el sidebar está colapsado, reducir el margen para que el contenido ocupe más espacio */
+.coordinacion-content.collapsed {
+  margin-left: 72px; /* coincide con .sidebar.collapsed */
+}
+
 .coordinacion-main-content {
   flex: 1;
 }

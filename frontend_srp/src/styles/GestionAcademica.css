@@ -307,8 +307,8 @@
 
 .upload-button {
   background-color: var(--azul-principal);
-  color: var(--blanco);
-  border: none;
+  color: var(--rojo-institucional);
+  border: 2px solid black;
   padding: 12px 24px;
   border-radius: 6px;
   cursor: pointer;
@@ -317,6 +317,9 @@
   transition: background-color 0.3s ease;
   display: inline-block;
   text-decoration: none;
+  position: relative;
+  z-index: 10;
+  pointer-events: auto;
 }
 
 .upload-button:hover {

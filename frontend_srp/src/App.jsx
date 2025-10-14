@@ -9,7 +9,7 @@ import { disableBrowserNavigation } from './utils/navigationControl';
 
 
 // Lazy load de páginas
-const LoginPage = lazy(() => import("./pages/LoginPage.jsx"));
+const LoginPage = lazy(() => import("./pages/Loginpage.jsx"));
 const DocentesPage = lazy(() => import("./pages/DocentesPage.jsx"));
 const CoordinacionPage = lazy(() => import("./pages/CoordinacionPage.jsx"));
 const SecretariaPage = lazy(() => import("./pages/SecretariaPage.jsx"));
@@ -18,7 +18,7 @@ const NotFound = lazy(() => import("./pages/NotFound.jsx"));
 
 // Helper para verificar el token de autenticación al cargar la app
 const checkAuthToken = () => {
-  const token = localStorage.getItem("token");
+  const token = sessionStorage.getItem("token");
   // Simplemente verifica si el token existe.
   // La doble negación (!!) convierte el valor (string o null) en un booleano.
   return !!token;
@@ -26,7 +26,7 @@ const checkAuthToken = () => {
 
 // Helper para obtener el rol del usuario desde el token
 const getUserRole = () => {
-  const token = localStorage.getItem("token");
+  const token = sessionStorage.getItem("token");
   if (!token) return null;
   try {
     const decoded = jwtDecode(token);
@@ -109,8 +109,15 @@ function App() {
           <Route path="/NotFound" element={<NotFound />} />
           {/* Redirección por defecto para cualquier otra ruta */}
           <Route path="*" element={<Navigate to="/NotFound" replace />} />
-          {/* Ruta para gestión de usuarios */}
-          <Route path="/coordinacion/gestion-usuarios" element={<GestionUsuarios />} />
+          {/* Ruta para gestión de usuarios (protegida) */}
+          <Route
+            path="/coordinacion/gestion-usuarios"
+            element={
+              <RoleBasedRoute isAuthenticated={isAuthenticated} allowedRoles={['coordinacion']}>
+                <GestionUsuarios />
+              </RoleBasedRoute>
+            }
+          />
         </Routes>
       </Suspense>
     </Router>

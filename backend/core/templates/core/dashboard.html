@@ -1,0 +1,148 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Dashboard - Sistema de Registro de Personas{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="fas fa-tachometer-alt"></i> Dashboard
+        </h1>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Estadísticas -->
+    <div class="col-md-3 mb-4">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ total_estudiantes }}</h4>
+                        <p class="mb-0">Estudiantes</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-graduation-cap fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <a href="{% url 'estudiantes_list' %}" class="text-white text-decoration-none">
+                    Ver todos <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-4">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ total_profesores }}</h4>
+                        <p class="mb-0">Profesores</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-chalkboard-teacher fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <a href="{% url 'profesores_list' %}" class="text-white text-decoration-none">
+                    Ver todos <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-4">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ total_acudientes }}</h4>
+                        <p class="mb-0">Acudientes</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-user-friends fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <a href="{% url 'acudientes_list' %}" class="text-white text-decoration-none">
+                    Ver todos <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-4">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ total_relaciones }}</h4>
+                        <p class="mb-0">Relaciones</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-link fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="text-white">Estudiante-Acudiente</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Acciones rápidas -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-plus-circle"></i> Acciones Rápidas</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'estudiantes_create' %}" class="btn btn-primary">
+                        <i class="fas fa-user-plus"></i> Registrar Estudiante
+                    </a>
+                    <a href="{% url 'profesores_create' %}" class="btn btn-success">
+                        <i class="fas fa-user-plus"></i> Registrar Profesor
+                    </a>
+                    <a href="{% url 'acudientes_create' %}" class="btn btn-info">
+                        <i class="fas fa-user-plus"></i> Registrar Acudiente
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Últimos registros -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-clock"></i> Últimos Estudiantes Registrados</h5>
+            </div>
+            <div class="card-body">
+                {% if ultimos_estudiantes %}
+                    <div class="list-group list-group-flush">
+                        {% for estudiante in ultimos_estudiantes %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>{{ estudiante.nombre_completo }}</strong><br>
+                                    <small class="text-muted">{{ estudiante.numero_documento }}</small>
+                                </div>
+                                <span class="badge bg-primary rounded-pill">{{ estudiante.fk_tipo_estado.descripcion }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">No hay estudiantes registrados.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

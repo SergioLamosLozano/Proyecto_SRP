@@ -46,8 +46,11 @@ function LoginPage({ onLogin }) {
     setError(null);
     try {
       const res = await login(form.username, form.password);
-      const token = res.data.access;
-      localStorage.setItem("token", token);
+  const token = res.data.access;
+  const refresh = res.data.refresh;
+  // Guardar el token en sessionStorage para que persista mientras la pestaña/navegador esté abierta
+  sessionStorage.setItem("token", token);
+  if (refresh) sessionStorage.setItem('refreshToken', refresh);
       onLogin();
       const decoded = jwtDecode(token);
       const rol = decoded.rol || decoded.role || decoded["user"]["rol"];

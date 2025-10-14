@@ -146,3 +146,9 @@ Los logs se guardan en:
 - `logs/agents/{agent_name}.log` - Logs de agentes individuales
 
 Para debugging detallado, editar la configuración de logging en cada agente.
+
+## Notas sobre plantillas Excel (carga masiva)
+
+- Las plantillas descargables para carga masiva (estudiantes/profesores) contienen una hoja `Catalogos` con valores legibles y ahora incluyen una hoja adicional `Catalogos_Detalle` que mapea identificadores (IDs) a descripciones legibles.
+- El importador en backend acepta tanto identificadores numéricos (IDs) como valores legibles (por ejemplo, `Masculino` o `1`) para los campos que son claves foráneas. Esto permite que los usuarios rellenes las filas de ejemplo con nombres legibles mientras usan `Catalogos_Detalle` como referencia cuando necesiten IDs.
+- Si prefieres que las filas de ejemplo usen explícitamente los IDs numéricos, solicitarlo y se actualizará la plantilla de ejemplo para usar los IDs en lugar de las etiquetas legibles.
