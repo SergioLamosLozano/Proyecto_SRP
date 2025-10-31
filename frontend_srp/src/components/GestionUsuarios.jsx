@@ -120,6 +120,132 @@ const GestionUsuarios = ({ onBack }) => {
   // Referencias para los inputs de archivo
   const estudiantesFileInputRef = useRef(null);
 
+  // Helper: leer un workbook usando SheetJS (XLSX)
+  const readWorkbook = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = (e) => reject(e);
+      reader.onload = (e) => {
+        try {
+          const data = new Uint8Array(e.target.result);
+          const wb = XLSX.read(data, { type: 'array' });
+          resolve(wb);
+        } catch (err) {
+          reject(err);
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    });
+  };
+
+  // Helper: cargar catálogos necesarios para validar/interpretar el Excel
+  const loadCatalogsForValidation = async () => {
+    try {
+      const [tiposDocResp, generosResp, estadosResp, tiposSangreResp, sisbenResp, departamentosResp, ciudadesResp, tiposAcudienteResp] = await Promise.all([
+        catalogoAPI.getTiposDocumento(),
+        catalogoAPI.getGeneros(),
+        catalogoAPI.getEstados(),
+        catalogoAPI.getTiposSangre(),
+        catalogoAPI.getSisben(),
+        catalogoAPI.getDepartamentos(),
+        catalogoAPI.getCiudades(),
+        catalogoAPI.getTipoAcudiente()
+      ]);
+      return {
+        tiposDocumento: tiposDocResp.data || [],
+        generos: generosResp.data || [],
+        estados: estadosResp.data || [],
+        tiposSangre: tiposSangreResp.data || [],
+        sisben: sisbenResp.data || [],
+        departamentos: departamentosResp.data || [],
+        ciudades: ciudadesResp.data || [],
+        tiposAcudiente: tiposAcudienteResp.data || []
+      };
+    } catch (err) {
+      console.warn('No se pudieron cargar catálogos para validación:', err);
+      return null;
+    }
+  };
+
+  // Construir índices simples para búsqueda rápida en catálogos
+  const buildCatalogIndex = (catalogs) => {
+    if (!catalogs) return null;
+    const idx = {};
+    Object.keys(catalogs).forEach((k) => {
+      idx[k] = {
+        byId: {},
+        byName: {}
+      };
+      (catalogs[k] || []).forEach((item) => {
+        const id = item.id || item.pk || item.codigo_municipio || item.id_tipo_documento || item.id_tipo_estado || item.id_tipo_sangre || item.id_tipo_sisben || item.id_tipo_acudiente || item.id_tipo_acudiente;
+        const name = (item.descripcion || item.nombre || item.sigla || item.nombre_completo || '').toString().toLowerCase();
+        if (id != null) idx[k].byId[id] = item;
+        if (name) idx[k].byName[name] = item;
+      });
+    });
+    return idx;
+  };
+
+  // Validación mínima y previsualización para Estudiantes
+  const validateEstudiantesWorkbook = (wb, catalogsIndex) => {
+    const errors = [];
+    try {
+      const sheetName = wb.SheetNames.find(n => /estudiantes?/i.test(n)) || wb.SheetNames[0];
+      const ws = wb.Sheets[sheetName];
+      const raw = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+      if (!raw || raw.length === 0) {
+        errors.push('No se detectó contenido en la hoja de estudiantes');
+        return { errors, preview: null };
+      }
+      const headers = raw[0].map(h => String(h || '').trim());
+      const dataRows = raw.slice(1).map(r => {
+        const obj = {};
+        headers.forEach((h, i) => { obj[h] = r[i] ?? ''; });
+        return obj;
+      });
+      const preview = {
+        rowsCount: dataRows.length,
+        headers,
+        sample: dataRows.slice(0, 5),
+        rows: dataRows
+      };
+      return { errors, preview };
+    } catch (err) {
+      errors.push(`Error parseando workbook: ${err.message || err}`);
+      return { errors, preview: null };
+    }
+  };
+
+  // Validación mínima y previsualización para Profesores (similar)
+  const validateProfesoresWorkbook = (wb, catalogsIndex) => {
+    const errors = [];
+    try {
+      const sheetName = wb.SheetNames.find(n => /profesores?/i.test(n)) || wb.SheetNames[0];
+      const ws = wb.Sheets[sheetName];
+      const raw = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+      if (!raw || raw.length === 0) {
+        errors.push('No se detectó contenido en la hoja de profesores');
+        return { errors, preview: null };
+      }
+      const headers = raw[0].map(h => String(h || '').trim());
+      const dataRows = raw.slice(1).map(r => {
+        const obj = {};
+        headers.forEach((h, i) => { obj[h] = r[i] ?? ''; });
+        return obj;
+      });
+      const preview = {
+        rowsCount: dataRows.length,
+        headers,
+        sample: dataRows.slice(0, 5),
+        rows: dataRows
+      };
+      return { errors, preview };
+    } catch (err) {
+      errors.push(`Error parseando workbook: ${err.message || err}`);
+      return { errors, preview: null };
+    }
+  };
+
   const breadcrumbItems = [
     { label: 'Inicio', path: '/coordinacion' },
     { label: 'Coordinación Administrativa', path: '/coordinacion' },
