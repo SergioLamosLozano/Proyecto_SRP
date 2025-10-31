@@ -12,6 +12,17 @@
   z-index: 100;
   overflow-y: auto;
   transition: transform 0.3s ease;
+  transition: width 0.25s ease, transform 0.3s ease;
+}
+
+/* Estado colapsado: sólo iconos */
+.sidebar.collapsed {
+  width: 72px; /* ancho reducido para mostrar sólo iconos */
+  overflow: visible;
+}
+
+.sidebar.collapsed .menu-text {
+  display: none;
 }
 
 /* Sidebar móvil */
@@ -70,9 +81,14 @@
 
 .menu-icon {
   font-size: 18px;
-  width: 20px;
+  width: 40px;
   text-align: center;
-  margin-right: 12px;
+  margin-right: 0;
+}
+
+.sidebar.collapsed .menu-icon {
+  width: 100%;
+  font-size: 20px;
 }
 
 

@@ -1,0 +1,199 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Detalle del Estudiante{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">
+                        <i class="fas fa-user-graduate me-2"></i>
+                        {{ estudiante.primer_nombre }} {{ estudiante.segundo_nombre }} {{ estudiante.primer_apellido }} {{ estudiante.segundo_apellido }}
+                    </h4>
+                    <div>
+                        <a href="{% url 'estudiantes_update' estudiante.numero_documento %}" class="btn btn-warning btn-sm">
+                            <i class="fas fa-edit"></i> Editar
+                        </a>
+                        <a href="{% url 'estudiantes_list' %}" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-arrow-left"></i> Volver
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Información Personal -->
+                        <div class="col-md-6">
+                            <h5 class="text-primary mb-3">
+                                <i class="fas fa-id-card me-2"></i>Información Personal
+                            </h5>
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Tipo de Documento:</strong></td>
+                                    <td>{{ estudiante.fk_id_tipo_documento.descripcion }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Número de Documento:</strong></td>
+                                    <td>{{ estudiante.numero_documento }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Primer Nombre:</strong></td>
+                                    <td>{{ estudiante.primer_nombre }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Segundo Nombre:</strong></td>
+                                    <td>{{ estudiante.segundo_nombre|default:"N/A" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Primer Apellido:</strong></td>
+                                    <td>{{ estudiante.primer_apellido }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Segundo Apellido:</strong></td>
+                                    <td>{{ estudiante.segundo_apellido|default:"N/A" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Fecha de Nacimiento:</strong></td>
+                                    <td>{{ estudiante.fecha_nacimiento|date:"d/m/Y" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Género:</strong></td>
+                                    <td>{{ estudiante.fk_id_genero.descripcion }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Estado:</strong></td>
+                                    <td>
+                                        <span class="badge {% if estudiante.fk_tipo_estado.descripcion == 'Activo' %}bg-success{% else %}bg-danger{% endif %}">
+                                            {{ estudiante.fk_tipo_estado.descripcion }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <!-- Información de Contacto -->
+                        <div class="col-md-6">
+                            <h5 class="text-primary mb-3">
+                                <i class="fas fa-address-book me-2"></i>Información de Contacto
+                            </h5>
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Email:</strong></td>
+                                    <td>{{ estudiante.email|default:"N/A" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Teléfono:</strong></td>
+                                    <td>{{ estudiante.telefono|default:"N/A" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Dirección:</strong></td>
+                                    <td>{{ estudiante.direccion|default:"N/A" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Ciudad:</strong></td>
+                                    <td>{{ estudiante.fk_codigo_municipio.descripcion }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Departamento:</strong></td>
+                                    <td>{{ estudiante.fk_codigo_municipio.fk_codigo_departamento.descripcion }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Procedencia:</strong></td>
+                                    <td>{{ estudiante.fk_id_procedencia.descripcion|default:"N/A" }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <!-- Información Médica y Social -->
+                        <div class="col-md-6">
+                            <h5 class="text-primary mb-3">
+                                <i class="fas fa-heartbeat me-2"></i>Información Médica y Social
+                            </h5>
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Tipo de Sangre:</strong></td>
+                                    <td>{{ estudiante.fk_id_tipo_sangre.descripcion|default:"N/A" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Discapacidad:</strong></td>
+                                    <td>{{ estudiante.fk_id_discapacidad.descripcion|default:"N/A" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Alergia:</strong></td>
+                                    <td>{{ estudiante.fk_id_alergia.descripcion|default:"N/A" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Sisben:</strong></td>
+                                    <td>{{ estudiante.fk_id_sisben.descripcion|default:"N/A" }}</td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <!-- Información Adicional -->
+                        <div class="col-md-6">
+                            <h5 class="text-primary mb-3">
+                                <i class="fas fa-info-circle me-2"></i>Información Adicional
+                            </h5>
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Fecha de Registro:</strong></td>
+                                    <td>{{ estudiante.fecha_registro|date:"d/m/Y H:i" }}</td>
+                                </tr>
+                                {% if estudiante.observaciones %}
+                                <tr>
+                                    <td><strong>Observaciones:</strong></td>
+                                    <td>{{ estudiante.observaciones }}</td>
+                                </tr>
+                                {% endif %}
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Acudientes -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <h5 class="text-primary mb-3">
+                                <i class="fas fa-users me-2"></i>Acudientes
+                            </h5>
+                            {% if estudiante.estudiantesacudientes_set.all %}
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Nombre</th>
+                                                <th>Documento</th>
+                                                <th>Tipo</th>
+                                                <th>Teléfono</th>
+                                                <th>Email</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for relacion in estudiante.estudiantesacudientes_set.all %}
+                                            <tr>
+                                                <td>{{ relacion.fk_numero_documento_acudiente.primer_nombre }} {{ relacion.fk_numero_documento_acudiente.primer_apellido }}</td>
+                                                <td>{{ relacion.fk_numero_documento_acudiente.numero_documento }}</td>
+                                                <td>{{ relacion.fk_numero_documento_acudiente.fk_id_tipo_acudiente.descripcion }}</td>
+                                                <td>{{ relacion.fk_numero_documento_acudiente.telefono|default:"N/A" }}</td>
+                                                <td>{{ relacion.fk_numero_documento_acudiente.email|default:"N/A" }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    No hay acudientes registrados para este estudiante.
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

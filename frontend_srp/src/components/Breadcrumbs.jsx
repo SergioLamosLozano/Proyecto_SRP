@@ -17,7 +17,7 @@ const Breadcrumbs = ({ items = [], onNavigate }) => {
     const [rol, setRol] = useState(null);
     
     useEffect(() => {
-        const token = localStorage.getItem('token');
+        const token = sessionStorage.getItem('token');
         if (token) {
             try {
                 const decoded = jwtDecode(token);
@@ -38,7 +38,7 @@ const Breadcrumbs = ({ items = [], onNavigate }) => {
                 setRol(userRole);
             } catch (error) {
                 console.error('Error al decodificar el token:', error);
-                localStorage.removeItem('token');
+                // No eliminar token automáticamente aquí; puede ser corrupto o expirado y se manejará en ProtectedRoute
             }
         }
     }, []);

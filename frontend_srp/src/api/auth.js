@@ -11,6 +11,9 @@ export const getAdministradores = async () => {
 export const login = (username, password) =>
     axios.post(`${baseURL}/token/`, { username, password });
 
+export const refreshToken = (refresh) =>
+    axios.post(`${baseURL}/token/refresh/`, { refresh });
+
 
 export  const validationUser = async (username, password) => {
 

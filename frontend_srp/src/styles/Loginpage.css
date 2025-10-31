@@ -19,12 +19,12 @@
 }
 
 .Login-container-2 {
-  width: 50%;
-  height: 100%;
-  background: linear-gradient(to right, #00184bc5 10%, rgb(1, 1, 70) 100%);
-  padding: 20px;
-  border-top-right-radius: 20%;
-  border-bottom-right-radius: 20%;
+    width: 50%;
+    height: 100%;
+    background: var(--rojo-institucional);
+    padding: 20px;
+    border-top-right-radius: 20%;
+    border-bottom-right-radius: 20%;
 }
 
 .Login-container-3 {
@@ -59,7 +59,7 @@
 .Login-container-3 section {
   width: 300px;
   height: auto;
-  color: rgba(231, 231, 231, 0.556);
+  color: rgb(255, 255, 255);
   margin-top: 10px;
   font-family: Arial, Helvetica, sans-serif;
   font-size: 12px;
@@ -254,7 +254,7 @@
   border: none;
   font-weight: bold;
   color: white;
-  background: linear-gradient(to right, #00184bc5 10%, rgb(1, 1, 70) 100%);
+  background: var(--rojo-institucional);
   border-radius: 15px;
   cursor: pointer;
   transition: all 0.5s ease-in-out;

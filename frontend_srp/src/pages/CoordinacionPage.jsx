@@ -14,6 +14,7 @@ const CoordinacionPage = () => {
   const [currentView, setCurrentView] = useState('dashboard');
   const [isMobile, setIsMobile] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
 
   const handleNavigation = (view) => {
     setCurrentView(view);
@@ -70,7 +71,7 @@ const CoordinacionPage = () => {
   };
 
   return (
-    <>
+    <div className="page-wrapper" style={{ '--sidebar-width': sidebarCollapsed ? '72px' : '250px' }}>
       <Logout />
       {/* Botón hamburguesa para móvil */}
       {isMobile && (
@@ -97,15 +98,18 @@ const CoordinacionPage = () => {
           onNavigate={handleNavigation}
           isMobile={isMobile}
           isOpen={sidebarOpen}
+          collapsed={sidebarCollapsed}
+          onMouseEnter={() => setSidebarCollapsed(false)}
+          onMouseLeave={() => setSidebarCollapsed(true)}
         />
-        <div className="coordinacion-content">
+        <div className={`coordinacion-content ${sidebarCollapsed ? 'collapsed' : ''}`}>
           <div className="coordinacion-main-content">
             {renderContent()}
           </div>
         </div>
       </div>
       <Footer />
-    </>
+    </div>
     
   );
 };

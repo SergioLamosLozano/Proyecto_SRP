@@ -1,7 +1,7 @@
 import React from 'react';
 import '../styles/Sidebar.css';
 
-const Sidebar = ({ currentView, onNavigate, isMobile, isOpen }) => {
+const Sidebar = ({ currentView, onNavigate, isMobile, isOpen, collapsed, onMouseEnter, onMouseLeave }) => {
   const menuItems = [
     { id: 'dashboard', label: 'Inicio', icon: '📊' },
     { id: 'gestion-academica', label: 'Gestión Académica', icon: '📚' },
@@ -10,10 +10,10 @@ const Sidebar = ({ currentView, onNavigate, isMobile, isOpen }) => {
     { id: 'reportes', label: 'Reportes y Estadísticas', icon: '📈' }
   ];
 
-  const sidebarClasses = `sidebar ${isMobile ? 'mobile' : ''} ${isOpen ? 'open' : ''}`;
+  const sidebarClasses = `sidebar ${isMobile ? 'mobile' : ''} ${isOpen ? 'open' : ''} ${collapsed && !isMobile && !isOpen ? 'collapsed' : ''}`;
 
   return (
-    <div className={sidebarClasses}>
+    <div className={sidebarClasses} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
       <div className="sidebar-header">
         <p className="sidebar-subtitle">Sistema de Gestión Académica</p>
       </div>
@@ -24,8 +24,10 @@ const Sidebar = ({ currentView, onNavigate, isMobile, isOpen }) => {
             key={item.id}
             className={`menu-item ${currentView === item.id ? 'active' : ''}`}
             onClick={() => onNavigate(item.id)}
+            title={item.label}
+            aria-label={item.label}
           >
-            <span className="menu-icon">{item.icon}</span>
+            <span className="menu-icon" aria-hidden>{item.icon}</span>
             <span className="menu-text">{item.label}</span>
           </div>
         ))}

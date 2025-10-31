@@ -46,8 +46,11 @@ function LoginPage({ onLogin }) {
     setError(null);
     try {
       const res = await login(form.username, form.password);
-      const token = res.data.access;
-      localStorage.setItem("token", token);
+  const token = res.data.access;
+  const refresh = res.data.refresh;
+  // Guardar el token en sessionStorage para que persista mientras la pestaña/navegador esté abierta
+  sessionStorage.setItem("token", token);
+  if (refresh) sessionStorage.setItem('refreshToken', refresh);
       onLogin();
       const decoded = jwtDecode(token);
       const rol = decoded.rol || decoded.role || decoded["user"]["rol"];
@@ -88,7 +91,7 @@ function LoginPage({ onLogin }) {
           <div className="Login-container-2">
             <div className="Login-container-3">
               <img className="Login-logo" onClick={RP} src="./Logo.png" />
-              <a>¡Welcome!</a>
+              <a>¡Bienvenido!</a>
               <section>
                 <p>
                   Pagina de administracion, institucion educativa Rafael Pombo
@@ -136,12 +139,12 @@ function LoginPage({ onLogin }) {
             </div>
           </div>
           <div className="Login-container-5">
-            <h1>Login</h1>
+            <h1>Inicio de Sesión</h1>
             <div className="Login-conetendor-Inputs">
               <form className="Login-form" onSubmit={handleSubmit}>
                 <input
                   name="username"
-                  placeholder="User name"
+                  placeholder="Nombre de usuario"
                   className="Login-Inputs"
                   value={form.username || ""} // fallback para evitar undefined
                   onChange={handleChange}
@@ -150,7 +153,7 @@ function LoginPage({ onLogin }) {
                 <input
                   type={showPassword ? "text" : "password"} // alterna entre password y text
                   name="password"
-                  placeholder="Password"
+                  placeholder="Contraseña"
                   className="Login-Inputs"
                   value={form.password}
                   onChange={handleChange}
