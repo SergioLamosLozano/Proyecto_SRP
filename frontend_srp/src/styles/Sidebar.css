@@ -1,7 +1,6 @@
-/* Estilos del Sidebar */
 .sidebar {
   width: 250px;
-  height: calc(100vh - 100px); /* Altura completa menos el navbar */
+  height: calc(100vh - 100px);
   background-color: var(--blanco);
   color: var(--blanco);
   position: fixed;
@@ -52,7 +51,7 @@
   font-size: 12px;
   color: var(--rojo-institucional);
   margin: 0;
-  text-align:  center;
+  text-align: center;
 }
 
 .menu-item {
@@ -71,8 +70,6 @@
   background-color: rgba(255, 255, 255, 0.1);
 }
 
-
-
 .menu-item.active {
   background-color: var(--rojo-institucional);
   border-left-color: var(--blanco);
@@ -90,10 +87,6 @@
   width: 100%;
   font-size: 20px;
 }
-
-
-
-
 
 /* Responsive design */
 @media (max-width: 768px) {

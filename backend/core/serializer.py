@@ -64,7 +64,7 @@ class CiudadSerializer(serializers.ModelSerializer):
     # Removemos departamento_nombre temporalmente para evitar el error
     class Meta:
         model = Ciudad
-        fields = ['codigo_municipio', 'nombre', 'fk_codigo_departamento']
+        fields = '__all__'
 
 
 class ProcedenciaSerializer(serializers.ModelSerializer):

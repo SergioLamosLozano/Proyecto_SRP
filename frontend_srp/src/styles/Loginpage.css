@@ -19,12 +19,12 @@
 }
 
 .Login-container-2 {
-    width: 50%;
-    height: 100%;
-    background: var(--rojo-institucional);
-    padding: 20px;
-    border-top-right-radius: 20%;
-    border-bottom-right-radius: 20%;
+  width: 50%;
+  height: 100%;
+  background: var(--rojo-institucional);
+  padding: 20px;
+  border-top-right-radius: 20%;
+  border-bottom-right-radius: 20%;
 }
 
 .Login-container-3 {
@@ -185,7 +185,7 @@
   top: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(to right, white 30%, #00184b62 100%);
+  background: linear-gradient(to right, white 30%, #ff0000a8 100%);
   z-index: 0;
 }
 
@@ -257,11 +257,10 @@
   background: var(--rojo-institucional);
   border-radius: 15px;
   cursor: pointer;
-  transition: all 0.5s ease-in-out;
+  transition: all 0.5s ease;
 }
 
 .Login-buttons:hover {
-  background: linear-gradient(to right, #000f2fc5 10%, rgb(1, 1, 51) 100%);
   transform: translateY(-5px);
 }
 

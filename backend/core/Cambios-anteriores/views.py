@@ -24,58 +24,357 @@ except Exception:
     Workbook = None
     load_workbook = None
 
+
+# Helper para resolver IDs por nombre en catálogos (disponible globalmente)
+def resolve_by_name(Model, value):
+    if value is None:
+        return None
+    # Si es número (o string numérico), úsalo como ID
+    if str(value).isdigit():
+        return int(value)
+    s = str(value).strip()
+    if not s:
+        return None
+    # Para Ciudad, buscar por nombre y retornar codigo_municipio
+    if Model.__name__ == 'Ciudad':
+        obj = Model.objects.filter(nombre__iexact=s).first()
+        if obj:
+            return obj.codigo_municipio
+        return None
+    # Para otros modelos, buscar en campos estándar
+    for field in ['descripcion', 'nombre', 'sigla', 'codigo']:
+        if field in [f.name for f in Model._meta.fields]:
+            obj = Model.objects.filter(**{f"{field}__iexact": s}).first()
+            if obj:
+                return obj.pk
+    return None
+
+
+def normalize_fk(value, Model):
+    """Normaliza un valor de FK: si es numérico lo devuelve como int, si es texto intenta resolver por nombre."""
+    if value is None:
+        return None
+    # Si ya es int
+    try:
+        if isinstance(value, int):
+            return value
+    except Exception:
+        pass
+    s = str(value).strip()
+    if not s:
+        return None
+    if s.isdigit():
+        return int(s)
+    # intentar resolver por nombre/descripcion
+    return resolve_by_name(Model, s)
+
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializer import CustomTokenObtainPairSerializer
 
+
+# Vistas HTML para el dashboard y gestión
+def dashboard(request):
+    context = {
+        'total_estudiantes': Estudiantes.objects.count(),
+        'total_profesores': Profesores.objects.count(),
+        'total_acudientes': Acudiente.objects.count(),
+        'total_relaciones': EstudiantesAcudientes.objects.count(),
+        'ultimos_estudiantes': Estudiantes.objects.order_by('-numero_documento')[:5],
+    }
+    return render(request, 'core/dashboard.html', context)
+
+
+# Vistas para Estudiantes
+class EstudiantesListView(ListView):
+    model = Estudiantes
+    template_name = 'core/estudiantes_list.html'
+    context_object_name = 'estudiantes'
+    paginate_by = 20
+
+    def get_queryset(self):
+        queryset = Estudiantes.objects.select_related(
+            'fk_id_tipo_documento', 'fk_codigo_municipio', 'fk_tipo_estado'
+        ).all()
+        search = self.request.GET.get('search')
+        if search:
+            queryset = queryset.filter(
+                Q(primer_nombre__icontains=search) |
+                Q(segundo_nombre__icontains=search) |
+                Q(primer_apellido__icontains=search) |
+                Q(segundo_apellido__icontains=search) |
+                Q(numero_documento__icontains=search)
+            )
+        return queryset
+
+
+class EstudiantesCreateView(CreateView):
+    model = Estudiantes
+    form_class = EstudiantesForm
+    template_name = 'core/estudiantes_form.html'
+    success_url = reverse_lazy('estudiantes_list')
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Estudiante creado exitosamente.')
+        return super().form_valid(form)
+
+
+class EstudiantesUpdateView(UpdateView):
+    model = Estudiantes
+    form_class = EstudiantesForm
+    template_name = 'core/estudiantes_form.html'
+    success_url = reverse_lazy('estudiantes_list')
+    pk_url_kwarg = 'numero_documento'
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Estudiante actualizado exitosamente.')
+        return super().form_valid(form)
+
+
+class EstudiantesDetailView(DetailView):
+    model = Estudiantes
+    template_name = 'core/estudiantes_detail.html'
+    context_object_name = 'estudiante'
+    pk_url_kwarg = 'numero_documento'
+
+
+class EstudiantesDeleteView(DeleteView):
+    model = Estudiantes
+    template_name = 'core/estudiantes_confirm_delete.html'
+    success_url = reverse_lazy('estudiantes_list')
+    pk_url_kwarg = 'numero_documento'
+
+    def delete(self, request, *args, **kwargs):
+        messages.success(request, 'Estudiante eliminado exitosamente.')
+        return super().delete(request, *args, **kwargs)
+
+
+# ViewSets para modelos de catálogos/tipos
 class TipoDocumentoViewSet(viewsets.ModelViewSet):
     queryset = TipoDocumento.objects.all()
     serializer_class = TipoDocumentoSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+
+class TipoEstadoViewSet(viewsets.ModelViewSet):
+    queryset = TipoEstado.objects.all()
+    serializer_class = TipoEstadoSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
 
 class TipoSangreViewSet(viewsets.ModelViewSet):
     queryset = TipoSangre.objects.all()
     serializer_class = TipoSangreSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
 
 class GeneroViewSet(viewsets.ModelViewSet):
     queryset = Genero.objects.all()
     serializer_class = GeneroSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
 
-class EstadoViewSet(viewsets.ModelViewSet):
-    queryset = TipoEstado.objects.all()
-    serializer_class = TipoEstadoSerializer
+class SisbenViewSet(viewsets.ModelViewSet):
+    queryset = Sisben.objects.all()
+    serializer_class = SisbenSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
 
+class DiscapacidadViewSet(viewsets.ModelViewSet):
+    queryset = Discapacidad.objects.all()
+    serializer_class = DiscapacidadSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+
+class AlergiaViewSet(viewsets.ModelViewSet):
+    queryset = Alergia.objects.all()
+    serializer_class = AlergiaSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+
+class TipoAcudienteViewSet(viewsets.ModelViewSet):
+    queryset = TipoAcudiente.objects.all()
+    serializer_class = TipoAcudienteSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+
+# ViewSets para modelos geográficos
 class DepartamentoViewSet(viewsets.ModelViewSet):
     queryset = Departamento.objects.all()
     serializer_class = DepartamentoSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
 
 class CiudadViewSet(viewsets.ModelViewSet):
     queryset = Ciudad.objects.all()
     serializer_class = CiudadSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    
+    @action(detail=False, methods=['get'])
+    def por_departamento(self, request):
+        departamento_id = request.query_params.get('departamento_id')
+        if departamento_id:
+            ciudades = Ciudad.objects.filter(fk_codigo_departamento=departamento_id)
+            serializer = self.get_serializer(ciudades, many=True)
+            return Response(serializer.data)
+        return Response({'error': 'departamento_id requerido'}, status=400)
 
 
-class EstudianteViewSet(viewsets.ModelViewSet):
-    queryset = Estudiantes.objects.all()
+class ProcedenciaViewSet(viewsets.ModelViewSet):
+    queryset = Procedencia.objects.all()
+    serializer_class = ProcedenciaSerializer
+    permission_classes = [IsAuthenticated]
+
+
+# ViewSets para modelos principales
+class EstudiantesViewSet(viewsets.ModelViewSet):
+    queryset = Estudiantes.objects.select_related(
+        'fk_id_tipo_documento', 
+        'fk_id_genero', 
+        'fk_codigo_municipio__fk_codigo_departamento',
+        'fk_id_tipo_sangre',
+        'fk_tipo_estado'
+    ).all()
     serializer_class = EstudiantesSerializer
+    permission_classes = []  # Temporalmente sin autenticación para pruebas
+
+    @action(detail=False, methods=['get'])
+    def activos(self, request):
+        activos = self.queryset.filter(fk_tipo_estado__descripcion='Activo')
+        serializer = self.get_serializer(activos, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'])
+    def por_ciudad(self, request):
+        ciudad_id = request.query_params.get('ciudad_id')
+        if ciudad_id:
+            estudiantes = self.queryset.filter(fk_codigo_municipio=ciudad_id)
+            serializer = self.get_serializer(estudiantes, many=True)
+            return Response(serializer.data)
+        return Response({'error': 'ciudad_id es requerido'}, status=400)
 
 
-class ProfesorViewSet(viewsets.ModelViewSet):
-    queryset = Profesores.objects.all()
+class ProfesoresViewSet(viewsets.ModelViewSet):
+    queryset = Profesores.objects.select_related(
+        'fk_id_tipo_documento',
+        'fk_codigo_municipio__fk_codigo_departamento',
+        'fk_id_estado',
+        'fk_id_tipo_sangre'
+    ).all()
     serializer_class = ProfesoresSerializer
+    permission_classes = []  # Temporalmente sin autenticación para pruebas
+
+    @action(detail=False, methods=['get'])
+    def activos(self, request):
+        activos = self.queryset.filter(fk_id_estado__descripcion='Activo')
+        serializer = self.get_serializer(activos, many=True)
+        return Response(serializer.data)
+
+    def perform_update(self, serializer):
+        """
+        Después de actualizar un profesor, sincronizamos el campo is_active
+        del `core.User` que tenga username == numero_documento_profesor.
+        Si el estado del profesor deja de ser 'Activo', marcamos is_active=False;
+        si vuelve a ser 'Activo' marcamos is_active=True.
+        """
+        # estado previo
+        instance_before = serializer.instance
+        old_estado = getattr(instance_before.fk_id_estado, 'descripcion', None)
+        # aplicar la actualización
+        updated = serializer.save()
+
+        try:
+            nuevo_estado = getattr(updated.fk_id_estado, 'descripcion', None)
+            username = str(updated.numero_documento_profesor)
+            qs = User.objects.filter(username=username)
+            if nuevo_estado and str(nuevo_estado).strip().lower() != 'activo':
+                qs.update(is_active=False)
+            else:
+                # Si es 'Activo' o no se puede determinar, habilitar el user
+                qs.update(is_active=True)
+        except Exception as e:
+            # No romper la actualización principal por un fallo secundario
+            print('Warning: no se pudo sincronizar is_active en core.User:', e)
+
+    def destroy(self, request, *args, **kwargs):
+        """
+        Al eliminar un profesor, también borramos el core.User cuyo username
+        coincida con el numero de documento del profesor (si existe).
+        """
+        instance = self.get_object()
+        username = str(getattr(instance, 'numero_documento_profesor', '') or '')
+        # eliminar el profesor primero
+        resp = super().destroy(request, *args, **kwargs)
+        # luego intentar eliminar el core user asociado
+        try:
+            if username:
+                User.objects.filter(username=username).delete()
+        except Exception as e:
+            print('Warning: no se pudo eliminar core.User asociado al profesor:', e)
+        return resp
 
 
 class AcudienteViewSet(viewsets.ModelViewSet):
     queryset = Acudiente.objects.all()
     serializer_class = AcudienteSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_update(self, serializer):
+        """Sincronizar is_active en core.User cuando se actualiza un acudiente"""
+        instance_before = serializer.instance
+        old_estado = getattr(instance_before.fk_codigo_municipio, 'descripcion', None)
+        updated = serializer.save()
+        try:
+            username = str(updated.numero_documento_acudiente)
+            # Determinar estado activo por convención: si existe campo fk_id_tipo_documento o similar no aplica; asumimos que
+            # la lógica para marcar activo/inactivo viene de otro campo en Acudiente; si no existe, habilitamos el user.
+            # Intentaremos buscar un campo 'activo' o 'fk_id_estado' si existe
+            nuevo_estado = None
+            if hasattr(updated, 'fk_id_estado'):
+                nuevo_estado = getattr(updated.fk_id_estado, 'descripcion', None)
+            if nuevo_estado and str(nuevo_estado).strip().lower() != 'activo':
+                User.objects.filter(username=username).update(is_active=False)
+            else:
+                User.objects.filter(username=username).update(is_active=True)
+        except Exception as e:
+            print('Warning: no se pudo sincronizar is_active en core.User para acudiente:', e)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        username = str(getattr(instance, 'numero_documento_acudiente', '') or '')
+        resp = super().destroy(request, *args, **kwargs)
+        try:
+            if username:
+                User.objects.filter(username=username).delete()
+        except Exception as e:
+            print('Warning: no se pudo eliminar core.User asociado al acudiente:', e)
+        return resp
 
 
-class EstudianteAcudienteViewSet(viewsets.ModelViewSet):
+class EstudiantesAcudientesViewSet(viewsets.ModelViewSet):
     queryset = EstudiantesAcudientes.objects.all()
     serializer_class = EstudiantesAcudientesSerializer
+    permission_classes = [IsAuthenticated]
+    
+    @action(detail=False, methods=['get'])
+    def por_estudiante(self, request):
+        estudiante_id = request.query_params.get('estudiante_id')
+        if estudiante_id:
+            relaciones = EstudiantesAcudientes.objects.filter(fk_numero_documento_estudiante=estudiante_id)
+            serializer = self.get_serializer(relaciones, many=True)
+            return Response(serializer.data)
+        return Response({'error': 'estudiante_id requerido'}, status=400)
+    
+    @action(detail=False, methods=['get'])
+    def por_acudiente(self, request):
+        acudiente_id = request.query_params.get('acudiente_id')
+        if acudiente_id:
+            relaciones = EstudiantesAcudientes.objects.filter(fk_numero_documento_acudiente=acudiente_id)
+            serializer = self.get_serializer(relaciones, many=True)
+            return Response(serializer.data)
+        return Response({'error': 'acudiente_id requerido'}, status=400)
 
+
+# ====== Carga masiva y plantillas (Excel) ======
 class EstudiantesTemplateView(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
@@ -229,6 +528,7 @@ class EstudiantesTemplateView(APIView):
         )
         response['Content-Disposition'] = 'attachment; filename="plantilla_estudiantes.xlsx"'
         return response
+
 
 class ProfesoresTemplateView(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
@@ -517,6 +817,7 @@ class EstudiantesBulkUploadView(APIView):
             }
         })
 
+
 class ProfesoresBulkUploadView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -600,7 +901,6 @@ class RegisterView(generics.CreateAPIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response({"error": "Credenciales inválidas"}, status=status.HTTP_401_UNAUTHORIZED)"""
-
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer

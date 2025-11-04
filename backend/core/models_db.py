@@ -422,3 +422,5 @@ class EstudiantesAcudientes(models.Model):
 
     def __str__(self):
         return f"{self.fk_numero_documento_estudiante} - {self.fk_numero_documento_acudiente}"
+    
+    
