@@ -70,6 +70,8 @@ function LoginPage({ onLogin }) {
         navigate("/coordinacion");
       } else if (rol === "docente") {
         navigate("/docente");
+      } else if (rol === "padre" || rol === "padres" || rol === "acudiente") {
+        navigate("/padres");
       } else {
         navigate("/NotFound");
       }

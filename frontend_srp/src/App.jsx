@@ -13,6 +13,7 @@ const LoginPage = lazy(() => import("./pages/Loginpage.jsx"));
 const DocentesPage = lazy(() => import("./pages/DocentesPage.jsx"));
 const CoordinacionPage = lazy(() => import("./pages/CoordinacionPage.jsx"));
 const SecretariaPage = lazy(() => import("./pages/SecretariaPage.jsx"));
+const PadresPage = lazy(() => import("./pages/PadresPage.jsx"));
 const NotFound = lazy(() => import("./pages/NotFound.jsx"));
 
 
@@ -101,6 +102,14 @@ function App() {
             element={
               <RoleBasedRoute isAuthenticated={isAuthenticated} allowedRoles={['secretaria']}>
                 <SecretariaPage />
+              </RoleBasedRoute>
+            }
+          />
+          <Route
+            path="/padres"
+            element={
+              <RoleBasedRoute isAuthenticated={isAuthenticated} allowedRoles={['padre','padres','acudiente']}>
+                <PadresPage />
               </RoleBasedRoute>
             }
           />
