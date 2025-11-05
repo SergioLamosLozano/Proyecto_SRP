@@ -12,6 +12,7 @@ function PadresPage() {
   const [estudiantes, setEstudiantes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [estudianteSeleccionado, setEstudianteSeleccionado] = useState(null);
 
   useEffect(() => {
     const cargarEstudiantesVinculados = async () => {
@@ -37,7 +38,14 @@ function PadresPage() {
             .catch(() => null)
         );
         const detalles = await Promise.all(detallesPromises);
-        setEstudiantes(detalles.filter(Boolean));
+        // Ajustar campos consumidos por la tabla
+        const formateados = (detalles.filter(Boolean) || []).map(e => ({
+          numero_documento_estudiante: e.numero_documento_estudiante,
+          nombre_completo: e.nombre_completo || `${e.nombre1 || ''} ${e.nombre2 || ''} ${e.apellido1 || ''} ${e.apellido2 || ''}`.trim(),
+          correo: e.correo || '-',
+          ciudad_nombre: e.ciudad_nombre || '-',
+        }));
+        setEstudiantes(formateados);
       } catch (e) {
         setError("Error cargando estudiantes vinculados.");
       } finally {
@@ -62,19 +70,7 @@ function PadresPage() {
                 <p>Consulta de calificaciones y notas del estudiante</p>
               </div>
 
-              <div className="dashboard-cards">
-                <div className="card">
-                  <h3>📈 Calificaciones</h3>
-                  <p>Visualiza el resumen de calificaciones por periodo.</p>
-                  <button className="btn-primary" onClick={() => setVista("calificaciones")}>Ver Calificaciones</button>
-                </div>
-
-                <div className="card">
-                  <h3>🔍 Consultar notas del estudiante</h3>
-                  <p>Busca notas detalladas por curso y materia.</p>
-                  <button className="btn-primary" onClick={() => setVista("notas")}>Consultar Notas</button>
-                </div>
-              </div>
+              {/* Solo dejamos la lista de estudiantes vinculados */}
 
               <div className="card wide" style={{ marginTop: 20 }}>
                 <h3>Estudiantes vinculados</h3>
@@ -93,15 +89,27 @@ function PadresPage() {
                           <th>Nombre</th>
                           <th>Correo</th>
                           <th>Municipio</th>
+                          <th>Acciones</th>
                         </tr>
                       </thead>
                       <tbody>
                         {estudiantes.map((est) => (
                           <tr key={est.numero_documento_estudiante}>
                             <td>{est.numero_documento_estudiante}</td>
-                            <td>{`${est.nombre1 || ''} ${est.nombre2 || ''} ${est.apellido1 || ''} ${est.apellido2 || ''}`.trim()}</td>
-                            <td>{est.correo || '-'}</td>
-                            <td>{est.fk_codigo_municipio?.nombre || '-'}</td>
+                            <td>{est.nombre_completo}</td>
+                            <td>{est.correo}</td>
+                            <td>{est.ciudad_nombre}</td>
+                            <td>
+                              <button
+                                className="btn-primary"
+                                onClick={() => { setEstudianteSeleccionado(est); setVista('calificaciones'); }}
+                              >Ver Calificaciones</button>
+                              <button
+                                className="btn-secondary"
+                                style={{ marginLeft: 8 }}
+                                onClick={() => { setEstudianteSeleccionado(est); setVista('notas'); }}
+                              >Ver Notas</button>
+                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -116,6 +124,10 @@ function PadresPage() {
             <div className="padres-container">
               <div className="card wide">
                 <h3>Calificaciones</h3>
+                <p>
+                  Estudiante: {estudianteSeleccionado?.nombre_completo} (
+                  {estudianteSeleccionado?.numero_documento_estudiante})
+                </p>
                 <p>Este módulo mostrará gráficos y tablas con las calificaciones del estudiante. (Placeholder)</p>
                 <button className="btn-secondary" onClick={() => setVista("inicio")}>Volver</button>
               </div>
@@ -126,6 +138,10 @@ function PadresPage() {
             <div className="padres-container">
               <div className="card wide">
                 <h3>Consulta de notas</h3>
+                <p>
+                  Estudiante: {estudianteSeleccionado?.nombre_completo} (
+                  {estudianteSeleccionado?.numero_documento_estudiante})
+                </p>
                 <p>Este módulo permitirá filtrar y ver notas por curso y materia. (Placeholder)</p>
                 <button className="btn-secondary" onClick={() => setVista("inicio")}>Volver</button>
               </div>
