@@ -261,7 +261,7 @@
 }
 
 .Login-buttons:hover {
-  background: linear-gradient(to right, #000f2fc5 10%, rgb(1, 1, 51) 100%);
+  background: linear-gradient(to right, #7a0505c5 10%, rgb(151, 4, 4) 100%);
   transform: translateY(-5px);
 }
 

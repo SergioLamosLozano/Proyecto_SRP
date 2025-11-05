@@ -10,12 +10,14 @@ const Sidebar = ({ currentView, onNavigate, isMobile, isOpen, collapsed, onMouse
     { id: 'reportes', label: 'Reportes y Estadísticas', icon: '📈' }
   ];
 
-  const sidebarClasses = `sidebar ${isMobile ? 'mobile' : ''} ${isOpen ? 'open' : ''} ${collapsed && !isMobile && !isOpen ? 'collapsed' : ''}`;
+  const isCollapsed = collapsed && !isMobile && !isOpen;
+  const sidebarClasses = `sidebar ${isMobile ? 'mobile' : ''} ${isOpen ? 'open' : ''} ${isCollapsed ? 'collapsed' : ''}`;
+  const headerText = isCollapsed || (isMobile && !isOpen) ? 'SRP' : 'Sistema Rafael Pombo';
 
   return (
     <div className={sidebarClasses} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
       <div className="sidebar-header">
-        <p className="sidebar-subtitle">Sistema de Gestión Académica</p>
+        <p className="sidebar-subtitle"><strong>{headerText}</strong></p>
       </div>
       
       <nav className="sidebar-nav">

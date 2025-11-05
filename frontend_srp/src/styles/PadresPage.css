@@ -1,0 +1,100 @@
+/* Layout base para página Padres */
+.padres-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--gris-claro-fondo, #f8f9fa);
+}
+
+.padres-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Contenedor scrollable para el contenido principal */
+.padres-scroll {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Limitar ancho y centrar para evitar espacios sobrantes */
+.padres-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-top: 100px;
+}
+
+/* Encabezado tipo hero para Padres */
+.padres-hero {
+  background-color: var(--blanco, #ffffff);
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  padding: 24px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.padres-hero h1 {
+  color: var(--rojo-institucional, #dc3545);
+  margin: 0 0 8px 0;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.padres-hero p {
+  color: var(--gris-secundario, #6c757d);
+  margin: 0;
+  font-size: 16px;
+}
+
+/* Alineación horizontal consistente para tarjetas */
+.padres-container .dashboard-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+/* Módulos anchos internos */
+.padres-container .card.wide {
+  max-width: 100%;
+}
+
+/* Footer específico para Padres: sin margen lateral, altura proporcional */
+.padres-page .footer {
+  margin-left: 0; /* No hay sidebar en Padres */
+  padding: 20px 0; /* Reducir altura por defecto */
+}
+
+.padres-page .footer-content {
+  max-width: 1200px;
+  padding: 0 20px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.padres-page .footer-logo {
+  width: 100px;
+  height: 100px;
+}
+
+/* Responsividad */
+@media (max-width: 992px) {
+  .padres-container { padding: 16px; padding-top: 100px;}
+  .padres-page .footer-content { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 768px) {
+  .padres-container { padding: 12px; padding-top: 100px; }
+  .padres-page .footer { padding: 16px 0; }
+  .padres-page .footer-content { grid-template-columns: 1fr; gap: 16px; }
+  .padres-page .footer-logo { width: 80px; height: 80px; }
+}
+
+@media (max-width: 480px) {
+  .padres-container { padding: 10px; padding-top: 100px; }
+  .padres-page .footer { padding: 14px 0; }
+  .padres-page .footer-logo { width: 64px; height: 64px; }
+}

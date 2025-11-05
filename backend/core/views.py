@@ -235,7 +235,7 @@ class EstudiantesViewSet(viewsets.ModelViewSet):
         'fk_tipo_estado'
     ).all()
     serializer_class = EstudiantesSerializer
-    permission_classes = []  # Temporalmente sin autenticación para pruebas
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     @action(detail=False, methods=['get'])
     def activos(self, request):

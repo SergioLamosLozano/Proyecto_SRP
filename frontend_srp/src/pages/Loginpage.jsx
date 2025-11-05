@@ -41,7 +41,9 @@ function LoginPage({ onLogin }) {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    if (e && typeof e.preventDefault === 'function') {
+      e.preventDefault();
+    }
     setLoading(true);
     setError(null);
     try {
@@ -68,6 +70,8 @@ function LoginPage({ onLogin }) {
         navigate("/coordinacion");
       } else if (rol === "docente") {
         navigate("/docente");
+      } else if (rol === "padre" || rol === "padres" || rol === "acudiente") {
+        navigate("/padres");
       } else {
         navigate("/NotFound");
       }
@@ -148,6 +152,9 @@ function LoginPage({ onLogin }) {
                   className="Login-Inputs"
                   value={form.username || ""} // fallback para evitar undefined
                   onChange={handleChange}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleSubmit(e);
+                  }}
                 />
 
                 <input
@@ -157,6 +164,9 @@ function LoginPage({ onLogin }) {
                   className="Login-Inputs"
                   value={form.password}
                   onChange={handleChange}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleSubmit(e);
+                  }}
                 />
                 <button
                   type="button"

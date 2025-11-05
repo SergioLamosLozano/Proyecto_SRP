@@ -116,7 +116,7 @@
   .user-welcome {
     font-size: 1.1rem;
   }
-
+  
   .rafaelpombo-logo {
     height: 70px;
   }
@@ -192,6 +192,8 @@
     justify-content: center;
     gap: 12px;
     order: 2;
+    position: relative;
+    top: -20px;
   }
 
   .user-welcome {
