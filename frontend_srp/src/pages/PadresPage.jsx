@@ -1,15 +1,18 @@
 import React, { useEffect, useState } from "react";
 import "../styles/Dashboard.css";
 import "../styles/PadresPage.css";
+import "../styles/Table.css";
 import Logout from "../components/Logout";
 import Breadcrumbs from "../components/Breadcrumbs";
 import Footer from "../components/Footer";
+import Table from "../components/Table";
 import { padresAPI } from "../api/padres";
 import { jwtDecode } from "jwt-decode";
 
 function PadresPage() {
   const [vista, setVista] = useState("inicio");
   const [estudiantes, setEstudiantes] = useState([]);
+  const [filtrados, setFiltrados] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [estudianteSeleccionado, setEstudianteSeleccionado] = useState(null);
@@ -46,6 +49,7 @@ function PadresPage() {
           ciudad_nombre: e.ciudad_nombre || '-',
         }));
         setEstudiantes(formateados);
+        setFiltrados(formateados);
       } catch (e) {
         setError("Error cargando estudiantes vinculados.");
       } finally {
@@ -81,40 +85,40 @@ function PadresPage() {
                 ) : estudiantes.length === 0 ? (
                   <p>No hay estudiantes vinculados a su cuenta.</p>
                 ) : (
-                  <div className="table-wrapper">
-                    <table className="table">
-                      <thead>
-                        <tr>
-                          <th>Documento</th>
-                          <th>Nombre</th>
-                          <th>Correo</th>
-                          <th>Municipio</th>
-                          <th>Acciones</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {estudiantes.map((est) => (
-                          <tr key={est.numero_documento_estudiante}>
-                            <td>{est.numero_documento_estudiante}</td>
-                            <td>{est.nombre_completo}</td>
-                            <td>{est.correo}</td>
-                            <td>{est.ciudad_nombre}</td>
-                            <td>
-                              <button
-                                className="btn-primary"
-                                onClick={() => { setEstudianteSeleccionado(est); setVista('calificaciones'); }}
-                              >Ver Calificaciones</button>
-                              <button
-                                className="btn-secondary"
-                                style={{ marginLeft: 8 }}
-                                onClick={() => { setEstudianteSeleccionado(est); setVista('notas'); }}
-                              >Ver Notas</button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                  <Table
+                    title=""
+                    columns={[
+                      { key: 'numero_documento_estudiante', label: 'Documento' },
+                      { key: 'nombre_completo', label: 'Nombre' },
+                      { key: 'correo', label: 'Correo' },
+                      { key: 'ciudad_nombre', label: 'Municipio' },
+                    ]}
+                    data={filtrados}
+                    searchPlaceholder="Buscar por nombre o documento..."
+                    onSearch={(term) => {
+                      const lower = term.toLowerCase();
+                      setFiltrados(
+                        estudiantes.filter(e =>
+                          (e.nombre_completo || '').toLowerCase().includes(lower) ||
+                          String(e.numero_documento_estudiante || '').includes(lower)
+                        )
+                      );
+                    }}
+                    actions={[
+                      {
+                        label: 'Ver Calificaciones',
+                        className: 'table-action-btn btn-primary',
+                        title: 'Ver calificaciones del estudiante',
+                        onClick: (est) => { setEstudianteSeleccionado(est); setVista('calificaciones'); }
+                      },
+                      {
+                        label: 'Ver Notas',
+                        className: 'table-action-btn btn-secondary',
+                        title: 'Ver notas del estudiante',
+                        onClick: (est) => { setEstudianteSeleccionado(est); setVista('notas'); }
+                      }
+                    ]}
+                  />
                 )}
               </div>
             </div>
