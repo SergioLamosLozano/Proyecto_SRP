@@ -1,22 +1,26 @@
 // src/App.jsx
 
-import React, { useState, lazy, Suspense } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import React, { useState, lazy, Suspense, useEffect } from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import "./App.css";
+import GestionUsuarios from './components/GestionUsuarios';
+import { disableBrowserNavigation } from './utils/navigationControl';
+
 
 // Lazy load de páginas
 const HomePage = lazy(() => import("./pages/HomePage.jsx"));
 const DocentesPage = lazy(() => import("./pages/DocentesPage.jsx"));
 const CoordinacionPage = lazy(() => import("./pages/CoordinacionPage.jsx"));
 const SecretariaPage = lazy(() => import("./pages/SecretariaPage.jsx"));
+const PadresPage = lazy(() => import("./pages/PadresPage.jsx"));
 const NotFound = lazy(() => import("./pages/NotFound.jsx"));
 const LoginPage = lazy(() => import("./pages/Loginpage.jsx"));
 const Estadisticas = lazy(() => import("./components/Estadisticas.jsx"));
 
 // Helper para verificar el token de autenticación al cargar la app
 const checkAuthToken = () => {
-  const token = localStorage.getItem("token");
+  const token = sessionStorage.getItem("token");
   // Simplemente verifica si el token existe.
   // La doble negación (!!) convierte el valor (string o null) en un booleano.
   return !!token;
@@ -24,7 +28,7 @@ const checkAuthToken = () => {
 
 // Helper para obtener el rol del usuario desde el token
 const getUserRole = () => {
-  const token = localStorage.getItem("token");
+  const token = sessionStorage.getItem("token");
   if (!token) return null;
   try {
     const decoded = jwtDecode(token);
@@ -57,8 +61,21 @@ function App() {
   // El estado de autenticación ahora se inicializa verificando el token
   const [isAuthenticated, setIsAuthenticated] = useState(checkAuthToken());
 
+  // Deshabilitar navegación del navegador al montar el componente
+  useEffect(() => {
+    
+
+    disableBrowserNavigation();
+    
+    // Cleanup function para rehabilitar la navegación si es necesario
+    return () => {
+      // Opcional: rehabilitar navegación al desmontar
+      // enableBrowserNavigation();
+    };
+  }, []);
+
   return (
-    <BrowserRouter>
+    <Router>
       <Suspense fallback={<div>Cargando...</div>}>
         <Routes>
           {/* Ruta pública */}
@@ -112,14 +129,31 @@ function App() {
               </RoleBasedRoute>
             }
           />
+          <Route
+            path="/padres"
+            element={
+              <RoleBasedRoute isAuthenticated={isAuthenticated} allowedRoles={['padre','padres','acudiente']}>
+                <PadresPage />
+              </RoleBasedRoute>
+            }
+          />
 
           {/* Ruta para la página no encontrada */}
           <Route path="/NotFound" element={<NotFound />} />
           {/* Redirección por defecto para cualquier otra ruta */}
           <Route path="*" element={<Navigate to="/NotFound" replace />} />
+          {/* Ruta para gestión de usuarios (protegida) */}
+          <Route
+            path="/coordinacion/gestion-usuarios"
+            element={
+              <RoleBasedRoute isAuthenticated={isAuthenticated} allowedRoles={['coordinacion']}>
+                <GestionUsuarios />
+              </RoleBasedRoute>
+            }
+          />
         </Routes>
       </Suspense>
-    </BrowserRouter>
+    </Router>
   );
 }
 

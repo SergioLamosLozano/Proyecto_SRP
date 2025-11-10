@@ -1,0 +1,99 @@
+/* Estilos para CoordinacionPage */
+.coordinacion-container {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f8f9fa;
+  padding-top: 100px; /* Espacio para el navbar fijo */
+  margin-top: 20px;
+}
+
+.coordinacion-content {
+  flex: 1;
+  margin-left: 250px; /* Ancho del sidebar */
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 100px);
+}
+
+/* Si el sidebar está colapsado, reducir el margen para que el contenido ocupe más espacio */
+.coordinacion-content.collapsed {
+  margin-left: 72px; /* coincide con .sidebar.collapsed */
+}
+
+.coordinacion-main-content {
+  flex: 1;
+}
+
+/* Estilos para el botón hamburguesa */
+.hamburger-button {
+  display: none;
+  position: fixed;
+  top: 110px;
+  left: 20px;
+  z-index: 1002;
+  background-color: var(--rojo-institucional, #dc3545);
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 18px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  transition: all 0.3s ease;
+}
+
+.hamburger-button:hover {
+  background-color: var(--rojo-hover, #b02a37);
+  transform: scale(1.05);
+}
+
+/* Overlay para cerrar el sidebar en móvil */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 99;
+}
+
+.sidebar-overlay.active {
+  display: block;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .coordinacion-container {
+    padding-top: 80px;
+  }
+  
+  .coordinacion-content {
+    margin-left: 0;
+    min-height: calc(100vh - 80px);
+  }
+
+  .hamburger-button {
+    display: block;
+    top: 90px;
+  }
+}
+
+@media (max-width: 480px) {
+  .coordinacion-container {
+    padding-top: 70px;
+  }
+  
+  .coordinacion-content {
+    min-height: calc(100vh - 70px);
+  }
+
+  .hamburger-button {
+    top: 80px;
+    left: 15px;
+    padding: 8px;
+    font-size: 16px;
+  }
+}

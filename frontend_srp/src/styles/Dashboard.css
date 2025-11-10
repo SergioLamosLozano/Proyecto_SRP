@@ -1,3 +1,4 @@
+/* Estilos del Dashboard */
 .dashboard {
   min-height: 100vh;
   display: flex;
@@ -91,6 +92,7 @@
   background-color: #000e2dc5;
 }
 
+/* Estilos para formularios */
 .registro-asistencia {
   background: white;
   padding: 20px;
@@ -137,6 +139,7 @@
   margin-bottom: 15px;
 }
 
+/* Estilos para información de usuario */
 .user-info-container {
   display: flex;
   flex-direction: column; /* Primero título arriba */
@@ -181,6 +184,7 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
+/* Estilos para vigilancia */
 .vigilancia-container {
   display: flex;
   gap: 20px;
@@ -212,6 +216,7 @@
   max-height: 80%;
 }
 
+/* Estilos para PDF preview */
 .pdf-preview-container {
   padding: 20px;
   max-width: 80%;

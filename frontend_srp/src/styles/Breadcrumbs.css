@@ -35,3 +35,161 @@
   font-weight: bold;
   color: #007bff;
 }
+
+.home-button {
+  font-weight: 600;
+}
+
+.current-page {
+  font-weight: bold;
+  color: #495057;
+  padding: 4px 8px;
+  background-color: #e9ecef;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .breadcrumbs {
+    margin: 0 0 20px 0;
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+
+  .breadcrumbs ul {
+    gap: 6px;
+  }
+
+  .breadcrumbs li::after {
+    margin: 0 4px;
+    font-size: 12px;
+  }
+
+  .breadcrumb-button {
+    font-size: 12px;
+    padding: 4px 8px;
+    font-weight: 600;
+  }
+
+  .current-page {
+    font-size: 12px;
+    padding: 4px 8px;
+  }
+}
+
+@media (max-width: 768px) {
+  .breadcrumbs {
+    margin: 0 0 20px 0;
+    padding: 10px 15px;
+    font-size: 13px;
+    background-color: #ffffff;
+    border: 2px solid #007bff;
+  }
+
+  .breadcrumbs ul {
+    gap: 6px;
+  }
+
+  .breadcrumbs li::after {
+    margin: 0 4px;
+    font-size: 12px;
+  }
+
+  .breadcrumb-button {
+    font-size: 12px;
+    padding: 4px 8px;
+    font-weight: 600;
+  }
+
+  .current-page {
+    font-size: 12px;
+    padding: 4px 8px;
+    background-color: #007bff;
+    color: white;
+  }
+}
+
+@media (max-width: 640px) {
+  .breadcrumbs {
+    margin: 0 0 20px 0;
+    padding: 12px 16px;
+    font-size: 12px;
+    background-color: #ffffff;
+    border: 2px solid #007bff;
+    box-shadow: 0 4px 8px rgba(0, 123, 255, 0.2);
+  }
+
+  .breadcrumbs ul {
+    gap: 6px;
+  }
+
+  .breadcrumbs li::after {
+    margin: 0 4px;
+    font-size: 12px;
+  }
+
+  .breadcrumb-button {
+    font-size: 12px;
+    padding: 4px 8px;
+    font-weight: 600;
+  }
+
+  .current-page {
+    font-size: 12px;
+    padding: 4px 8px;
+    background-color: #007bff;
+    color: white;
+  }
+}
+
+@media (max-width: 480px) {
+  .breadcrumbs {
+    margin: 0 0 20px 0;
+    padding: 10px 12px;
+    font-size: 11px;
+    overflow-x: auto;
+    white-space: nowrap;
+    background-color: #ffffff;
+    border: 2px solid #007bff;
+    box-shadow: 0 4px 8px rgba(0, 123, 255, 0.25);
+  }
+
+  .breadcrumbs ul {
+    gap: 4px;
+    flex-wrap: nowrap;
+    min-width: max-content;
+  }
+
+  .breadcrumbs li::after {
+    margin: 0 3px;
+    font-size: 11px;
+  }
+
+  .breadcrumb-button {
+    font-size: 11px;
+    padding: 3px 6px;
+    font-weight: 600;
+  }
+
+  .current-page {
+    font-size: 11px;
+    padding: 3px 6px;
+    background-color: #007bff;
+    color: white;
+  }
+}
+
+@media (max-width: 360px) {
+  .breadcrumbs {
+    margin: 0 0 20px 0;
+    padding: 8px 10px;
+    font-size: 10px;
+  }
+
+  .breadcrumb-button,
+  .current-page {
+    font-size: 10px;
+    padding: 2px 4px;
+  }
+}

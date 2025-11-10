@@ -1,0 +1,209 @@
+{% extends 'core/base.html' %}
+
+{% block title %}
+    {% if form.instance.pk %}Editar{% else %}Crear{% endif %} Estudiante - Sistema de Registro de Personas
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>
+                <i class="fas fa-graduation-cap"></i> 
+                {% if form.instance.pk %}Editar{% else %}Crear{% endif %} Estudiante
+            </h1>
+            <a href="{% url 'estudiantes_list' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Volver a la lista
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Información del Estudiante</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <!-- Información de identificación -->
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.fk_id_tipo_documento.id_for_label }}" class="form-label">{{ form.fk_id_tipo_documento.label }}</label>
+                            {{ form.fk_id_tipo_documento }}
+                            {% if form.fk_id_tipo_documento.errors %}
+                                <div class="text-danger">{{ form.fk_id_tipo_documento.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.numero_documento.id_for_label }}" class="form-label">{{ form.numero_documento.label }}</label>
+                            {{ form.numero_documento }}
+                            {% if form.numero_documento.errors %}
+                                <div class="text-danger">{{ form.numero_documento.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <!-- Nombres -->
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.primer_nombre.id_for_label }}" class="form-label">{{ form.primer_nombre.label }}</label>
+                            {{ form.primer_nombre }}
+                            {% if form.primer_nombre.errors %}
+                                <div class="text-danger">{{ form.primer_nombre.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.segundo_nombre.id_for_label }}" class="form-label">{{ form.segundo_nombre.label }}</label>
+                            {{ form.segundo_nombre }}
+                            {% if form.segundo_nombre.errors %}
+                                <div class="text-danger">{{ form.segundo_nombre.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <!-- Apellidos -->
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.primer_apellido.id_for_label }}" class="form-label">{{ form.primer_apellido.label }}</label>
+                            {{ form.primer_apellido }}
+                            {% if form.primer_apellido.errors %}
+                                <div class="text-danger">{{ form.primer_apellido.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.segundo_apellido.id_for_label }}" class="form-label">{{ form.segundo_apellido.label }}</label>
+                            {{ form.segundo_apellido }}
+                            {% if form.segundo_apellido.errors %}
+                                <div class="text-danger">{{ form.segundo_apellido.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <!-- Información personal -->
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.fecha_nacimiento.id_for_label }}" class="form-label">{{ form.fecha_nacimiento.label }}</label>
+                            {{ form.fecha_nacimiento }}
+                            {% if form.fecha_nacimiento.errors %}
+                                <div class="text-danger">{{ form.fecha_nacimiento.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.fk_id_genero.id_for_label }}" class="form-label">{{ form.fk_id_genero.label }}</label>
+                            {{ form.fk_id_genero }}
+                            {% if form.fk_id_genero.errors %}
+                                <div class="text-danger">{{ form.fk_id_genero.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <!-- Contacto -->
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.telefono.id_for_label }}" class="form-label">{{ form.telefono.label }}</label>
+                            {{ form.telefono }}
+                            {% if form.telefono.errors %}
+                                <div class="text-danger">{{ form.telefono.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.email.id_for_label }}" class="form-label">{{ form.email.label }}</label>
+                            {{ form.email }}
+                            {% if form.email.errors %}
+                                <div class="text-danger">{{ form.email.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <!-- Ubicación -->
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.fk_codigo_municipio.id_for_label }}" class="form-label">{{ form.fk_codigo_municipio.label }}</label>
+                            {{ form.fk_codigo_municipio }}
+                            {% if form.fk_codigo_municipio.errors %}
+                                <div class="text-danger">{{ form.fk_codigo_municipio.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.direccion.id_for_label }}" class="form-label">{{ form.direccion.label }}</label>
+                            {{ form.direccion }}
+                            {% if form.direccion.errors %}
+                                <div class="text-danger">{{ form.direccion.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <!-- Información médica y social -->
+                        <div class="col-md-4 mb-3">
+                            <label for="{{ form.fk_id_tipo_sangre.id_for_label }}" class="form-label">{{ form.fk_id_tipo_sangre.label }}</label>
+                            {{ form.fk_id_tipo_sangre }}
+                            {% if form.fk_id_tipo_sangre.errors %}
+                                <div class="text-danger">{{ form.fk_id_tipo_sangre.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label for="{{ form.fk_id_sisben.id_for_label }}" class="form-label">{{ form.fk_id_sisben.label }}</label>
+                            {{ form.fk_id_sisben }}
+                            {% if form.fk_id_sisben.errors %}
+                                <div class="text-danger">{{ form.fk_id_sisben.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label for="{{ form.fk_tipo_estado.id_for_label }}" class="form-label">{{ form.fk_tipo_estado.label }}</label>
+                            {{ form.fk_tipo_estado }}
+                            {% if form.fk_tipo_estado.errors %}
+                                <div class="text-danger">{{ form.fk_tipo_estado.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.fk_id_discapacidad.id_for_label }}" class="form-label">{{ form.fk_id_discapacidad.label }}</label>
+                            {{ form.fk_id_discapacidad }}
+                            {% if form.fk_id_discapacidad.errors %}
+                                <div class="text-danger">{{ form.fk_id_discapacidad.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.fk_id_alergia.id_for_label }}" class="form-label">{{ form.fk_id_alergia.label }}</label>
+                            {{ form.fk_id_alergia }}
+                            {% if form.fk_id_alergia.errors %}
+                                <div class="text-danger">{{ form.fk_id_alergia.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="d-flex justify-content-end gap-2">
+                                <a href="{% url 'estudiantes_list' %}" class="btn btn-secondary">
+                                    <i class="fas fa-times"></i> Cancelar
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> 
+                                    {% if form.instance.pk %}Actualizar{% else %}Guardar{% endif %}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
