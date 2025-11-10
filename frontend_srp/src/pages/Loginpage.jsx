@@ -6,7 +6,6 @@ import { jwtDecode } from "jwt-decode";
 import Swal from "sweetalert2";
 import "boxicons/css/boxicons.min.css";
 import Logout from "../components/Logout";
-import Footer from '../components/Footer';
 
 function LoginPage({ onLogin }) {
   const RP = () =>
@@ -41,18 +40,13 @@ function LoginPage({ onLogin }) {
   };
 
   const handleSubmit = async (e) => {
-    if (e && typeof e.preventDefault === 'function') {
-      e.preventDefault();
-    }
+    e.preventDefault();
     setLoading(true);
     setError(null);
     try {
       const res = await login(form.username, form.password);
-  const token = res.data.access;
-  const refresh = res.data.refresh;
-  // Guardar el token en sessionStorage para que persista mientras la pestaña/navegador esté abierta
-  sessionStorage.setItem("token", token);
-  if (refresh) sessionStorage.setItem('refreshToken', refresh);
+      const token = res.data.access;
+      localStorage.setItem("token", token);
       onLogin();
       const decoded = jwtDecode(token);
       const rol = decoded.rol || decoded.role || decoded["user"]["rol"];
@@ -70,8 +64,6 @@ function LoginPage({ onLogin }) {
         navigate("/coordinacion");
       } else if (rol === "docente") {
         navigate("/docente");
-      } else if (rol === "padre" || rol === "padres" || rol === "acudiente") {
-        navigate("/padres");
       } else {
         navigate("/NotFound");
       }
@@ -89,13 +81,14 @@ function LoginPage({ onLogin }) {
 
   return (
     <>
+      <Logout />
       <section className="Login-padre">
         <div className="Login-fondo"></div>
         <div className="Login-container">
           <div className="Login-container-2">
             <div className="Login-container-3">
               <img className="Login-logo" onClick={RP} src="./Logo.png" />
-              <a>¡Bienvenido!</a>
+              <a>¡Welcome!</a>
               <section>
                 <p>
                   Pagina de administracion, institucion educativa Rafael Pombo
@@ -143,30 +136,24 @@ function LoginPage({ onLogin }) {
             </div>
           </div>
           <div className="Login-container-5">
-            <h1>Inicio de Sesión</h1>
+            <h1>Login</h1>
             <div className="Login-conetendor-Inputs">
               <form className="Login-form" onSubmit={handleSubmit}>
                 <input
                   name="username"
-                  placeholder="Nombre de usuario"
+                  placeholder="User name"
                   className="Login-Inputs"
                   value={form.username || ""} // fallback para evitar undefined
                   onChange={handleChange}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') handleSubmit(e);
-                  }}
                 />
 
                 <input
                   type={showPassword ? "text" : "password"} // alterna entre password y text
                   name="password"
-                  placeholder="Contraseña"
+                  placeholder="Password"
                   className="Login-Inputs"
                   value={form.password}
                   onChange={handleChange}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') handleSubmit(e);
-                  }}
                 />
                 <button
                   type="button"

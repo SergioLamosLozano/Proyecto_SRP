@@ -9,13 +9,14 @@ import { disableBrowserNavigation } from './utils/navigationControl';
 
 
 // Lazy load de páginas
-const LoginPage = lazy(() => import("./pages/Loginpage.jsx"));
+const HomePage = lazy(() => import("./pages/HomePage.jsx"));
 const DocentesPage = lazy(() => import("./pages/DocentesPage.jsx"));
 const CoordinacionPage = lazy(() => import("./pages/CoordinacionPage.jsx"));
 const SecretariaPage = lazy(() => import("./pages/SecretariaPage.jsx"));
 const PadresPage = lazy(() => import("./pages/PadresPage.jsx"));
 const NotFound = lazy(() => import("./pages/NotFound.jsx"));
-
+const LoginPage = lazy(() => import("./pages/Loginpage.jsx"));
+const Estadisticas = lazy(() => import("./components/Estadisticas.jsx"));
 
 // Helper para verificar el token de autenticación al cargar la app
 const checkAuthToken = () => {
@@ -78,13 +79,30 @@ function App() {
       <Suspense fallback={<div>Cargando...</div>}>
         <Routes>
           {/* Ruta pública */}
-          <Route path="/" element={<LoginPage onLogin={() => setIsAuthenticated(true)} />} />
+          <Route
+            path="/"
+            element={<LoginPage onLogin={() => setIsAuthenticated(true)} />}
+          />
 
           {/* Rutas protegidas */}
           <Route
+            path="/home"
+            element={
+              <RoleBasedRoute
+                isAuthenticated={isAuthenticated}
+                allowedRoles={["secretaria", "coordinacion", "docente"]}
+              >
+                <HomePage />
+              </RoleBasedRoute>
+            }
+          />
+          <Route
             path="/docente"
             element={
-              <RoleBasedRoute isAuthenticated={isAuthenticated} allowedRoles={['docente']}>
+              <RoleBasedRoute
+                isAuthenticated={isAuthenticated}
+                allowedRoles={["docente"]}
+              >
                 <DocentesPage />
               </RoleBasedRoute>
             }
@@ -92,7 +110,10 @@ function App() {
           <Route
             path="/coordinacion"
             element={
-              <RoleBasedRoute isAuthenticated={isAuthenticated} allowedRoles={['coordinacion']}>
+              <RoleBasedRoute
+                isAuthenticated={isAuthenticated}
+                allowedRoles={["coordinacion"]}
+              >
                 <CoordinacionPage />
               </RoleBasedRoute>
             }
@@ -100,7 +121,10 @@ function App() {
           <Route
             path="/secretaria"
             element={
-              <RoleBasedRoute isAuthenticated={isAuthenticated} allowedRoles={['secretaria']}>
+              <RoleBasedRoute
+                isAuthenticated={isAuthenticated}
+                allowedRoles={["secretaria"]}
+              >
                 <SecretariaPage />
               </RoleBasedRoute>
             }

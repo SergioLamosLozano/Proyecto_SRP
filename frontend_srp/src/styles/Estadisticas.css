@@ -1,35 +1,7 @@
-/* Estilos para el componente Estadisticas */
-
-/* Sobrescribir el padding-top del dashboard para evitar conflicto con breadcrumbs */
-.dashboard {
-    padding-top: 0 !important;
-}
-
 .Estadistica {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-}
-
-.estadisticas-header-nav {
-  padding: 15px 20px;
-  background-color: #f8f9fa;
-  border-bottom: 1px solid #dee2e6;
-}
-
-.btn-back {
-  background-color: #6c757d;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: background-color 0.3s;
-}
-
-.btn-back:hover {
-  background-color: #5a6268;
 }
 
 .Estadistica-header {
@@ -46,10 +18,10 @@
 }
 
 .Estadistica-content-1 {
-  max-width: 1450px;
   width: 100%;
+  max-width: 1450px;
   margin: 0 auto;
-  padding: 0 0 30px 0;
+  padding-bottom: 30px;
   height: auto;
   background-color: white;
   margin-bottom: 20px;
@@ -57,16 +29,20 @@
   box-shadow: 0px 5px 5px rgba(0, 0, 0, 0.416);
 }
 
+.Estadistica-content-2 {
+  padding: 20px;
+}
+
 .Estadistica-container {
   display: flex;
   gap: 20px;
   padding: 20px;
-  flex-wrap: wrap;
+  flex-wrap: wrap; /* Para que en pantallas pequeñas se apilen */
 }
 
 .Estadistica-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  grid-template-columns: 1fr 1fr;
   gap: 20px;
   padding: 20px;
 }
@@ -82,24 +58,7 @@
   border-radius: 8px;
   padding: 20px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-  width: 100%;
-  min-height: 400px;
-}
-
-.grafico-container {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 300px;
-  width: 100%;
-}
-
-.grafico-container canvas {
-  max-width: 100% !important;
-  max-height: 100% !important;
-  height: auto !important;
-  width: auto !important;
+  width: auto;
 }
 
 .Estadistica-card-buttons {
@@ -252,103 +211,3 @@
   max-width: 100%;
   max-height: 80%;
 }
-
-@media (max-width: 768px) {
-  .Estadistica-content-1 {
-    width: 100%;
-  }
-}
-
-/* Responsive Design Mejorado */
-@media (max-width: 1200px) {
-  .Estadistica-content-1 {
-    max-width: 95%;
-    margin: 0 auto;
-  }
-  
-  .Estadistica-cards {
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-    padding: 15px;
-  }
-}
-
-@media (max-width: 768px) {
-  .Estadistica-content-1 {
-    width: 95%;
-    margin: 10px auto;
-    border-radius: 10px;
-  }
-  
-  .Estadistica-cards {
-    grid-template-columns: 1fr;
-    gap: 15px;
-    padding: 10px;
-  }
-  
-  .card-Estadistica {
-    min-height: 350px;
-    padding: 15px;
-  }
-  
-  .grafico-container {
-    min-height: 250px;
-  }
-  
-  .Estadistica-header {
-    padding: 15px;
-  }
-  
-  .Estadistica-header h1 {
-    font-size: 1.5rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .Estadistica-content-1 {
-    width: 98%;
-    margin: 5px auto;
-    border-radius: 8px;
-  }
-  
-  .estadisticas-header-nav {
-    padding: 10px 15px;
-  }
-  
-  .btn-back {
-    padding: 6px 12px;
-    font-size: 12px;
-  }
-  
-  .Estadistica-cards {
-    padding: 8px;
-    gap: 10px;
-  }
-  
-  .card-Estadistica {
-    min-height: 300px;
-    padding: 12px;
-  }
-  
-  .card-Estadistica h3 {
-    font-size: 1rem;
-    margin-bottom: 10px;
-  }
-  
-  .grafico-container {
-    min-height: 200px;
-  }
-  
-  .Estadistica-header {
-    padding: 10px;
-  }
-  
-  .Estadistica-header h1 {
-    font-size: 1.3rem;
-  }
-  
-  .Estadistica-header p {
-    font-size: 0.9rem;
-  }
-}
-
-

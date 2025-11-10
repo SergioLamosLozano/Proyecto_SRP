@@ -1,117 +1,47 @@
-import React, { useState, useEffect } from 'react';
-import Sidebar from '../components/Sidebar';
-import Dashboard from '../components/Dashboard';
-import GestionAcademica from '../components/GestionAcademica';
-import GestionUsuarios from '../components/GestionUsuarios';
-import Calificaciones from '../components/Calificaciones';
-import ReportesEstadisticas from '../components/ReportesEstadisticas';
-import Logout from '../components/Logout';
-import Footer from '../components/Footer';
-import '../styles/Dashboard.css';
-import '../styles/CoordinacionPage.css';
+import React from "react";
+import Logout from "../components/Logout";
+import Breadcrumbs from "../components/Breadcrumbs";
+//import Footer from '../components/Footer';
+import "../styles/Dashboard.css";
+import Footer from "../components/Footer";
 
-const CoordinacionPage = () => {
-  const [currentView, setCurrentView] = useState('dashboard');
-  const [isMobile, setIsMobile] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
-
-  const handleNavigation = (view) => {
-    setCurrentView(view);
-    // Cerrar sidebar en móvil después de navegar
-    if (isMobile) {
-      setSidebarOpen(false);
-    }
-  };
-
-  const handleBackToDashboard = () => {
-    setCurrentView('dashboard');
-    // Cerrar sidebar en móvil después de navegar
-    if (isMobile) {
-      setSidebarOpen(false);
-    }
-  };
-
-  // Detectar si es móvil
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
-  // Funciones para controlar el menú hamburguesa
-  const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
-  };
-
-  const closeSidebar = () => {
-    setSidebarOpen(false);
-  };
-
-  const renderContent = () => {
-    switch (currentView) {
-      case 'dashboard':
-        return <Dashboard onNavigate={handleNavigation} />;
-      case 'gestion-academica':
-        return <GestionAcademica onBack={handleBackToDashboard} />;
-      case 'gestion-usuarios':
-        return <GestionUsuarios onBack={handleBackToDashboard} />;
-      case 'calificaciones':
-        return <Calificaciones onBack={handleBackToDashboard} />;
-      case 'reportes':
-        return <ReportesEstadisticas onBack={handleBackToDashboard} />;
-      default:
-        return <Dashboard onNavigate={handleNavigation} />;
-    }
-  };
-
+const Coordinacion = () => {
   return (
-    <div className="page-wrapper" style={{ '--sidebar-width': sidebarCollapsed ? '72px' : '250px' }}>
+    <div className="dashboard">
       <Logout />
-      {/* Botón hamburguesa para móvil */}
-      {isMobile && (
-        <button 
-          className="hamburger-button" 
-          onClick={toggleSidebar}
-          aria-label="Abrir menú"
-        >
-          ☰
-        </button>
-      )}
-      
-      {/* Overlay para cerrar sidebar en móvil */}
-      {isMobile && sidebarOpen && (
-        <div 
-          className="sidebar-overlay active" 
-          onClick={closeSidebar}
-        />
-      )}
-      
-      <div className="coordinacion-container">
-        <Sidebar 
-          currentView={currentView} 
-          onNavigate={handleNavigation}
-          isMobile={isMobile}
-          isOpen={sidebarOpen}
-          collapsed={sidebarCollapsed}
-          onMouseEnter={() => setSidebarCollapsed(false)}
-          onMouseLeave={() => setSidebarCollapsed(true)}
-        />
-        <div className={`coordinacion-content ${sidebarCollapsed ? 'collapsed' : ''}`}>
-          <div className="coordinacion-main-content">
-            {renderContent()}
+      <Breadcrumbs />
+      <div className="dashboard-content-1">
+        <main className="content">
+          <div className="dashboard-header">
+            <h1>Coordinación Administrativa</h1>
+            <p>Panel de control - Gestión administrativa y recursos</p>
           </div>
-        </div>
+
+          <div className="dashboard-cards">
+            <div className="card">
+              <h3>⚙️ Gestion De Estudiantes</h3>
+              <p>Crear Estudiantes</p>
+              <button className="btn-primary">Ver Tabla</button>
+            </div>
+
+            <div className="card">
+              <h3>⚙️ Gestion De Docentes</h3>
+              <p>Crear Docentes</p>
+              <button className="btn-primary">Ver Tabla</button>
+            </div>
+
+            <div className="card">
+              <h3>⚙️ Gestion De Padres</h3>
+              <p>Crear padres de familia</p>
+              <button className="btn-primary">Ver Tabla</button>
+            </div>
+          </div>
+        </main>
       </div>
       <Footer />
+      {/* <Footer /> */}
     </div>
-    
   );
 };
 
-export default CoordinacionPage;
+export default Coordinacion;

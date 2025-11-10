@@ -1,69 +1,39 @@
-.breadcrumbs {/* Solo margen inferior */
+.breadcrumbs {
+  margin: 10px 15px;
   font-size: 14px;
-  padding: 12px 20px;
-  border-radius: 8px;
-  background-color: #f8f9fa;
-  border: 1px solid #e9ecef;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  z-index: 99;
-  width: 100%; /* Ocupa el 100% del contenedor padre */
-  position: sticky;
-  top: 100px; /* Posición fija debajo del navbar */
-  box-sizing: border-box;
-  min-height: 40px;
-  display: flex;
-  align-items: center;
 }
 
 .breadcrumbs ul {
   list-style: none;
   display: flex;
-  flex-wrap: nowrap; /* Evita que se envuelva */
-  gap: 8px; /* Espacio fijo entre elementos */
+  flex-wrap: wrap;
+  gap: 8px;
   padding: 0;
-  margin: 0;
-  align-items: center;
-  width: 100%;
-  overflow: hidden;
-  white-space: nowrap;
 }
 
 .breadcrumbs li {
   display: flex;
   align-items: center;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .breadcrumbs li::after {
-  content: ""; /* Separador fijo */
-  margin: 0 1px;
+  content: "›";
+  margin: 0 6px;
   color: #888;
 }
 
 .breadcrumbs li:last-child::after {
-  content: ""; /* No hay separador en el último */
+  content: "";
 }
 
-.breadcrumb-button {
-  background: none;
-  border: none;
-  color: #007bff;
+.breadcrumbs a {
   text-decoration: none;
-  cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 4px;
-  transition: all 0.2s ease;
-  font-size: 14px;
-  white-space: nowrap;
-  font-weight: 500;
+  color: #007bff;
 }
 
-.breadcrumb-button:hover {
-  background-color: #e3f2fd;
-  color: #0056b3;
-  text-decoration: underline;
+.breadcrumbs span {
+  font-weight: bold;
+  color: #007bff;
 }
 
 .home-button {
