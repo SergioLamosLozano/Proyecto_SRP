@@ -8,6 +8,7 @@ import CoordinacionPage from "./pages/CoordinacionPage";
 import DocentesPage from "./pages/DocentesPage";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./ProtectedRoute";
+import PadresPage from "./pages/PadresPage";
 
 function App() {
   return (
@@ -37,6 +38,14 @@ function App() {
             element={
               <ProtectedRoute role="docente">
                 <DocentesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/padres"
+            element={
+              <ProtectedRoute role={["padre", "padres", "acudiente"]}>
+                <PadresPage />
               </ProtectedRoute>
             }
           />

@@ -238,3 +238,9 @@ export const BusquedaPorNombreP = (documento) => {
 export const BusquedaPorNombreA = (documento) => {
   return api.get(`/acudientes/?search=${documento}`);
 };
+
+export const padresAPI = (acudienteid) => {
+  return api.get(
+    `/match-acudientes/verificar_coincidencias/?numero_documento_acudiente=${acudienteid}`
+  );
+};

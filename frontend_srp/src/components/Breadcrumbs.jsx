@@ -33,9 +33,6 @@ const Breadcrumbs = ({ items = [], onNavigate }) => {
         } else if (decoded.user && decoded.user.role) {
           userRole = decoded.user.role;
         }
-
-        console.log("Token decodificado:", decoded);
-        console.log("Rol encontrado:", userRole);
         setRol(userRole);
       } catch (error) {
         console.error("Error al decodificar el token:", error);

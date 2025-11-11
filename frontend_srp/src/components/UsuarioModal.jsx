@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import '../styles/Modal.css';
 import Swal from 'sweetalert2';
-import { estudiantesAPI, profesoresAPI, catalogoAPI, acudientesAPI, usersAPI } from '../api/usuarios';
+import { estudiantesAPI, profesoresAPI, catalogoAPI, acudientesAPI, usersAPI, estudiantesAcudientesAPI } from '../api/usuarios';
 
 const initialStateProfesor = {
   numero_documento_profesor: '',
@@ -22,7 +22,8 @@ const initialStateAcudiente = {
   fk_id_tipo_documento: null,
   nombre1: '', nombre2: '', apellido1: '', apellido2: '',
   correo: '', telefono1: '', telefono2: '', direccion: '', fk_codigo_municipio: null,
-  _password: ''
+  _password: '',
+  numero_documento_estudiante: ''
 };
 
 const UsuarioModal = ({ isOpen, onClose, mode = 'view', tipo = 'profesor', initialData = null, onSaved }) => {
@@ -163,7 +164,7 @@ const UsuarioModal = ({ isOpen, onClose, mode = 'view', tipo = 'profesor', initi
               const payload = {
                 username,
                 password: form._password,
-                rol: 'acudiente',
+                rol: 'padres',
                 email: form.correo || '',
                 first_name: form.nombre1 || '',
                 last_name: `${form.apellido1 || ''} ${form.apellido2 || ''}`.trim()
@@ -172,6 +173,20 @@ const UsuarioModal = ({ isOpen, onClose, mode = 'view', tipo = 'profesor', initi
             } catch (userErr) {
               console.warn('No se pudo crear core user para acudiente:', userErr);
               Swal.fire({ icon: 'warning', title: 'Usuario no creado', text: 'El acudiente fue creado, pero no se pudo crear la cuenta de acceso. Revisa el servidor.' });
+            }
+            // Crear relación estudiante-acudiente si se proporcionó el documento del estudiante
+            try {
+              const docEst = String(form.numero_documento_estudiante || '').trim();
+              const docAcu = String(form.numero_documento_acudiente || '').trim();
+              if (docEst) {
+                await estudiantesAcudientesAPI.create({
+                  fk_numero_documento_estudiante: docEst,
+                  fk_numero_documento_acudiente: docAcu,
+                });
+              }
+            } catch (relErr) {
+              console.warn('No se pudo crear relación estudiante-acudiente automáticamente:', relErr);
+              Swal.fire({ icon: 'warning', title: 'Relación no creada', text: 'El acudiente fue creado, pero no se pudo asociar automáticamente al estudiante.' });
             }
           } else if (mode === 'edit') {
             // acuidente PK is numero_documento_acudiente
@@ -298,6 +313,10 @@ const UsuarioModal = ({ isOpen, onClose, mode = 'view', tipo = 'profesor', initi
               <div className="form-row">
                 <label>Documento</label>
                 <input name="numero_documento_acudiente" value={form.numero_documento_acudiente} onChange={handleChange} disabled={readOnly || mode==='edit'} required />
+              </div>
+              <div className="form-row">
+                <label>Documento Estudiante (opcional)</label>
+                <input name="numero_documento_estudiante" value={form.numero_documento_estudiante||''} onChange={handleChange} disabled={readOnly} placeholder="Para asociar automáticamente" />
               </div>
               <div className="form-row">
                 <label>Correo</label>

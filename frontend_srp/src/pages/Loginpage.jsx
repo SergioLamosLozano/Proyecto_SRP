@@ -60,7 +60,7 @@ function LoginPage() {
         position: "top-end",
         icon: "success",
         title: `Inicio de sesión exitoso`,
-        text: `Bienvenido ${decoded.username}`,
+        text: `Bienvenido(a) ${decoded.first_name || decoded.username}`,
       }).then(() => {
         setcargar("Ingresar");
       });
@@ -71,6 +71,8 @@ function LoginPage() {
         navigate("/coordinacion");
       } else if (rol === "docente") {
         navigate("/docente");
+      } else if (rol === "acudiente" || "padre" || "padres") {
+        navigate("/padres");
       } else {
         navigate("/NotFound");
       }

@@ -27,6 +27,76 @@ except Exception:
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializer import CustomTokenObtainPairSerializer
 
+
+class AcudienteUserMatchViewSet(viewsets.ViewSet):
+    """
+    Busca coincidencia entre el username del usuario (rol=padres)
+    y el número de documento del acudiente.
+    Si encuentra el acudiente, trae los estudiantes relacionados.
+    """
+
+    @action(detail=False, methods=['get'])
+    def verificar_coincidencias(self, request):
+        # Obtener el número de documento desde el query param
+        numero_doc = request.query_params.get('numero_documento_acudiente', '').strip()
+
+        if not numero_doc:
+            return Response({
+                "error": "Debe enviar el parámetro 'numero_documento_acudiente'. Ejemplo: ?numero_documento_acudiente=123456789"
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # Buscar acudiente y usuario por coincidencia de documento/username
+        acudiente = Acudiente.objects.filter(numero_documento_acudiente=numero_doc).first()
+        usuario = User.objects.filter(username=numero_doc, rol='padres').first()
+
+        # Buscar estudiantes relacionados si hay acudiente
+        estudiantes_data = []
+        if acudiente:
+            relaciones = EstudiantesAcudientes.objects.filter(
+                fk_numero_documento_acudiente=acudiente
+            ).select_related('fk_numero_documento_estudiante')
+
+            for rel in relaciones:
+                est = rel.fk_numero_documento_estudiante
+                estudiantes_data.append({
+                    "numero_documento": est.numero_documento_estudiante,
+                    "nombre_completo": est.nombre_completo,
+                    "correo": est.correo,
+                    "edad": est.edad,
+                    "telefono": est.telefono,
+                    "direccion": est.direccion,
+                })
+
+        # Construcción de respuesta
+        respuesta = {}
+        if acudiente and usuario:
+            respuesta.update({
+                "mensaje": "Coincidencia encontrada.",
+                "acudiente": acudiente.nombre_completo,
+                "numero_documento_acudiente": acudiente.numero_documento_acudiente,
+                "usuario": f"{usuario.first_name} {usuario.last_name}".strip(),
+                "username": usuario.username,
+                "rol": usuario.rol
+            })
+        elif acudiente:
+            respuesta.update({
+                "mensaje": "Solo se encontró coincidencia en acudiente.",
+                "acudiente": acudiente.nombre_completo,
+                "numero_documento_acudiente": acudiente.numero_documento_acudiente
+            })
+        elif usuario:
+            respuesta.update({
+                "mensaje": "Solo se encontró coincidencia en usuario (rol padres).",
+                "usuario": f"{usuario.first_name} {usuario.last_name}".strip(),
+                "username": usuario.username
+            })
+        else:
+            return Response({"mensaje": "No se encontró coincidencia con el número de documento proporcionado."})
+
+        respuesta["estudiantes_relacionados"] = estudiantes_data or []
+
+        return Response(respuesta)
+
 class TipoDocumentoViewSet(viewsets.ModelViewSet):
     queryset = TipoDocumento.objects.all()
     serializer_class = TipoDocumentoSerializer
@@ -475,6 +545,31 @@ class EstudiantesBulkUploadView(APIView):
                     )
                     acu_created += 1 if acu_created_flag else 0
                     acu_updated += 0 if acu_created_flag else 1
+
+                    # Crear/actualizar usuario core para el acudiente con credenciales basadas en documento
+                    try:
+                        # Si el usuario no existe, crearlo con contraseña igual al documento
+                        user_qs = User.objects.filter(username=doc_acu)
+                        if not user_qs.exists():
+                            user = User.objects.create_user(
+                                username=doc_acu,
+                                password=doc_acu,
+                                rol='padres',
+                                first_name=str(data.get('nombre1') or ''),
+                                last_name=(f"{data.get('apellido1') or ''} {data.get('apellido2') or ''}").strip(),
+                                email=str(data.get('correo') or '')
+                            )
+                        else:
+                            # Mantener sincronizados nombre, apellidos y correo; no cambiamos contraseña aquí
+                            user_qs.update(
+                                rol='padres',
+                                first_name=str(data.get('nombre1') or ''),
+                                last_name=(f"{data.get('apellido1') or ''} {data.get('apellido2') or ''}").strip(),
+                                email=str(data.get('correo') or '')
+                            )
+                    except Exception as e:
+                        # Registrar el error pero no detener el proceso de carga
+                        acu_errors.append({'row': row[0].row, 'error': f'Error creando usuario core para acudiente {doc_acu}: {str(e)}'})
 
                     # Vincular acudiente con estudiante
                     # Normalizar documento del estudiante vinculado

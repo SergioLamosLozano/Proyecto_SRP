@@ -11,6 +11,8 @@ class User(AbstractUser):
         ('padres', 'Padres de familia'),
     )
     rol = models.CharField(max_length=20, choices=ROLES)
+    first_name = models.CharField(max_length=150 ,blank=True, null=True)
+    last_name = models.CharField(max_length=150 ,blank=True, null=True)
 
     class Meta:
         verbose_name = 'Usuario'

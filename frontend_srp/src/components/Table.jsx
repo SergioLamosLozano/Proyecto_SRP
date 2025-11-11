@@ -98,10 +98,12 @@ const Table = ({
 
   return (
     <div className="table-container">
-      <div className="gestion_usuarios_titulo">
-        <label>{title}</label>
-        <h3>{description}</h3>
-      </div>
+      {title && (
+        <div className="gestion_usuarios_titulo">
+          <label>{title}</label>
+          <h3>{description}</h3>
+        </div>
+      )}
 
       {title && <h2 className="table-title">Lista de {title}</h2>}
 
@@ -116,7 +118,7 @@ const Table = ({
               className="table-search-input"
             />
 
-            {filterOptions.length > 0 && title == "Estudiantes" && (
+            {filterOptions.length > 0 && title == "Gestion de Estudiantes" && (
               <select
                 value={filterValue}
                 onChange={handleFilter}

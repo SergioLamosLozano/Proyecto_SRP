@@ -117,7 +117,7 @@
   .user-welcome {
     font-size: 1.1rem;
   }
-
+  
   .rafaelpombo-logo {
     height: 70px;
   }
@@ -176,18 +176,8 @@
 
   .navbar-content {
     flex-direction: column;
-    gap: 12px;
-    align-items: center;
-    padding: 0 0.5rem;
-  }
-
-  .logo-container {
-    justify-content: center;
-    order: 1;
-  }
-
-  .logo-text {
-    font-size: 1rem;
+    gap: 10px;
+    align-items: flex-start;
   }
 
   .user-info {
