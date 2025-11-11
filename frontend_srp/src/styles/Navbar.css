@@ -7,7 +7,7 @@
   top: 0%;
   left: 0%;
   width: 100%;
-  z-index: 1001; /* Mayor que el sidebar */
+  z-index: 10; /* Mayor que el sidebar */
   display: flex;
   margin: 0%;
   height: 100px; /* Altura fija para el navbar */
@@ -117,7 +117,7 @@
   .user-welcome {
     font-size: 1.1rem;
   }
-  
+
   .rafaelpombo-logo {
     height: 70px;
   }

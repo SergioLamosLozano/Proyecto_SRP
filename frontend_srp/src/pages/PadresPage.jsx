@@ -42,8 +42,6 @@ function PadresPage() {
         // Llamar a la API: busca coincidencia entre user_name y número_documento_acudiente
         const response = await padresAPI(acudienteId);
 
-        console.log("Respuesta del backend:", response.data);
-
         // Guardar los estudiantes vinculados
         const lista = response.data.estudiantes_relacionados || [];
         setEstudiantes(lista);
@@ -85,10 +83,11 @@ function PadresPage() {
                   <p>No hay estudiantes vinculados a su cuenta.</p>
                 ) : (
                   <Table
+                    id="EstudiantesAcudientes"
                     title=""
                     columns={[
                       {
-                        key: "numero_documento_estudiante",
+                        key: "numero_documento",
                         label: "Documento",
                       },
                       { key: "nombre_completo", label: "Nombre" },
@@ -96,21 +95,7 @@ function PadresPage() {
                       { key: "ciudad_nombre", label: "Municipio" },
                     ]}
                     data={filtrados}
-                    searchPlaceholder="Buscar por nombre o documento..."
-                    onSearch={(term) => {
-                      const lower = term.toLowerCase();
-                      setFiltrados(
-                        estudiantes.filter(
-                          (e) =>
-                            (e.nombre_completo || "")
-                              .toLowerCase()
-                              .includes(lower) ||
-                            String(
-                              e.numero_documento_estudiante || ""
-                            ).includes(lower)
-                        )
-                      );
-                    }}
+                    searchPlaceholder="Buscar por documento..."
                     actions={[
                       {
                         label: "Ver Calificaciones",
@@ -131,6 +116,7 @@ function PadresPage() {
                         },
                       },
                     ]}
+                    filtroParaEstudiantePadres={filtrados}
                   />
                 )}
               </div>

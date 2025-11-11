@@ -101,6 +101,10 @@ class TipoDocumentoViewSet(viewsets.ModelViewSet):
     queryset = TipoDocumento.objects.all()
     serializer_class = TipoDocumentoSerializer
 
+class anoElectivoViewSet(viewsets.ModelViewSet):
+    queryset = ano_electivo.objects.all()
+    serializer_class = AnoElectivoSerializer
+
 class TipoActividadViewSet(viewsets.ModelViewSet):
     queryset = TipoActividad.objects.all()
     serializer_class = TipoActividadSerializer
@@ -140,6 +144,11 @@ class EstudianteViewSet(viewsets.ModelViewSet):
     filter_backends = [filters.SearchFilter]
     search_fields = ['numero_documento_estudiante']
 
+class CursoViewSet(viewsets.ModelViewSet):
+    queryset = Cursos.objects.all()
+    serializer_class = CursoSerializer
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['nombre']
 
 class ProfesorViewSet(viewsets.ModelViewSet):
     queryset = Profesores.objects.all()

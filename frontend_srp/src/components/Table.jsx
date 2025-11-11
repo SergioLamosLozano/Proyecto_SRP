@@ -5,8 +5,10 @@ import {
   BusquedaPorNombreP,
   BusquedaPorNombreA,
 } from "../api/usuarios";
+import { BuscarCurso } from "../api/cursos";
 
 const Table = ({
+  id,
   title,
   description,
   columns, // Array de objetos con estructura: { key: 'campo', label: 'TÍTULO DE LA COLUMNA' }
@@ -18,32 +20,45 @@ const Table = ({
   onAdd,
   addButtonText = "Añadir",
   actions = [], // Array de objetos con estructura: { key: 'accion', label: 'Texto del Botón', onClick: function }
+  filtroParaEstudiantePadres = [],
 }) => {
   const [searchTerm, setSearchTerm] = React.useState("");
   const [filterValue, setFilterValue] = React.useState("");
   const [usuarios, setUsuarios] = useState([]);
 
   const buscar = async (letras) => {
-    if (title == "Gestion de Estudiantes") {
+    if (id == "Estudiantes") {
       try {
         const response = await BusquedaPorNombre(letras);
         setUsuarios(response.data);
       } catch (error) {
         console.error("Error al buscar estudiante:", error);
       }
-    } else if (title == "Gestion de Profesores") {
+    } else if (id == "Profesores") {
       try {
         const response = await BusquedaPorNombreP(letras);
         setUsuarios(response.data);
       } catch (error) {
         console.error("Error al buscar Profesores:", error);
       }
-    } else if (title == "Gestion de Padres") {
+    } else if (id == "Padres") {
       try {
         const response = await BusquedaPorNombreA(letras);
         setUsuarios(response.data);
       } catch (error) {
         console.error("Error al buscar Padres:", error);
+      }
+    } else if (id === "EstudiantesAcudientes") {
+      const resultado = filtroParaEstudiantePadres.filter((item) =>
+        item.numero_documento.toString().includes(letras)
+      );
+      setUsuarios(resultado);
+    } else if (id === "Cursos") {
+      try {
+        const response = await BuscarCurso(letras);
+        setUsuarios(response.data);
+      } catch (error) {
+        console.log(error);
       }
     }
   };
@@ -111,7 +126,7 @@ const Table = ({
         <div className="contenedor_busqueda">
           <div className="table-search-filter">
             <input
-              type="number"
+              type="text"
               placeholder={searchPlaceholder}
               value={searchTerm}
               onChange={handleSearch}
@@ -141,7 +156,9 @@ const Table = ({
                 {usuarios.length > 0 ? (
                   usuarios.map((item, index) => (
                     <div className="targeta_busqueda" key={index}>
-                      <label>{item.nombre1}</label>
+                      <label>
+                        {item.nombre1 ? item.nombre1 : item.nombre_completo}
+                      </label>
                       <label>{item.correo}</label>
                       <label>{item.genero_desc}</label>
                       {actions.length > 0 && (

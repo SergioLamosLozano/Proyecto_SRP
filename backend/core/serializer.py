@@ -43,6 +43,17 @@ class SisbenSerializer(serializers.ModelSerializer):
         model = Sisben
         fields = '__all__'
 
+class AnoElectivoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ano_electivo
+        fields = '__all__'
+
+class CursoSerializer(serializers.ModelSerializer):
+    fecha_inicio = serializers.DateField(source='fk_id_año_electivo.fecha_inicio', read_only=True)
+    fecha_fin = serializers.DateField(source='fk_id_año_electivo.fecha_fin', read_only=True)
+    class Meta:
+        model = Cursos
+        fields = '__all__'
 
 class DiscapacidadSerializer(serializers.ModelSerializer):
     class Meta:

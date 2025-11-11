@@ -274,6 +274,7 @@
   display: grid;
   grid-template-columns: 1fr;
   gap: 30px;
+  margin: auto;
   margin-top: 30px;
   max-width: 800px;
 }

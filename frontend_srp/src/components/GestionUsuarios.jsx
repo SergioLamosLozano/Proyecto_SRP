@@ -620,6 +620,7 @@ const GestionUsuarios = ({ onBack }) => {
 
         return (
           <Table
+            id="Profesores"
             title="Gestion de Profesores"
             description="Registro manual de Profesores"
             columns={profesoresColumns}
@@ -661,6 +662,7 @@ const GestionUsuarios = ({ onBack }) => {
 
         return (
           <Table
+            id="Estudiantes"
             title="Gestion de Estudiantes"
             description="Registro manual de Estudiantes"
             columns={estudiantesColumns}
@@ -1165,7 +1167,7 @@ const GestionUsuarios = ({ onBack }) => {
                   datos
                 </p>
                 <div className="boton_plantilla">
-                  <a href="/utils/holaaa.xlsx" download>
+                  <a href="/utils/plantilla_estudiantes.xlsx" download>
                     Descargar plantilla 📄
                   </a>
                 </div>
@@ -1342,6 +1344,7 @@ const GestionUsuarios = ({ onBack }) => {
         return (
           <div>
             <Table
+              id="Acudientes"
               title="Gestion de Padres"
               description="Registro manual de padres de familia, Para carga masiva usar la opción de Estudiantes (se crean vía estudiantes)."
               columns={padresColumns}

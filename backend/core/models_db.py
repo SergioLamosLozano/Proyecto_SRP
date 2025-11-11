@@ -468,3 +468,25 @@ class Actividades(models.Model):
     def __str__(self):
         return self.id_actividad
     
+class ano_electivo(models.Model) :
+    id_año_electivo = models.IntegerField(primary_key=True, max_length=10)
+    fecha_inicio = models.DateField(blank= True, null=True)
+    fecha_fin = models.DateField(blank= True, null=True)
+
+    class Meta:
+        db_table = "ano_electivo"
+
+    def __str__(self) :
+        return self.id_año_electivo
+
+class Cursos(models.Model) :
+    id_curso = models.AutoField(primary_key=True)
+    nombre = models.CharField(max_length=100, blank= True, null=True)
+    fk_id_año_electivo = models.ForeignKey(ano_electivo, on_delete=models.CASCADE, db_column="FK_id_año_electivo")
+    estado = models.CharField(max_length=50, blank=True)
+
+    class Meta:
+        db_table = "curso"
+
+    def __str__(self) :
+        return self.id_curso
