@@ -3,7 +3,7 @@
   width: 100%;
   max-width: 1000px;
   margin: auto;
-  margin-top: 60px;
+  margin-top: 50px; /* Reducido de 150px a 50px para centrar mejor */
   border-radius: 25px;
   box-shadow: 0px 5px 5px rgb(0, 0, 0, 0.4);
   height: 500px;
@@ -20,8 +20,8 @@
 
 .Login-container-2 {
   width: 50%;
-  height: 93%;
-  background: linear-gradient(to right, #00184bc5 10%, rgb(1, 1, 70) 100%);
+  height: 100%;
+  background: var(--rojo-institucional);
   padding: 20px;
   border-top-right-radius: 20%;
   border-bottom-right-radius: 20%;
@@ -59,7 +59,7 @@
 .Login-container-3 section {
   width: 300px;
   height: auto;
-  color: rgba(231, 231, 231, 0.556);
+  color: rgb(255, 255, 255);
   margin-top: 10px;
   font-family: Arial, Helvetica, sans-serif;
   font-size: 12px;
@@ -182,10 +182,11 @@
 
 .Login-fondo {
   position: absolute;
-  top: 0;
+  top: 0%;
+  left: 0%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(to right, white 30%, #00184b62 100%);
+  background: linear-gradient(to right, white 30%, #ff0000a8 100%);
   z-index: 0;
 }
 
@@ -254,21 +255,20 @@
   border: none;
   font-weight: bold;
   color: white;
-  background: linear-gradient(to right, #00184bc5 10%, rgb(1, 1, 70) 100%);
+  background: var(--rojo-institucional);
   border-radius: 15px;
   cursor: pointer;
-  transition: all 0.5s ease-in-out;
+  transition: all 0.5s ease;
 }
 
 .Login-buttons:hover {
-  background: linear-gradient(to right, #000f2fc5 10%, rgb(1, 1, 51) 100%);
   transform: translateY(-5px);
 }
 
 .show-password-btn {
   position: absolute;
-  top: 54%;
-  left: 92%;
+  top: 52%;
+  left: 89%;
   border-top-right-radius: 20px;
   border-bottom-right-radius: 20px;
   width: 30px;

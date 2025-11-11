@@ -7,20 +7,21 @@ function Logout() {
     const [username, setUsername] = useState(null);
 
     useEffect(() => {
-        const token = localStorage.getItem('token');
+        const token = sessionStorage.getItem('token');
         if (token) {
         try {
             const decoded = jwtDecode(token);
             setUsername(decoded.username || decoded.name || 'Usuario');
         } catch (error) {
             console.error('Error al decodificar el token:', error);
-            localStorage.removeItem('token');
+                sessionStorage.removeItem('token');
         }
         }
     }, []);
 
     const handleLogout = () => {
-        localStorage.removeItem('token');
+        sessionStorage.removeItem('token');
+        sessionStorage.removeItem('refreshToken');
         setUsername(null);
     };
 

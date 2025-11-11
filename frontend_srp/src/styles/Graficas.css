@@ -1,0 +1,128 @@
+/* Estilos para componentes de gráficas */
+
+.grafica-circular-container,
+.grafica-linea-container {
+  background: var(--blanco, white);
+  border: 1px solid var(--borde-color, #dee2e6);
+  border-radius: 8px;
+  padding: 20px;
+  margin: 20px 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.grafica-titulo {
+  color: var(--rojo-institucional, #dc3545);
+  font-size: 18px;
+  font-weight: bold;
+  margin: 0 0 20px 0;
+  text-align: center;
+}
+
+.grafica-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+/* Estilos específicos para gráfica circular */
+.grafica-circular {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.grafica-circular .segment {
+  transition: opacity 0.3s ease;
+  cursor: pointer;
+}
+
+.grafica-circular .segment:hover {
+  opacity: 0.8;
+}
+
+/* Estilos específicos para gráfica de línea */
+.grafica-linea {
+  border: 1px solid var(--borde-color, #dee2e6);
+  border-radius: 4px;
+  background: var(--blanco, white);
+}
+
+.grafica-linea .data-point {
+  transition: r 0.3s ease;
+  cursor: pointer;
+}
+
+.grafica-linea .data-point:hover {
+  r: 6;
+}
+
+/* Estilos para la leyenda */
+.grafica-leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+.leyenda-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.leyenda-color {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid var(--blanco, white);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.leyenda-texto {
+  color: var(--gris-principal, #495057);
+  font-weight: 500;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .grafica-circular-container,
+  .grafica-linea-container {
+    padding: 15px;
+    margin: 15px 0;
+  }
+  
+  .grafica-titulo {
+    font-size: 16px;
+  }
+  
+  .grafica-content {
+    gap: 15px;
+  }
+  
+  .grafica-leyenda {
+    gap: 10px;
+  }
+  
+  .leyenda-item {
+    font-size: 12px;
+  }
+  
+  .leyenda-color {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .grafica-circular-container,
+  .grafica-linea-container {
+    padding: 10px;
+  }
+  
+  .grafica-leyenda {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}
