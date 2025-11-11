@@ -1,32 +1,32 @@
-import { Navigate } from 'react-router-dom';
-import jwtDecode from 'jwt-decode';
+// src/ProtectedRoute.jsx
+import { Navigate } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
 
 function ProtectedRoute({ role, children }) {
-    const token = sessionStorage.getItem('token');
+  const token = sessionStorage.getItem("token");
+  if (!token) return <Navigate to="/" replace />;
 
-    // Si no hay token, considerar recurso no encontrado para evitar exponer rutas
-    if (!token) return <Navigate to="/NotFound" replace />;
+  try {
+    const decoded = jwtDecode(token);
+    const roles = Array.isArray(role) ? role : [role];
 
-    let decoded;
-    try {
-        decoded = jwtDecode(token);
-    } catch (e) {
-        // token inválido
-    console.warn('ProtectedRoute: token inválido', e);
-    return <Navigate to="/NotFound" replace />;
+    // Verifica expiración del token
+    const now = Date.now() / 1000;
+    if (decoded.exp && decoded.exp < now) {
+      sessionStorage.removeItem("token");
+      return <Navigate to="/" replace />;
     }
 
-    // Nota: no invalidamos la sesión automáticamente por 'exp' aquí.
-    // La aplicación mantiene el token en sessionStorage y solo se eliminará al cerrar sesión
-    // o el navegador. El backend seguirá retornando 401 si el token no es válido y el
-    // interceptor intentará un refresh usando el refreshToken cuando esté disponible.
-
-    // Validar rol si se especificó
-    if (role && decoded.rol !== role) {
-        return <Navigate to="/NotFound" replace />;
+    if (!roles.includes(decoded.rol)) {
+      return <Navigate to="/404" replace />;
     }
 
     return children;
+  } catch (e) {
+    console.error("Error decodificando token:", e);
+    sessionStorage.removeItem("token");
+    return <Navigate to="/" replace />;
+  }
 }
 
 export default ProtectedRoute;

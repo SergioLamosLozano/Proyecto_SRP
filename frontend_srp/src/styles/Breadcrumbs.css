@@ -1,39 +1,70 @@
 .breadcrumbs {
-  margin: 10px 15px;
+  /* Solo margen inferior */
   font-size: 14px;
+  padding: 12px 20px;
+  border-radius: 8px;
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 2;
+  width: 100%; /* Ocupa el 100% del contenedor padre */
+  position: sticky;
+  top: 100px; /* Posición fija debajo del navbar */
+  box-sizing: border-box;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
 }
 
 .breadcrumbs ul {
   list-style: none;
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  flex-wrap: nowrap; /* Evita que se envuelva */
+  gap: 8px; /* Espacio fijo entre elementos */
   padding: 0;
+  margin: 0;
+  align-items: center;
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .breadcrumbs li {
   display: flex;
   align-items: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .breadcrumbs li::after {
-  content: "›";
-  margin: 0 6px;
+  content: ""; /* Separador fijo */
+  margin: 0 1px;
   color: #888;
 }
 
 .breadcrumbs li:last-child::after {
-  content: "";
+  content: ""; /* No hay separador en el último */
 }
 
-.breadcrumbs a {
+.breadcrumb-button {
+  background: none;
+  border: none;
+  color: #007bff;
   text-decoration: none;
-  color: #007bff;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  white-space: nowrap;
+  font-weight: 500;
 }
 
-.breadcrumbs span {
-  font-weight: bold;
-  color: #007bff;
+.breadcrumb-button:hover {
+  background-color: #e3f2fd;
+  color: #0056b3;
+  text-decoration: underline;
 }
 
 .home-button {
@@ -84,7 +115,6 @@
     padding: 10px 15px;
     font-size: 13px;
     background-color: #ffffff;
-    border: 2px solid #007bff;
   }
 
   .breadcrumbs ul {
@@ -116,8 +146,8 @@
     padding: 12px 16px;
     font-size: 12px;
     background-color: #ffffff;
-    border: 2px solid #007bff;
     box-shadow: 0 4px 8px rgba(0, 123, 255, 0.2);
+    margin-top: 30px;
   }
 
   .breadcrumbs ul {
@@ -151,8 +181,8 @@
     overflow-x: auto;
     white-space: nowrap;
     background-color: #ffffff;
-    border: 2px solid #007bff;
     box-shadow: 0 4px 8px rgba(0, 123, 255, 0.25);
+    margin-top: 30px;
   }
 
   .breadcrumbs ul {
@@ -185,6 +215,7 @@
     margin: 0 0 20px 0;
     padding: 8px 10px;
     font-size: 10px;
+    margin-top: 30px;
   }
 
   .breadcrumb-button,

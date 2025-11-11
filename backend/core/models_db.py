@@ -422,3 +422,71 @@ class EstudiantesAcudientes(models.Model):
 
     def __str__(self):
         return f"{self.fk_numero_documento_estudiante} - {self.fk_numero_documento_acudiente}"
+    
+class TipoActividad(models.Model):
+    id_tipo_actividad = models.IntegerField(primary_key=True)
+    descripcion = models.CharField(max_length=100)
+
+    class Meta:
+        db_table = 'tipo_actividad'
+        verbose_name = 'Tipo de Actividad'
+        verbose_name_plural = 'Tipos de Actividad'
+
+    def __str__(self):
+        return self.descripcion
+
+class Actividades(models.Model):
+    id_actividades = models.AutoField( primary_key=True)
+    nombre = models.CharField(max_length=100)
+    descripcion = models.TextField(blank=True, null=True)
+    porcentaje = models.DecimalField(max_digits=5 , decimal_places=2,blank=True, null=True)
+    fecha_inicio = models.DateField(blank=True, null=True)
+    fecha_fin = models.DateField(blank=True, null=True)
+    fk_id_tipo_actividad = models.ForeignKey(
+        Acudiente, 
+        on_delete=models.CASCADE, 
+        db_column='FK_id_tipo_actividad'
+    )
+    fk_id_periodo_academico = models.ForeignKey(
+        Estudiantes, 
+        on_delete=models.CASCADE, 
+        db_column='FK_id_periodo_academico'
+    )
+    fk_id_materia_profesores = models.ForeignKey(
+        TipoAcudiente, 
+        on_delete=models.SET_NULL, 
+        db_column='FK_id_materia_profesores', 
+        blank=True, 
+        null=True
+    )
+
+    class Meta:
+        db_table = 'actividades'
+        verbose_name = 'Actividades'
+        verbose_name_plural = 'Actividades'
+
+    def __str__(self):
+        return self.id_actividad
+    
+class ano_electivo(models.Model) :
+    id_año_electivo = models.IntegerField(primary_key=True, max_length=10)
+    fecha_inicio = models.DateField(blank= True, null=True)
+    fecha_fin = models.DateField(blank= True, null=True)
+
+    class Meta:
+        db_table = "ano_electivo"
+
+    def __str__(self) :
+        return self.id_año_electivo
+
+class Cursos(models.Model) :
+    id_curso = models.AutoField(primary_key=True)
+    nombre = models.CharField(max_length=100, blank= True, null=True)
+    fk_id_año_electivo = models.ForeignKey(ano_electivo, on_delete=models.CASCADE, db_column="FK_id_año_electivo")
+    estado = models.CharField(max_length=50, blank=True)
+
+    class Meta:
+        db_table = "curso"
+
+    def __str__(self) :
+        return self.id_curso

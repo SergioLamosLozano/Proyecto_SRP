@@ -10,6 +10,15 @@ class TipoDocumentoSerializer(serializers.ModelSerializer):
         model = TipoDocumento
         fields = '__all__'
 
+class TipoActividadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TipoActividad
+        fields = '__all__'
+
+class ActividadesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Actividades
+        fields = '__all__'
 
 class TipoEstadoSerializer(serializers.ModelSerializer):
     class Meta:
@@ -34,6 +43,17 @@ class SisbenSerializer(serializers.ModelSerializer):
         model = Sisben
         fields = '__all__'
 
+class AnoElectivoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ano_electivo
+        fields = '__all__'
+
+class CursoSerializer(serializers.ModelSerializer):
+    fecha_inicio = serializers.DateField(source='fk_id_año_electivo.fecha_inicio', read_only=True)
+    fecha_fin = serializers.DateField(source='fk_id_año_electivo.fecha_fin', read_only=True)
+    class Meta:
+        model = Cursos
+        fields = '__all__'
 
 class DiscapacidadSerializer(serializers.ModelSerializer):
     class Meta:
@@ -64,7 +84,7 @@ class CiudadSerializer(serializers.ModelSerializer):
     # Removemos departamento_nombre temporalmente para evitar el error
     class Meta:
         model = Ciudad
-        fields = ['codigo_municipio', 'nombre', 'fk_codigo_departamento']
+        fields = '__all__'
 
 
 class ProcedenciaSerializer(serializers.ModelSerializer):
@@ -162,8 +182,8 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
         token = super().get_token(user)
-
-        # Añadir campos personalizados al token
         token['rol'] = user.rol
         token['username'] = user.username
+        token['first_name'] = user.first_name
+        token['last_name'] = user.last_name
         return token
