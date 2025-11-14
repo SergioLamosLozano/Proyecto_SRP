@@ -137,6 +137,21 @@ class CiudadViewSet(viewsets.ModelViewSet):
     queryset = Ciudad.objects.all()
     serializer_class = CiudadSerializer
 
+class MateriasAsignadasViewSet(viewsets.ModelViewSet):
+    queryset = MateriasAsignadas.objects.all()
+    serializer_class = MateriasAsignadasSerializer
+
+class AreaConocimientoViewSet(viewsets.ModelViewSet):
+    queryset = Area_conocimiento.objects.all()
+    serializer_class = AreaConocimientoSerializer
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['nombre']
+
+class MateriasViewSet(viewsets.ModelViewSet):
+    queryset = Materias.objects.all()
+    serializer_class = MatriaSerializer
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['nombre']
 
 class EstudianteViewSet(viewsets.ModelViewSet):
     queryset = Estudiantes.objects.all()

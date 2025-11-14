@@ -12,6 +12,8 @@ router.register(r"ano_electivo", anoElectivoViewSet, basename = 'Ano_Electivo')
 router.register(r'actividades', ActividadesViewSet, basename='Actividades')
 router.register(r'tipo_actividades', TipoActividadViewSet, basename='Tipo_Actividades')
 router.register(r'estado', EstadoViewSet, basename='Estados')
+router.register(r'materias', MateriasViewSet, basename='Materias')
+router.register(r'area_conocimiento', AreaConocimientoViewSet, basename='Area_Conocimiento')
 router.register(r'cursos', CursoViewSet, basename='Curso')
 router.register(r'departamento', DepartamentoViewSet, basename='Departamentos')
 router.register(r'ciudad', CiudadViewSet, basename='Ciudad')
@@ -20,6 +22,7 @@ router.register(r'profesores', ProfesorViewSet, basename='Profesores')
 router.register(r'acudientes', AcudienteViewSet, basename='Acudientes')
 router.register(r'match-acudientes', AcudienteUserMatchViewSet, basename='match-acudientes')
 router.register(r'estudiantes-acudientes', EstudianteAcudienteViewSet, basename='Estudiante_Acudiente')
+router.register(r'materias_asignadas', MateriasAsignadasViewSet, basename='Materias_Asignadas')
 
 urlpatterns = [
     path('token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),

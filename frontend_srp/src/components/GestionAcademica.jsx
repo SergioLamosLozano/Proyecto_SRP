@@ -2,15 +2,117 @@ import React, { useEffect, useState } from "react";
 import "../styles/GestionAcademica.css";
 import Breadcrumbs from "./Breadcrumbs";
 import Table from "./Table";
-import { Cursos } from "../api/cursos";
+import {
+  Año_electivo,
+  Cursos,
+  EditarCurso,
+  EditarMateria,
+  EliminarCurso,
+  EliminarMateria,
+  Materias,
+  MateriasAsignadas,
+  NuevaMateria,
+  NuevoCurso,
+} from "../api/cursos";
 import Modal from "./modal";
+import Swal from "sweetalert2";
 
 const GestionAcademica = ({ onBack }) => {
   const [currentSubSection, setCurrentSubSection] = useState(null);
   const [activeAssignmentTab, setActiveAssignmentTab] = useState(
     "materias-profesores"
   );
+  const [Año, setAño] = useState([]);
+  //uses states de cursos
   const [modal, setmodal] = useState(false);
+  const [nombrecurso, setnombrecurso] = useState("");
+  const [fkIdFecha, setfkIdFecha] = useState(2025);
+  const [estado, setEstado] = useState("Activo");
+  const [id, setid] = useState(null);
+  // lo que abre el modal
+  const [editar, setEditar] = useState(false);
+  // useStates de materia
+  const [nombremateria, setnombremateria] = useState("");
+  const [porcentajePonderado, setPorsentajePonderado] = useState(0);
+  const [areasDeConocimiento, setAreasDeConocimiento] = useState(0);
+  const [estadoMateria, setEstadoMateria] = useState("Activo");
+
+  const fetchAñosElectivos = async () => {
+    try {
+      const respons = await Año_electivo();
+      setAño(respons.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const AgregarCurso = async () => {
+    if (nombrecurso && fkIdFecha && estado) {
+      try {
+        const response = await NuevoCurso({
+          nombre: nombrecurso,
+          fk_id_año_electivo: fkIdFecha,
+          estado: estado,
+        });
+        Swal.fire({
+          icon: "success",
+          text: "Curso creado con exito",
+          timer: 3000,
+        }).then(() => {
+          cerrarModal();
+          fetchCursos();
+        });
+      } catch (error) {
+        console.log(error);
+      }
+    } else {
+      Swal.fire({
+        icon: "info",
+        text: "Llene todos los campos",
+        timer: 3000,
+      });
+    }
+  };
+
+  const AgregarMateria = async () => {
+    if (
+      nombremateria &&
+      porcentajePonderado != 0 &&
+      areasDeConocimiento &&
+      estadoMateria
+    ) {
+      try {
+        const response = await NuevaMateria({
+          nombre: nombremateria,
+          porcentaje_ponderado: porcentajePonderado,
+          fk_Id_area_conocimiento: areasDeConocimiento,
+          estado: estadoMateria,
+        });
+        Swal.fire({
+          icon: "success",
+          text: "Materia creada con exito",
+          timer: 3000,
+        }).then(() => {
+          cerrarModal();
+          fetchMaterias();
+        });
+      } catch (error) {
+        console.log(error);
+      }
+    } else {
+      console.log(
+        nombremateria,
+        porcentajePonderado,
+        areasDeConocimiento,
+        estadoMateria
+      );
+      Swal.fire({
+        icon: "info",
+        text: "Llene todos los campos",
+        timer: 3000,
+      });
+    }
+  };
 
   const breadcrumbItems = [
     { label: "Inicio", path: "/coordinacion" },
@@ -63,148 +165,44 @@ const GestionAcademica = ({ onBack }) => {
   // Datos de ejemplo basados en la estructura de la BD
   const [cursos, setCursos] = useState([]);
 
-  useEffect(() => {
-    const fetchCursos = async () => {
-      try {
-        const response = await Cursos();
-        setCursos(response.data);
-      } catch (error) {
-        console.log(error);
-      }
-    };
+  const fetchCursos = async () => {
+    try {
+      const response = await Cursos();
+      setCursos(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
+  const fetchMaterias = async () => {
+    try {
+      const response = await Materias();
+      setMaterias(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const fetchMateriasAsignadas = async () => {
+    try {
+      const response = await MateriasAsignadas();
+      setMateriaProfesores(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
     fetchCursos();
+    fetchMaterias();
+    fetchAñosElectivos();
+    fetchMateriasAsignadas();
   }, []);
 
-  const [materias, setMaterias] = useState([
-    {
-      id_materia: 1,
-      nombre: "Matemáticas",
-      id_area_conocimiento: 1,
-      area_conocimiento: "Ciencias Exactas",
-      porcentaje_ponderado: 25.0,
-      estado: "Activa",
-    },
-    {
-      id_materia: 2,
-      nombre: "Ciencias Naturales",
-      id_area_conocimiento: 2,
-      area_conocimiento: "Ciencias Naturales",
-      porcentaje_ponderado: 20.0,
-      estado: "Activa",
-    },
-    {
-      id_materia: 3,
-      nombre: "Español y Literatura",
-      id_area_conocimiento: 3,
-      area_conocimiento: "Humanidades",
-      porcentaje_ponderado: 20.0,
-      estado: "Activa",
-    },
-    {
-      id_materia: 4,
-      nombre: "Tecnología e Informática",
-      id_area_conocimiento: 4,
-      area_conocimiento: "Tecnología",
-      porcentaje_ponderado: 15.0,
-      estado: "Activa",
-    },
-  ]);
+  const [materias, setMaterias] = useState([]);
 
-  const [materiaProfesores, setMateriaProfesores] = useState([
-    {
-      id_materia_profesores: 1,
-      id_materia: 1,
-      numero_documento_profesor: "52847392",
-      nombre_profesor: "Dr. María Elena González",
-      materia: "Matemáticas",
-      id_curso: 1,
-      curso: "Sexto A",
-      usuario_creacion: "admin",
-      usuario_asignado: "admin",
-    },
-    {
-      id_materia_profesores: 2,
-      id_materia: 2,
-      numero_documento_profesor: "41739582",
-      nombre_profesor: "Lic. Roberto Martínez",
-      materia: "Ciencias Naturales",
-      id_curso: 1,
-      curso: "Sexto A",
-      usuario_creacion: "admin",
-      usuario_asignado: "admin",
-    },
-  ]);
+  const [materiaProfesores, setMateriaProfesores] = useState([]);
 
-  const [profesores] = useState([
-    {
-      numero_documento_profesor: "52847392",
-      nombre1: "María",
-      nombre2: "Elena",
-      apellido1: "González",
-      apellido2: "Pérez",
-      correo: "maria.gonzalez@colegio.edu.co",
-      direccion: "Calle 123 #45-67",
-      telefono1: "3001234567",
-      telefono2: "6012345678",
-    },
-    {
-      numero_documento_profesor: "41739582",
-      nombre1: "Roberto",
-      nombre2: "Carlos",
-      apellido1: "Martínez",
-      apellido2: "López",
-      correo: "roberto.martinez@colegio.edu.co",
-      direccion: "Carrera 89 #12-34",
-      telefono1: "3009876543",
-      telefono2: "6019876543",
-    },
-  ]);
-
-  const [areasConocimiento] = useState([
-    { id_area_conocimiento: 1, nombre: "Ciencias Exactas" },
-    { id_area_conocimiento: 2, nombre: "Ciencias Naturales" },
-    { id_area_conocimiento: 3, nombre: "Humanidades" },
-    { id_area_conocimiento: 4, nombre: "Tecnología" },
-    { id_area_conocimiento: 5, nombre: "Educación Física" },
-    { id_area_conocimiento: 6, nombre: "Artes" },
-  ]);
-
-  // Datos de estudiantes para asignaciones
-  const [estudiantes] = useState([
-    {
-      numero_documento_estudiante: "1234567890",
-      nombre1: "Juan",
-      nombre2: "Carlos",
-      apellido1: "Pérez",
-      apellido2: "González",
-      correo: "juan.perez@estudiante.edu.co",
-      telefono: "3001234567",
-      direccion: "Calle 10 #20-30",
-    },
-    {
-      numero_documento_estudiante: "0987654321",
-      nombre1: "Ana",
-      nombre2: "María",
-      apellido1: "López",
-      apellido2: "Martínez",
-      correo: "ana.lopez@estudiante.edu.co",
-      telefono: "3009876543",
-      direccion: "Carrera 15 #25-35",
-    },
-    {
-      numero_documento_estudiante: "1122334455",
-      nombre1: "Carlos",
-      nombre2: "Andrés",
-      apellido1: "Rodríguez",
-      apellido2: "Silva",
-      correo: "carlos.rodriguez@estudiante.edu.co",
-      telefono: "3005556677",
-      direccion: "Avenida 30 #40-50",
-    },
-  ]);
-
-  // Asignaciones de estudiantes a cursos
   const [estudianteCursos, setEstudianteCursos] = useState([
     {
       id_clases_estudiantes: 1,
@@ -255,6 +253,179 @@ const GestionAcademica = ({ onBack }) => {
     }
   };
 
+  const Eliminarcurso = async (item) => {
+    if (item.id_curso) {
+      const result = await Swal.fire({
+        title: "¿Eliminar curso?",
+        text: "Esta acción eliminará el curso permanentemente.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#c41e3a",
+        cancelButtonColor: "#c41e3a",
+        confirmButtonText: "Sí, eliminar",
+        cancelButtonText: "No, cancelar",
+      });
+
+      if (result.isConfirmed) {
+        try {
+          const respons = await EliminarCurso(item.id_curso);
+          Swal.fire({
+            icon: "success",
+            text: "Curso eliminado con exito",
+            timer: 3000,
+          }).then(() => {
+            fetchCursos();
+          });
+        } catch (error) {
+          console.log(error);
+          Swal.fire({
+            icon: "error",
+            text: "Error en la respuesta del servidor, intente nuevamente",
+            timer: 3000,
+          });
+        }
+      }
+    }
+  };
+
+  const EditarDatosModal = async () => {
+    if (nombrecurso && fkIdFecha && estado) {
+      try {
+        const response = await EditarCurso(id, {
+          nombre: nombrecurso,
+          fk_id_año_electivo: fkIdFecha,
+          estado: estado,
+        });
+        Swal.fire({
+          icon: "success",
+          text: "Curso modificado con exito",
+          timer: 3000,
+        }).then(() => {
+          cerrarModal();
+          fetchCursos();
+        });
+      } catch (error) {
+        console.log(error);
+        Swal.fire({
+          icon: "error",
+          text: "Error en la respuesta del servidor, intente nuevamente",
+          timer: 3000,
+        });
+      }
+    } else {
+      Swal.fire({
+        icon: "info",
+        text: "Llene todos los campos",
+        timer: 3000,
+      });
+    }
+  };
+
+  const AbrirModalConDatos = (item) => {
+    setEditar(true);
+    setmodal(true);
+    setnombrecurso(item.nombre || "");
+    setfkIdFecha(item.fk_id_año_electivo || "");
+    setEstado(item.estado || "");
+    setid(item.id_curso);
+  };
+
+  const AbrirModalConDatosMateria = (item) => {
+    setEditar(true);
+    setmodal(true);
+    setnombremateria(item.nombre || "");
+    setPorsentajePonderado(item.porcentaje_ponderado || 0);
+    setAreasDeConocimiento(item.fk_Id_area_conocimiento || 0);
+    setEstadoMateria(item.estado || "");
+    setid(item.id_materia);
+  };
+
+  const cerrarModal = () => {
+    setmodal(false);
+    setnombrecurso("");
+    setfkIdFecha(2025);
+    setEstado("Activo");
+    setid(null);
+    setnombremateria("");
+    setPorsentajePonderado(0);
+    setAreasDeConocimiento(0);
+    setEstadoMateria("Activo");
+  };
+
+  const Eliminarmateria = async (item) => {
+    if (item.id_materia) {
+      const result = await Swal.fire({
+        title: "¿Eliminar curso?",
+        text: "Esta acción eliminará el curso permanentemente.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#c41e3a",
+        cancelButtonColor: "#c41e3a",
+        confirmButtonText: "Sí, eliminar",
+        cancelButtonText: "No, cancelar",
+      });
+
+      if (result.isConfirmed) {
+        try {
+          const respons = await EliminarMateria(item.id_materia);
+          Swal.fire({
+            icon: "success",
+            text: "Materia eliminado con exito",
+            timer: 3000,
+          }).then(() => {
+            fetchMaterias();
+          });
+        } catch (error) {
+          console.log(error);
+          Swal.fire({
+            icon: "error",
+            text: "Error en la respuesta del servidor, intente nuevamente",
+            timer: 3000,
+          });
+        }
+      }
+    }
+  };
+
+  const EditarDatosMateria = async () => {
+    if (
+      nombremateria &&
+      porcentajePonderado != 0 &&
+      areasDeConocimiento != 0 &&
+      estadoMateria
+    ) {
+      try {
+        const response = await EditarMateria(id, {
+          nombre: nombremateria,
+          porcentaje_ponderado: porcentajePonderado,
+          fk_Id_area_conocimiento: areasDeConocimiento,
+          estado: estadoMateria,
+        });
+        Swal.fire({
+          icon: "success",
+          text: "Materia modificado con exito",
+          timer: 3000,
+        }).then(() => {
+          cerrarModal();
+          fetchMaterias();
+        });
+      } catch (error) {
+        console.log(error);
+        Swal.fire({
+          icon: "error",
+          text: "Error en la respuesta del servidor, intente nuevamente",
+          timer: 3000,
+        });
+      }
+    } else {
+      Swal.fire({
+        icon: "info",
+        text: "Llene todos los campos",
+        timer: 3000,
+      });
+    }
+  };
+
   const renderSubSection = () => {
     switch (currentSubSection) {
       case "cursos":
@@ -281,18 +452,38 @@ const GestionAcademica = ({ onBack }) => {
 
             {modal && (
               <Modal
-                titulo="Crear curso"
+                titulo={editar ? "Editar Curso" : "Crear Curso"}
                 inputs={[
-                  { nombre: "cedula", type: "numbre" },
-                  { nombre: "cedula", type: "numbre" },
-                  { nombre: "cedula", type: "numbre" },
-                  { nombre: "cedula", type: "numbre" },
-                  { nombre: "cedula", type: "numbre" },
-                  { nombre: "cedula", type: "numbre" },
+                  {
+                    nombre: "Nombre del curso",
+                    type: "text",
+                    value: nombrecurso,
+                    onChange: (e) => setnombrecurso(e.target.value),
+                  },
+                  {
+                    nombre: "Año Electivo",
+                    type: "number",
+                    value: fkIdFecha,
+                    onChange: (e) => setfkIdFecha(e.target.value),
+                    placeholder: "año del curso",
+                  },
                 ]}
                 acciones={[
-                  { nombre: "Guardar" },
-                  { nombre: "cerrar", click: () => setmodal(false) },
+                  editar
+                    ? { nombre: "Editar", click: () => EditarDatosModal() }
+                    : { nombre: "Guardar", click: () => AgregarCurso() },
+                  { nombre: "cerrar", click: () => cerrarModal() },
+                ]}
+                select={[
+                  {
+                    nombre: "Estado",
+                    value: estado,
+                    onChange: (e) => setEstado(e.target.value),
+                    opciones: [
+                      { value: "Activo", title: "Activo" },
+                      { value: "InActivo", title: "InActivo" },
+                    ],
+                  },
                 ]}
               />
             )}
@@ -302,7 +493,11 @@ const GestionAcademica = ({ onBack }) => {
               data={cursos}
               columns={[
                 { key: "id_curso", label: "ID", sortable: true },
-                { key: "nombre", label: "Nombre del Curso", sortable: true },
+                {
+                  key: "nombre",
+                  label: "Nombre del Curso",
+                  sortable: true,
+                },
                 {
                   key: "fk_id_año_electivo",
                   label: "Año Electivo",
@@ -317,8 +512,16 @@ const GestionAcademica = ({ onBack }) => {
                 { key: "estado", label: "Estado", sortable: true },
               ]}
               actions={[
-                { label: "Editar", icon: "✏️", variant: "edit" },
-                { label: "Eliminar", icon: "🗑️", variant: "delete" },
+                {
+                  label: "Editar ✏️",
+                  icon: "✏️",
+                  variant: "edit",
+                  onClick: (item) => AbrirModalConDatos(item),
+                },
+                {
+                  label: "Eliminar 🗑️",
+                  onClick: (item) => Eliminarcurso(item),
+                },
               ]}
               onAction={(action, item) => {
                 console.log(`Acción ${action} en curso:`, item);
@@ -338,12 +541,72 @@ const GestionAcademica = ({ onBack }) => {
               </p>
             </div>
 
-            <div className="table-actions">
+            <div
+              className="table-actions"
+              onClick={() => {
+                setmodal(true);
+              }}
+            >
               <button className="btn-primary">
                 <span className="icon">➕</span>
                 Agregar Materia
               </button>
             </div>
+
+            {modal && (
+              <Modal
+                titulo={editar ? "Editar Materia" : "Crear Materia"}
+                inputs={[
+                  {
+                    nombre: "Nombre de la materia",
+                    type: "text",
+                    placeholder: "nombre",
+                    value: nombremateria,
+                    onChange: (e) => setnombremateria(e.target.value),
+                  },
+                  {
+                    nombre: "porcentaje ponderado",
+                    type: "number",
+                    step: "0.01",
+                    value: porcentajePonderado,
+                    onChange: (e) => setPorsentajePonderado(e.target.value),
+                    placeholder: "Porcetaje de la materia",
+                  },
+                ]}
+                acciones={[
+                  editar
+                    ? { nombre: "Editar", click: () => EditarDatosMateria() }
+                    : { nombre: "Guardar", click: () => AgregarMateria() },
+                  { nombre: "cerrar", click: () => cerrarModal() },
+                ]}
+                select={[
+                  {
+                    nombre: "Areas de conocimineto",
+                    value: areasDeConocimiento,
+                    onChange: (e) => setAreasDeConocimiento(e.target.value),
+                    opciones: [
+                      { value: "1", title: "Biología" },
+                      { value: "2", title: "Lenguaje y Comunicación" },
+                      {
+                        value: "3",
+                        title: "Matemáticas y Razonamiento Lógico",
+                      },
+                      { value: "4", title: "Educación Física y Deportes" },
+                      { value: "5", title: "Ciencias Sociales y Humanidades" },
+                    ],
+                  },
+                  {
+                    nombre: "Estado",
+                    value: estadoMateria,
+                    onChange: (e) => setEstadoMateria(e.target.value),
+                    opciones: [
+                      { value: "Activo", title: "Activo" },
+                      { value: "InActivo", title: "InActivo" },
+                    ],
+                  },
+                ]}
+              />
+            )}
 
             <Table
               data={materias}
@@ -355,7 +618,7 @@ const GestionAcademica = ({ onBack }) => {
                   sortable: true,
                 },
                 {
-                  key: "area_conocimiento",
+                  key: "nombre_area_conocimiento",
                   label: "Área de Conocimiento",
                   sortable: true,
                 },
@@ -367,8 +630,18 @@ const GestionAcademica = ({ onBack }) => {
                 { key: "estado", label: "Estado", sortable: true },
               ]}
               actions={[
-                { label: "Editar", icon: "✏️", variant: "edit" },
-                { label: "Eliminar", icon: "🗑️", variant: "delete" },
+                {
+                  label: "Editar ✏️",
+                  icon: "✏️",
+                  variant: "edit",
+                  onClick: (item) => AbrirModalConDatosMateria(item),
+                },
+                {
+                  label: "Eliminar 🗑️",
+                  icon: "🗑️",
+                  variant: "delete",
+                  onClick: (item) => Eliminarmateria(item),
+                },
               ]}
               onAction={(action, item) => {
                 console.log(`Acción ${action} en materia:`, item);
@@ -409,7 +682,12 @@ const GestionAcademica = ({ onBack }) => {
               </button>
             </div>
 
-            <div className="table-actions">
+            <div
+              className="table-actions"
+              onClick={() => {
+                setmodal(true);
+              }}
+            >
               <button className="btn-primary">
                 <span className="icon">➕</span>
                 {activeAssignmentTab === "materias-profesores"
@@ -418,21 +696,140 @@ const GestionAcademica = ({ onBack }) => {
               </button>
             </div>
 
+            {activeAssignmentTab === "materias-profesores"
+              ? modal && (
+                  <Modal
+                    titulo={editar ? "Editar Asignacion" : "Asignar Materia"}
+                    inputs={[
+                      {
+                        nombre: "Numero de documento prof.",
+                        type: "number",
+                        placeholder: "numero documento",
+                        value: nombremateria,
+                        onChange: (e) => setnombremateria(e.target.value),
+                      },
+                    ]}
+                    acciones={[
+                      editar
+                        ? {
+                            nombre: "Editar",
+                            click: () => EditarDatosMateria(),
+                          }
+                        : { nombre: "Guardar", click: () => AgregarMateria() },
+                      { nombre: "cerrar", click: () => cerrarModal() },
+                    ]}
+                    select={[
+                      {
+                        nombre: "Materias",
+                        value: areasDeConocimiento,
+                        onChange: (e) => setAreasDeConocimiento(e.target.value),
+                        opciones: materias.map((item) => ({
+                          value: item.id_materia,
+                          title: item.nombre,
+                        })),
+                      },
+                      {
+                        nombre: "Cursos",
+                        value: estadoMateria,
+                        onChange: (e) => setEstadoMateria(e.target.value),
+                        opciones: cursos.map((item) => ({
+                          value: item.id_curso,
+                          title: item.nombre,
+                        })),
+                      },
+                      {
+                        nombre: "Años",
+                        value: estadoMateria,
+                        onChange: (e) => setEstadoMateria(e.target.value),
+                        opciones: Año.map((item) => ({
+                          value: item.id_año_electivo,
+                          title: item.id_año_electivo,
+                        })),
+                      },
+                    ]}
+                  />
+                )
+              : modal && (
+                  <Modal
+                    titulo={editar ? "Editar Materia" : "Crear Materia"}
+                    inputs={[
+                      {
+                        nombre: "Nombre de la materia",
+                        type: "text",
+                        placeholder: "nombre",
+                        value: nombremateria,
+                        onChange: (e) => setnombremateria(e.target.value),
+                      },
+                      {
+                        nombre: "porcentaje ponderado",
+                        type: "number",
+                        step: "0.01",
+                        value: porcentajePonderado,
+                        onChange: (e) => setPorsentajePonderado(e.target.value),
+                        placeholder: "Porcetaje de la materia",
+                      },
+                    ]}
+                    acciones={[
+                      editar
+                        ? {
+                            nombre: "Editar",
+                            click: () => EditarDatosMateria(),
+                          }
+                        : { nombre: "Guardar", click: () => AgregarMateria() },
+                      { nombre: "cerrar", click: () => cerrarModal() },
+                    ]}
+                    select={[
+                      {
+                        nombre: "Areas de conocimineto",
+                        value: areasDeConocimiento,
+                        onChange: (e) => setAreasDeConocimiento(e.target.value),
+                        opciones: [
+                          { value: "1", title: "Biología" },
+                          { value: "2", title: "Lenguaje y Comunicación" },
+                          {
+                            value: "3",
+                            title: "Matemáticas y Razonamiento Lógico",
+                          },
+                          { value: "4", title: "Educación Física y Deportes" },
+                          {
+                            value: "5",
+                            title: "Ciencias Sociales y Humanidades",
+                          },
+                        ],
+                      },
+                      {
+                        nombre: "Estado",
+                        value: estadoMateria,
+                        onChange: (e) => setEstadoMateria(e.target.value),
+                        opciones: [
+                          { value: "Activo", title: "Activo" },
+                          { value: "InActivo", title: "InActivo" },
+                        ],
+                      },
+                    ]}
+                  />
+                )}
+
             {activeAssignmentTab === "materias-profesores" ? (
               <Table
                 data={materiaProfesores}
                 columns={[
                   { key: "id_materia_profesores", label: "ID", sortable: true },
-                  { key: "materia", label: "Materia", sortable: true },
-                  { key: "nombre_profesor", label: "Profesor", sortable: true },
-                  { key: "curso", label: "Curso", sortable: true },
+                  { key: "fk_id_materia", label: "Materia", sortable: true },
                   {
-                    key: "usuario_creacion",
+                    key: "fk_numero_documento_profesor",
+                    label: "Profesor",
+                    sortable: true,
+                  },
+                  { key: "fk_id_curso", label: "Curso", sortable: true },
+                  { key: "fk_id_año_electivo", label: "Año", sortable: true },
+                  {
+                    key: "fk_usuario_creacion",
                     label: "Creado por",
                     sortable: true,
                   },
                   {
-                    key: "usuario_asignado",
+                    key: "fk_usuario_asignado",
                     label: "Asignado por",
                     sortable: true,
                   },

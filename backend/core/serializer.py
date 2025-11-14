@@ -48,11 +48,22 @@ class AnoElectivoSerializer(serializers.ModelSerializer):
         model = ano_electivo
         fields = '__all__'
 
+class AreaConocimientoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Area_conocimiento
+        fields = '__all__'
+
 class CursoSerializer(serializers.ModelSerializer):
     fecha_inicio = serializers.DateField(source='fk_id_año_electivo.fecha_inicio', read_only=True)
     fecha_fin = serializers.DateField(source='fk_id_año_electivo.fecha_fin', read_only=True)
     class Meta:
         model = Cursos
+        fields = '__all__'
+
+class MatriaSerializer(serializers.ModelSerializer):
+    nombre_area_conocimiento = serializers.CharField(source='fk_Id_area_conocimiento.nombre', read_only=True)
+    class Meta:
+        model = Materias
         fields = '__all__'
 
 class DiscapacidadSerializer(serializers.ModelSerializer):
@@ -187,3 +198,18 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         token['first_name'] = user.first_name
         token['last_name'] = user.last_name
         return token
+
+class MateriasAsignadasSerializer(serializers.ModelSerializer):
+    fk_numero_documento_profesor = serializers.SerializerMethodField()
+    def get_fk_numero_documento_profesor(self, obj):
+        prof = obj.fk_numero_documento_profesor
+        return f"{prof.nombre1 or ''} {prof.nombre2 or ''}".strip()
+    fk_id_materia = serializers.CharField(source='fk_id_materia.nombre', read_only=True)
+    fk_id_curso = serializers.CharField(source='fk_id_curso.nombre', read_only=True)
+    fk_id_año_electivo = serializers.CharField(source='fk_id_año_electivo.id_año_electivo', read_only=True)
+    fk_usuario_creacion = serializers.CharField(source='fk_usuario_creacion.username', read_only=True)
+    fk_usuario_asignado = serializers.CharField(source='fk_usuario_asignado.username', read_only=True)
+
+    class Meta:
+        model = MateriasAsignadas
+        fields = '__all__'
