@@ -228,6 +228,14 @@
   gap: 10px;
 }
 
+.Login-form input {
+  outline: none;
+}
+.Login-form input:focus {
+  border: var(--rojo-institucional) 1px inset;
+  box-shadow: 0px 0px 5px rgba(255, 0, 0, 0.377);
+}
+
 .Login-Inputs {
   width: 96%;
   margin-left: 2px;

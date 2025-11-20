@@ -2,6 +2,7 @@
 # Estos modelos han sido ajustados para funcionar correctamente con Django
 
 from django.db import models
+from core.models import User
 
 
 # Modelos de catálogos/tipos
@@ -490,3 +491,43 @@ class Cursos(models.Model) :
 
     def __str__(self) :
         return self.id_curso
+
+class Area_conocimiento(models.Model) :
+    id_area_conocimiento = models.AutoField(primary_key=True, max_length=10)
+    nombre = models.CharField(max_length=100, blank= True, null=True)
+
+    class Meta:
+        db_table = "area_conocimiento"
+
+    def __str__(self) :
+        return self.id_area_conocimiento
+
+
+class Materias(models.Model) :
+    id_materia = models.AutoField(primary_key=True)
+    nombre = models.CharField(max_length=100, blank= True, null=True)
+    porcentaje_ponderado = models.DecimalField(max_digits=5, decimal_places=2)
+    fk_Id_area_conocimiento = models.ForeignKey(Area_conocimiento, on_delete=models.CASCADE, db_column="FK_Id_area_conocimiento")
+    estado = models.CharField(max_length=50)
+
+    class Meta:
+        db_table = "materias"
+
+    def __str__(self) :
+        return self.id_materia
+    
+class MateriasAsignadas(models.Model) :
+    id_materia_profesores = models.AutoField(primary_key=True)
+    fk_numero_documento_profesor = models.ForeignKey(Profesores, on_delete=models.CASCADE, db_column="numero_documento_profesor")
+    fk_id_materia = models.ForeignKey(Materias, on_delete=models.CASCADE, db_column="id_materia")
+    fk_id_curso = models.ForeignKey(Cursos, on_delete=models.CASCADE, db_column="id_curso")
+    fk_id_año_electivo = models.ForeignKey(ano_electivo, on_delete=models.CASCADE, db_column="id_año_electivo")
+    fk_usuario_creacion = models.ForeignKey(User, on_delete=models.CASCADE, db_column="usuario_creacion", related_name="materias_creadas")
+
+    fk_usuario_asignado = models.ForeignKey(User, on_delete=models.CASCADE, db_column="usuario_asignado", related_name="materias_asignadas")
+
+    class Meta:
+        db_table = "materia_profesores"
+
+    def __str__(self) :
+        return self.id_materia_profesores
