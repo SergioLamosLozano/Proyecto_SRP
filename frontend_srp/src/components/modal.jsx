@@ -21,6 +21,7 @@ function Modal({ titulo, inputs = [], acciones = [], select = [] }) {
               <input
                 type={item.type || "text"}
                 step={item.step}
+                disabled={item.disabled}
                 placeholder={item.placeholder || item.nombre}
                 value={item.value}
                 onChange={item.onChange}

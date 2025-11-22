@@ -4,11 +4,14 @@ import Breadcrumbs from "./Breadcrumbs";
 import Table from "./Table";
 import {
   Año_electivo,
+  CrearMateriaAsignada,
   Cursos,
   EditarCurso,
   EditarMateria,
+  EditarMateriaAsignada,
   EliminarCurso,
   EliminarMateria,
+  EliminarMateriaAsignada,
   Materias,
   MateriasAsignadas,
   NuevaMateria,
@@ -16,6 +19,7 @@ import {
 } from "../api/cursos";
 import Modal from "./modal";
 import Swal from "sweetalert2";
+import { jwtDecode } from "jwt-decode";
 
 const GestionAcademica = ({ onBack }) => {
   const [currentSubSection, setCurrentSubSection] = useState(null);
@@ -36,6 +40,14 @@ const GestionAcademica = ({ onBack }) => {
   const [porcentajePonderado, setPorsentajePonderado] = useState(0);
   const [areasDeConocimiento, setAreasDeConocimiento] = useState(0);
   const [estadoMateria, setEstadoMateria] = useState("Activo");
+  // useStates de materiaAsinada
+  const [numeroDocumetoP, setNumeroDocumetoP] = useState("");
+  const [materiasAsiganad, setMateriasAsiganad] = useState(0);
+  const [cursosAsiganados, setCursosAsiganados] = useState(0);
+  const [añoAsiganado, setAñoAsiganado] = useState(2025);
+  const [usuario_creacion, setUsuario_creacion] = useState("");
+  // id usuario creacion
+  const [usuarioid, setUsuarioid] = useState(0);
 
   const fetchAñosElectivos = async () => {
     try {
@@ -100,12 +112,42 @@ const GestionAcademica = ({ onBack }) => {
         console.log(error);
       }
     } else {
-      console.log(
-        nombremateria,
-        porcentajePonderado,
-        areasDeConocimiento,
-        estadoMateria
-      );
+      Swal.fire({
+        icon: "info",
+        text: "Llene todos los campos",
+        timer: 3000,
+      });
+    }
+  };
+
+  const AgregarMateriaAsignada = async () => {
+    if (
+      numeroDocumetoP &&
+      materiasAsiganad != 0 &&
+      cursosAsiganados != 0 &&
+      añoAsiganado != 0 &&
+      usuarioid
+    ) {
+      try {
+        const response = await CrearMateriaAsignada({
+          fk_numero_documento_profesor: numeroDocumetoP,
+          fk_id_materia: materiasAsiganad,
+          fk_id_curso: cursosAsiganados,
+          fk_id_año_electivo: añoAsiganado,
+          fk_usuario_creacion: usuarioid,
+        });
+        Swal.fire({
+          icon: "success",
+          text: "Asignadas creada con exito",
+          timer: 3000,
+        }).then(() => {
+          cerrarModal();
+          fetchMateriasAsignadas();
+        });
+      } catch (error) {
+        console.log(error);
+      }
+    } else {
       Swal.fire({
         icon: "info",
         text: "Llene todos los campos",
@@ -192,11 +234,19 @@ const GestionAcademica = ({ onBack }) => {
     }
   };
 
+  const ObtenerIdUsuario = () => {
+    const tokenid = sessionStorage.getItem("token");
+    const decoded = jwtDecode(tokenid);
+
+    setUsuarioid(decoded.user_id);
+  };
+
   useEffect(() => {
     fetchCursos();
     fetchMaterias();
     fetchAñosElectivos();
     fetchMateriasAsignadas();
+    ObtenerIdUsuario();
   }, []);
 
   const [materias, setMaterias] = useState([]);
@@ -321,6 +371,83 @@ const GestionAcademica = ({ onBack }) => {
     }
   };
 
+  const EliminarMateriaA = async (item) => {
+    if (item.id_materia_profesores) {
+      const result = await Swal.fire({
+        title: "¿Eliminar Asignacion?",
+        text: "Esta acción eliminará la asignacion permanentemente.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#c41e3a",
+        cancelButtonColor: "#c41e3a",
+        confirmButtonText: "Sí, eliminar",
+        cancelButtonText: "No, cancelar",
+      });
+
+      if (result.isConfirmed) {
+        try {
+          const respons = await EliminarMateriaAsignada(
+            item.id_materia_profesores
+          );
+          Swal.fire({
+            icon: "success",
+            text: "Asignacion eliminado con exito",
+            timer: 3000,
+          }).then(() => {
+            fetchMateriasAsignadas();
+          });
+        } catch (error) {
+          console.log(error);
+          Swal.fire({
+            icon: "error",
+            text: "Error en la respuesta del servidor, intente nuevamente",
+            timer: 3000,
+          });
+        }
+      }
+    }
+  };
+
+  const EditarDatosModalMateriaAsignada = async () => {
+    if (
+      numeroDocumetoP &&
+      materiasAsiganad != 0 &&
+      cursosAsiganados != 0 &&
+      añoAsiganado != 0 &&
+      usuarioid
+    ) {
+      try {
+        const response = await EditarMateriaAsignada(id, {
+          fk_numero_documento_profesor: numeroDocumetoP,
+          fk_id_materia: materiasAsiganad,
+          fk_id_curso: cursosAsiganados,
+          fk_id_año_electivo: añoAsiganado,
+        });
+        Swal.fire({
+          icon: "success",
+          text: "Asignacion modificado con exito",
+          timer: 3000,
+        }).then(() => {
+          cerrarModal();
+          fetchMateriasAsignadas();
+        });
+      } catch (error) {
+        console.log(error);
+        Swal.fire({
+          icon: "error",
+          text: "Error en la respuesta del servidor, intente nuevamente",
+          timer: 3000,
+        });
+      }
+    } else {
+      Swal.fire({
+        icon: "info",
+        text: "Llene todos los campos",
+        timer: 3000,
+      });
+    }
+  };
+
   const AbrirModalConDatos = (item) => {
     setEditar(true);
     setmodal(true);
@@ -340,16 +467,36 @@ const GestionAcademica = ({ onBack }) => {
     setid(item.id_materia);
   };
 
+  const AbrirModalConDatosMateriaAsignada = (item) => {
+    setEditar(true);
+    setmodal(true);
+    setNumeroDocumetoP(item.fk_numero_documento_profesor || "");
+    setMateriasAsiganad(item.fk_id_materia || 0);
+    setCursosAsiganados(item.fk_id_curso || 0);
+    setAñoAsiganado(item.fk_id_año_electivo || "");
+    setUsuario_creacion(item.usuario_creacion_nombre || "");
+    setid(item.id_materia_profesores);
+  };
+
   const cerrarModal = () => {
+    setEditar(false);
+    //cursosss
     setmodal(false);
     setnombrecurso("");
     setfkIdFecha(2025);
     setEstado("Activo");
     setid(null);
+    //materiasss
     setnombremateria("");
     setPorsentajePonderado(0);
     setAreasDeConocimiento(0);
     setEstadoMateria("Activo");
+    //materias asignadas
+    setNumeroDocumetoP("");
+    setMateriasAsiganad(0);
+    setCursosAsiganados(0);
+    setAñoAsiganado("");
+    setUsuario_creacion("");
   };
 
   const Eliminarmateria = async (item) => {
@@ -491,6 +638,7 @@ const GestionAcademica = ({ onBack }) => {
             <Table
               id="Cursos"
               data={cursos}
+              busqueda={["fecha_inicio", "fecha_fin", "nombre"]}
               columns={[
                 { key: "id_curso", label: "ID", sortable: true },
                 {
@@ -609,7 +757,9 @@ const GestionAcademica = ({ onBack }) => {
             )}
 
             <Table
+              id="Materias"
               data={materias}
+              busqueda={["nombre_area_conocimiento", "nombre", "estado"]}
               columns={[
                 { key: "id_materia", label: "ID", sortable: true },
                 {
@@ -654,7 +804,18 @@ const GestionAcademica = ({ onBack }) => {
       case "asignaciones":
         return (
           <div className="dashboard-section">
-            <div className="gestion-academica-header">
+            <div
+              className="gestion-academica-header"
+              onClick={() => {
+                console.log(
+                  numeroDocumetoP,
+                  materiasAsiganad,
+                  cursosAsiganados,
+                  añoAsiganado,
+                  id
+                );
+              }}
+            >
               <h2 className="gestion-academica-title">
                 Gestión de Asignaciones
               </h2>
@@ -705,24 +866,34 @@ const GestionAcademica = ({ onBack }) => {
                         nombre: "Numero de documento prof.",
                         type: "number",
                         placeholder: "numero documento",
-                        value: nombremateria,
-                        onChange: (e) => setnombremateria(e.target.value),
+                        value: numeroDocumetoP,
+                        onChange: (e) => setNumeroDocumetoP(e.target.value),
                       },
-                    ]}
+                      editar && {
+                        nombre: "Creado por:",
+                        type: "text",
+                        disabled: true,
+                        value: usuario_creacion,
+                        onChange: (e) => setUsuario_creacion(e.target.value),
+                      },
+                    ].filter(Boolean)}
                     acciones={[
                       editar
                         ? {
                             nombre: "Editar",
-                            click: () => EditarDatosMateria(),
+                            click: () => EditarDatosModalMateriaAsignada(),
                           }
-                        : { nombre: "Guardar", click: () => AgregarMateria() },
+                        : {
+                            nombre: "Guardar",
+                            click: () => AgregarMateriaAsignada(),
+                          },
                       { nombre: "cerrar", click: () => cerrarModal() },
                     ]}
                     select={[
                       {
                         nombre: "Materias",
-                        value: areasDeConocimiento,
-                        onChange: (e) => setAreasDeConocimiento(e.target.value),
+                        value: materiasAsiganad,
+                        onChange: (e) => setMateriasAsiganad(e.target.value),
                         opciones: materias.map((item) => ({
                           value: item.id_materia,
                           title: item.nombre,
@@ -730,17 +901,17 @@ const GestionAcademica = ({ onBack }) => {
                       },
                       {
                         nombre: "Cursos",
-                        value: estadoMateria,
-                        onChange: (e) => setEstadoMateria(e.target.value),
+                        value: cursosAsiganados,
+                        onChange: (e) => setCursosAsiganados(e.target.value),
                         opciones: cursos.map((item) => ({
                           value: item.id_curso,
                           title: item.nombre,
                         })),
                       },
                       {
-                        nombre: "Años",
-                        value: estadoMateria,
-                        onChange: (e) => setEstadoMateria(e.target.value),
+                        nombre: "Años Electivos",
+                        value: añoAsiganado,
+                        onChange: (e) => setAñoAsiganado(e.target.value),
                         opciones: Año.map((item) => ({
                           value: item.id_año_electivo,
                           title: item.id_año_electivo,
@@ -815,28 +986,33 @@ const GestionAcademica = ({ onBack }) => {
                 data={materiaProfesores}
                 columns={[
                   { key: "id_materia_profesores", label: "ID", sortable: true },
-                  { key: "fk_id_materia", label: "Materia", sortable: true },
+                  { key: "materia_nombre", label: "Materia", sortable: true },
                   {
-                    key: "fk_numero_documento_profesor",
+                    key: "profesor_nombre",
                     label: "Profesor",
                     sortable: true,
                   },
-                  { key: "fk_id_curso", label: "Curso", sortable: true },
-                  { key: "fk_id_año_electivo", label: "Año", sortable: true },
+                  { key: "curso_nombre", label: "Curso", sortable: true },
+                  { key: "año_electivo_valor", label: "Año", sortable: true },
                   {
-                    key: "fk_usuario_creacion",
+                    key: "usuario_creacion_nombre",
                     label: "Creado por",
-                    sortable: true,
-                  },
-                  {
-                    key: "fk_usuario_asignado",
-                    label: "Asignado por",
                     sortable: true,
                   },
                 ]}
                 actions={[
-                  { label: "Editar", icon: "✏️", variant: "edit" },
-                  { label: "Eliminar", icon: "🗑️", variant: "delete" },
+                  {
+                    label: "Editar ✏️",
+                    icon: "✏️",
+                    variant: "edit",
+                    onClick: (item) => AbrirModalConDatosMateriaAsignada(item),
+                  },
+                  {
+                    label: "Eliminar 🗑️",
+                    icon: "🗑️",
+                    variant: "delete",
+                    onClick: (item) => EliminarMateriaA(item),
+                  },
                 ]}
                 onAction={(action, item) => {
                   console.log(
@@ -876,8 +1052,12 @@ const GestionAcademica = ({ onBack }) => {
                   { key: "estado", label: "Estado", sortable: true },
                 ]}
                 actions={[
-                  { label: "Editar", icon: "✏️", variant: "edit" },
-                  { label: "Eliminar", icon: "🗑️", variant: "delete" },
+                  {
+                    label: "Editar ✏️",
+                    icon: "✏️",
+                    variant: "edit",
+                  },
+                  { label: "Eliminar 🗑️", icon: "🗑️", variant: "delete" },
                 ]}
                 onAction={(action, item) => {
                   console.log(

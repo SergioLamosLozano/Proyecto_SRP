@@ -508,7 +508,7 @@ class Materias(models.Model) :
     nombre = models.CharField(max_length=100, blank= True, null=True)
     porcentaje_ponderado = models.DecimalField(max_digits=5, decimal_places=2)
     fk_Id_area_conocimiento = models.ForeignKey(Area_conocimiento, on_delete=models.CASCADE, db_column="FK_Id_area_conocimiento")
-    estado = models.CharField(max_length=50)
+    estado = models.CharField(max_length=50, default="Activo")
 
     class Meta:
         db_table = "materias"
@@ -523,8 +523,6 @@ class MateriasAsignadas(models.Model) :
     fk_id_curso = models.ForeignKey(Cursos, on_delete=models.CASCADE, db_column="id_curso")
     fk_id_año_electivo = models.ForeignKey(ano_electivo, on_delete=models.CASCADE, db_column="id_año_electivo")
     fk_usuario_creacion = models.ForeignKey(User, on_delete=models.CASCADE, db_column="usuario_creacion", related_name="materias_creadas")
-
-    fk_usuario_asignado = models.ForeignKey(User, on_delete=models.CASCADE, db_column="usuario_asignado", related_name="materias_asignadas")
 
     class Meta:
         db_table = "materia_profesores"

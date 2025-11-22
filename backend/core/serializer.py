@@ -196,20 +196,27 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         token['rol'] = user.rol
         token['username'] = user.username
         token['first_name'] = user.first_name
-        token['last_name'] = user.last_name
+        token['id'] = user.id
         return token
 
 class MateriasAsignadasSerializer(serializers.ModelSerializer):
-    fk_numero_documento_profesor = serializers.SerializerMethodField()
-    def get_fk_numero_documento_profesor(self, obj):
+    profesor_nombre = serializers.SerializerMethodField()
+    materia_nombre = serializers.CharField(source='fk_id_materia.nombre', read_only=True)
+    curso_nombre = serializers.CharField(source='fk_id_curso.nombre', read_only=True)
+    año_electivo_valor = serializers.CharField(source='fk_id_año_electivo.id_año_electivo', read_only=True)
+    usuario_creacion_nombre = serializers.CharField(source='fk_usuario_creacion.username', read_only=True)
+
+    def get_profesor_nombre(self, obj):
         prof = obj.fk_numero_documento_profesor
         return f"{prof.nombre1 or ''} {prof.nombre2 or ''}".strip()
-    fk_id_materia = serializers.CharField(source='fk_id_materia.nombre', read_only=True)
-    fk_id_curso = serializers.CharField(source='fk_id_curso.nombre', read_only=True)
-    fk_id_año_electivo = serializers.CharField(source='fk_id_año_electivo.id_año_electivo', read_only=True)
-    fk_usuario_creacion = serializers.CharField(source='fk_usuario_creacion.username', read_only=True)
-    fk_usuario_asignado = serializers.CharField(source='fk_usuario_asignado.username', read_only=True)
 
     class Meta:
         model = MateriasAsignadas
         fields = '__all__'
+        read_only_fields = [
+            'profesor_nombre',
+            'materia_nombre',
+            'curso_nombre',
+            'año_electivo_valor',
+            'usuario_creacion_nombre'
+        ]

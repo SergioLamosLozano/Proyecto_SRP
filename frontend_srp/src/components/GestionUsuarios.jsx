@@ -621,6 +621,7 @@ const GestionUsuarios = ({ onBack }) => {
         return (
           <Table
             id="Profesores"
+            busqueda={["numero_documento_profesor", "nombre_completo"]}
             title="Gestion de Profesores"
             description="Registro manual de Profesores"
             columns={profesoresColumns}
@@ -663,6 +664,7 @@ const GestionUsuarios = ({ onBack }) => {
         return (
           <Table
             id="Estudiantes"
+            busqueda={[]}
             title="Gestion de Estudiantes"
             description="Registro manual de Estudiantes"
             columns={estudiantesColumns}

@@ -5,7 +5,7 @@ import {
   BusquedaPorNombreP,
   BusquedaPorNombreA,
 } from "../api/usuarios";
-import { BuscarCurso } from "../api/cursos";
+import { BuscarCurso, BuscarMaterias } from "../api/cursos";
 
 const Table = ({
   id,
@@ -21,6 +21,7 @@ const Table = ({
   addButtonText = "Añadir",
   actions = [], // Array de objetos con estructura: { key: 'accion', label: 'Texto del Botón', onClick: function }
   filtroParaEstudiantePadres = [],
+  busqueda = [],
 }) => {
   const [searchTerm, setSearchTerm] = React.useState("");
   const [filterValue, setFilterValue] = React.useState("");
@@ -57,6 +58,14 @@ const Table = ({
       try {
         const response = await BuscarCurso(letras);
         setUsuarios(response.data);
+      } catch (error) {
+        console.log(error);
+      }
+    } else if (id === "Materias") {
+      try {
+        const response = await BuscarMaterias(letras);
+        setUsuarios(response.data);
+        console.log(response.data);
       } catch (error) {
         console.log(error);
       }
@@ -156,11 +165,9 @@ const Table = ({
                 {usuarios.length > 0 ? (
                   usuarios.map((item, index) => (
                     <div className="targeta_busqueda" key={index}>
-                      <label>
-                        {item.nombre1 ? item.nombre1 : item.nombre_completo}
-                      </label>
-                      <label>{item.correo}</label>
-                      <label>{item.genero_desc}</label>
+                      {busqueda.map((parametro, index) => (
+                        <label key={index}>{`${item[parametro]} - `}</label>
+                      ))}
                       {actions.length > 0 && (
                         <div
                           style={{ display: "flex", gap: "10px" }}

@@ -87,3 +87,30 @@ export const MateriasAsignadas = () => {
 export const Año_electivo = () => {
   return api.get("/ano_electivo/");
 };
+
+export const CrearMateriaAsignada = (datos) => {
+  const token = sessionStorage.getItem("token");
+  return api.post(`/materias_asignadas/`, datos, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+};
+
+export const EditarMateriaAsignada = (id, datos) => {
+  const token = sessionStorage.getItem("token");
+  return api.patch(`/materias_asignadas/${id}/`, datos, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+};
+
+export const EliminarMateriaAsignada = (id) => {
+  const token = sessionStorage.getItem("token");
+  return api.delete(`/materias_asignadas/${id}/`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+};
