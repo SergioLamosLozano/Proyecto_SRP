@@ -20,6 +20,7 @@
     "react-hook-form": "^7.62.0",
     "react-hot-toast": "^2.6.0",
     "react-router-dom": "^7.8.2",
+    "react-select": "^5.10.2",
     "swal": "^0.1.0",
     "sweetalert2": "^11.23.0",
     "xlsx": "^0.18.5"

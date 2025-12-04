@@ -5,15 +5,23 @@ import {
   BusquedaPorNombreP,
   BusquedaPorNombreA,
 } from "../api/usuarios";
-import { BuscarCurso, BuscarMaterias } from "../api/cursos";
+import {
+  BuscarCurso,
+  BuscarEstudiantes_cursos,
+  BuscarMateriaAsignada,
+  BuscarMaterias,
+} from "../api/cursos";
 
 const Table = ({
   id,
   title,
   description,
-  columns, // Array de objetos con estructura: { key: 'campo', label: 'TÍTULO DE LA COLUMNA' }
+  columns,
   data,
   searchPlaceholder = "Buscar...",
+  type_search = "text",
+  salir,
+  onClickParaSalir,
   filterOptions = [],
   onSearch,
   onFilter,
@@ -22,6 +30,7 @@ const Table = ({
   actions = [], // Array de objetos con estructura: { key: 'accion', label: 'Texto del Botón', onClick: function }
   filtroParaEstudiantePadres = [],
   busqueda = [],
+  check = [],
 }) => {
   const [searchTerm, setSearchTerm] = React.useState("");
   const [filterValue, setFilterValue] = React.useState("");
@@ -65,7 +74,27 @@ const Table = ({
       try {
         const response = await BuscarMaterias(letras);
         setUsuarios(response.data);
-        console.log(response.data);
+      } catch (error) {
+        console.log(error);
+      }
+    } else if (id === "MateriaA") {
+      try {
+        const response = await BuscarMateriaAsignada(letras);
+        setUsuarios(response.data);
+      } catch (error) {
+        console.log(error);
+      }
+    } else if (id === "EstudianteC") {
+      try {
+        const term = letras.trim();
+        if (term === "") {
+          setUsuarios([]);
+          return;
+        }
+        const response = data.filter((est) =>
+          est.numero_documento_estudiante.toString().includes(term)
+        );
+        setUsuarios(response);
       } catch (error) {
         console.log(error);
       }
@@ -126,16 +155,20 @@ const Table = ({
         <div className="gestion_usuarios_titulo">
           <label>{title}</label>
           <h3>{description}</h3>
+          {salir && (
+            <span className="span-salir-tabla" onClick={onClickParaSalir}>
+              x
+            </span>
+          )}
         </div>
       )}
 
-      {title && <h2 className="table-title">Lista de {title}</h2>}
-
+      {title && <h2 className="table-title">{title}</h2>}
       <div className="table-controls">
         <div className="contenedor_busqueda">
           <div className="table-search-filter">
             <input
-              type="text"
+              type={type_search}
               placeholder={searchPlaceholder}
               value={searchTerm}
               onChange={handleSearch}
@@ -169,12 +202,7 @@ const Table = ({
                         <label key={index}>{`${item[parametro]} - `}</label>
                       ))}
                       {actions.length > 0 && (
-                        <div
-                          style={{ display: "flex", gap: "10px" }}
-                          onClick={() => {
-                            console.log(item);
-                          }}
-                        >
+                        <div style={{ display: "flex", gap: "10px" }}>
                           {renderActionButtons(item, index)}
                         </div>
                       )}
@@ -189,7 +217,19 @@ const Table = ({
             )}
           </div>
         </div>
-
+        {check.map((item, index) => (
+          <label key={index} className="switch-container">
+            <span className="switch-title">{item.title}</span>
+            <label className="switch">
+              <input
+                type="checkbox"
+                checked={item.check}
+                onChange={item.onChange}
+              />
+              <span className="slider"></span>
+            </label>
+          </label>
+        ))}
         {onAdd && (
           <button className="table-add-btn" onClick={handleAdd}>
             + {addButtonText}

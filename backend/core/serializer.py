@@ -15,11 +15,6 @@ class TipoActividadSerializer(serializers.ModelSerializer):
         model = TipoActividad
         fields = '__all__'
 
-class ActividadesSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Actividades
-        fields = '__all__'
-
 class TipoEstadoSerializer(serializers.ModelSerializer):
     class Meta:
         model = TipoEstado
@@ -90,6 +85,10 @@ class DepartamentoSerializer(serializers.ModelSerializer):
         model = Departamento
         fields = '__all__'
 
+class PeriodoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Periodo
+        fields = '__all__'
 
 class CiudadSerializer(serializers.ModelSerializer):
     # Removemos departamento_nombre temporalmente para evitar el error
@@ -103,44 +102,6 @@ class ProcedenciaSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Procedencia
-        fields = '__all__'
-
-
-# Serializers para modelos principales
-class EstudiantesSerializer(serializers.ModelSerializer):
-    nombre_completo = serializers.ReadOnlyField()
-    numero_documento = serializers.ReadOnlyField()
-    primer_nombre = serializers.ReadOnlyField()
-    segundo_nombre = serializers.ReadOnlyField()
-    primer_apellido = serializers.ReadOnlyField()
-    segundo_apellido = serializers.ReadOnlyField()
-    tipo_documento_desc = serializers.CharField(source='fk_id_tipo_documento.descripcion', read_only=True)
-    genero_desc = serializers.CharField(source='fk_id_genero.descripcion', read_only=True)
-    ciudad_nombre = serializers.CharField(source='fk_codigo_municipio.nombre', read_only=True)
-    tipo_sangre_desc = serializers.CharField(source='fk_id_tipo_sangre.descripcion', read_only=True)
-    estado_desc = serializers.CharField(source='fk_tipo_estado.descripcion', read_only=True)
-    
-    class Meta:
-        model = Estudiantes
-        fields = [
-            'numero_documento_estudiante', 'numero_documento', 'nombre1', 'primer_nombre',
-            'nombre2', 'segundo_nombre', 'apellido1', 'primer_apellido', 'apellido2', 'segundo_apellido',
-            'correo', 'direccion', 'edad', 'fecha_nacimiento', 'telefono', 'religion',
-            'nombre_completo', 'tipo_documento_desc', 'genero_desc', 'ciudad_nombre', 
-            'tipo_sangre_desc', 'estado_desc',
-            'fk_id_tipo_documento', 'fk_id_genero', 'fk_codigo_municipio', 
-            'fk_id_tipo_sangre', 'fk_id_tipo_sisben', 'fk_tipo_estado'
-        ]
-
-
-class ProfesoresSerializer(serializers.ModelSerializer):
-    nombre_completo = serializers.ReadOnlyField()
-    tipo_documento_desc = serializers.CharField(source='fk_id_tipo_documento.descripcion', read_only=True)
-    ciudad_nombre = serializers.CharField(source='fk_codigo_municipio.nombre', read_only=True)
-    estado_desc = serializers.CharField(source='fk_id_estado.descripcion', read_only=True)
-    
-    class Meta:
-        model = Profesores
         fields = '__all__'
 
 
@@ -220,3 +181,82 @@ class MateriasAsignadasSerializer(serializers.ModelSerializer):
             'año_electivo_valor',
             'usuario_creacion_nombre'
         ]
+
+class ActividadesSerializer(serializers.ModelSerializer):
+    MateriaProfesores = MateriasAsignadasSerializer(read_only=True, source='fk_id_materia_profesores')
+    Tipo_Actividad = serializers.CharField(read_only=True, source='fk_id_tipo_actividad.descripcion')
+    class Meta:
+        model = Actividades
+        fields = '__all__'
+        read_only_fields = [
+            'Tipo_Actividad'
+        ]
+
+
+class EstudiantesCursosSerializer(serializers.ModelSerializer):
+    nombre_estudiante = serializers.SerializerMethodField()
+    curso_nombre = serializers.CharField(source='id_curso.nombre', read_only=True)
+    año_electivo = serializers.CharField(source='id_curso.fk_id_año_electivo.id_año_electivo', read_only=True)
+    estado_curso = serializers.CharField(source='id_curso.estado', read_only=True)
+
+    class Meta:
+        model = Estudiantes_cursos
+        fields = '__all__'
+        read_only_fields = [
+            'nombre_estudiante',
+            'curso_nombre',
+            'año_electivo',
+            'estado_curso'
+        ]
+
+    def get_nombre_estudiante(self, obj):
+        est = obj.numero_documento_estudiante
+        return f"{est.nombre1} {est.nombre2 or ''} {est.apellido1} {est.apellido2 or ''}".strip()
+
+class EstudiantesSerializer(serializers.ModelSerializer):
+    nombre_completo = serializers.SerializerMethodField()
+    cursos = EstudiantesCursosSerializer(many=True, read_only=True,source='estudiantes_cursos_set')
+    tipo_documento = serializers.CharField(source='fk_id_tipo_documento.descripcion', read_only=True)
+    genero = serializers.CharField(source='fk_id_genero.descripcion', read_only=True)
+    municipio = serializers.CharField(source='fk_codigo_municipio.nombre', read_only=True)
+    tipo_sangre = serializers.CharField(source='fk_id_tipo_sangre.descripcion', read_only=True)
+    tipo_sisben = serializers.CharField(source='fk_id_tipo_sisben.descripcion', read_only=True)
+    tipo_discapacidad = serializers.CharField(source='fk_id_tipo_discapacidad.descripcion', read_only=True)
+    tipo_alergia = serializers.CharField(source='fk_id_tipo_alergia.descripcion', read_only=True)
+    estado = serializers.CharField(source='fk_tipo_estado.descripcion', read_only=True)
+    class Meta:
+        model = Estudiantes
+        fields = '__all__'
+        read_only_fields = [
+            'tipo_documento',
+            'genero',
+            'municipio',
+            'tipo_sangre',
+            'tipo_sisben',
+            'tipo_discapacidad',
+            'tipo_alergia',
+            'estado',
+            ]
+    def get_nombre_completo(self, obj):
+        return f"{obj.nombre1} {obj.nombre2 or ''} {obj.apellido1} {obj.apellido2 or ''}".strip()
+
+class ProfesoresSerializer(serializers.ModelSerializer):
+    nombre_completo = serializers.SerializerMethodField()
+    materias = MateriasAsignadasSerializer(many=True, read_only=True,source='materiasasignadas_set')
+    tipo_documento_desc = serializers.CharField(source='fk_id_tipo_documento.descripcion', read_only=True)
+    ciudad_nombre = serializers.CharField(source='fk_codigo_municipio.nombre', read_only=True)
+    estado_desc = serializers.CharField(source='fk_id_estado.descripcion', read_only=True)
+    
+    class Meta:
+        model = Profesores
+        fields = '__all__'
+    def get_nombre_completo(self, obj):
+        return f"{obj.nombre1} {obj.nombre2 or ''} {obj.apellido1} {obj.apellido2 or ''}".strip()
+    
+class EstudianteNotasSerializer(serializers.ModelSerializer):
+    estudiante = EstudiantesSerializer(read_only=True, source='fk_numero_documento_estudiante')
+    actividad = ActividadesSerializer(read_only=True, source='fk_id_actividad')
+
+    class Meta:
+        model = EstudianteNotas
+        fields = '__all__'

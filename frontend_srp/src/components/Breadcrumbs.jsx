@@ -6,12 +6,6 @@ import "../styles/Coordinacion.css";
 import "../styles/Breadcrumbs.css";
 import Coordinacion from "../pages/CoordinacionPage";
 
-const colors = {
-  grisSecundario: "var(--gris-secundario)",
-  rojoInstitucional: "var(--rojo-institucional)",
-  grisPrincipal: "var(--gris-principal)",
-};
-
 const Breadcrumbs = ({ items = [], onNavigate }) => {
   const location = useLocation();
   const navigate = useNavigate();

@@ -4,14 +4,18 @@ import Breadcrumbs from "./Breadcrumbs";
 import Table from "./Table";
 import {
   Año_electivo,
+  CrearEstudiantesCursos,
   CrearMateriaAsignada,
   Cursos,
   EditarCurso,
+  EditarEstudiantesCursos,
   EditarMateria,
   EditarMateriaAsignada,
   EliminarCurso,
+  EliminarEstudiantes_cursos,
   EliminarMateria,
   EliminarMateriaAsignada,
+  Estudiantes_cursos,
   Materias,
   MateriasAsignadas,
   NuevaMateria,
@@ -20,6 +24,7 @@ import {
 import Modal from "./modal";
 import Swal from "sweetalert2";
 import { jwtDecode } from "jwt-decode";
+import { EstudiantesGET } from "../api/usuarios";
 
 const GestionAcademica = ({ onBack }) => {
   const [currentSubSection, setCurrentSubSection] = useState(null);
@@ -48,6 +53,12 @@ const GestionAcademica = ({ onBack }) => {
   const [usuario_creacion, setUsuario_creacion] = useState("");
   // id usuario creacion
   const [usuarioid, setUsuarioid] = useState(0);
+  // Estudiante cursos
+  const [estudianteCursos, setEstudianteCursos] = useState([]);
+  const [estudiantesExistentes, setEstudiantesExistentes] = useState([]);
+  const [numeroDocumentoEstudiantes, setNumeroDocumentoEstudiantes] =
+    useState("");
+  const [idCurso, setIdCurso] = useState(0);
 
   const fetchAñosElectivos = async () => {
     try {
@@ -234,6 +245,17 @@ const GestionAcademica = ({ onBack }) => {
     }
   };
 
+  const fetchEstudianteCursos = async () => {
+    try {
+      const respons = await Estudiantes_cursos();
+      const response2 = await EstudiantesGET();
+      setEstudianteCursos(respons.data);
+      setEstudiantesExistentes(response2.data);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
   const ObtenerIdUsuario = () => {
     const tokenid = sessionStorage.getItem("token");
     const decoded = jwtDecode(tokenid);
@@ -246,45 +268,13 @@ const GestionAcademica = ({ onBack }) => {
     fetchMaterias();
     fetchAñosElectivos();
     fetchMateriasAsignadas();
+    fetchEstudianteCursos();
     ObtenerIdUsuario();
   }, []);
 
   const [materias, setMaterias] = useState([]);
 
   const [materiaProfesores, setMateriaProfesores] = useState([]);
-
-  const [estudianteCursos, setEstudianteCursos] = useState([
-    {
-      id_clases_estudiantes: 1,
-      numero_documento_estudiante: "1234567890",
-      nombre_estudiante: "Juan Carlos Pérez González",
-      id_curso: 1,
-      curso: "Sexto A",
-      año_electivo: "2024",
-      fecha_asignacion: "2024-02-01",
-      estado: "Activo",
-    },
-    {
-      id_clases_estudiantes: 2,
-      numero_documento_estudiante: "0987654321",
-      nombre_estudiante: "Ana María López Martínez",
-      id_curso: 1,
-      curso: "Sexto A",
-      año_electivo: "2024",
-      fecha_asignacion: "2024-02-01",
-      estado: "Activo",
-    },
-    {
-      id_clases_estudiantes: 3,
-      numero_documento_estudiante: "1122334455",
-      nombre_estudiante: "Carlos Andrés Rodríguez Silva",
-      id_curso: 2,
-      curso: "Séptimo B",
-      año_electivo: "2024",
-      fecha_asignacion: "2024-02-01",
-      estado: "Activo",
-    },
-  ]);
 
   const handleSectionClick = (sectionId) => {
     setCurrentSubSection(sectionId);
@@ -497,6 +487,9 @@ const GestionAcademica = ({ onBack }) => {
     setCursosAsiganados(0);
     setAñoAsiganado("");
     setUsuario_creacion("");
+    //estudiantes cursos
+    setNumeroDocumentoEstudiantes("");
+    setIdCurso(0);
   };
 
   const Eliminarmateria = async (item) => {
@@ -570,6 +563,144 @@ const GestionAcademica = ({ onBack }) => {
         text: "Llene todos los campos",
         timer: 3000,
       });
+    }
+  };
+
+  const AbrirModalConDatosEstudianteCurso = (item) => {
+    setNumeroDocumentoEstudiantes(item.numero_documento_estudiante);
+    setIdCurso(item.id_curso);
+    setid(item.id_estudiantes_cursos);
+    setEditar(true);
+    setmodal(true);
+  };
+
+  const EditarEstudianteCurso = async () => {
+    try {
+      if (numeroDocumentoEstudiantes && idCurso != 0) {
+        const existencia = estudiantesExistentes.some(
+          (est) => est.numero_documento_estudiante == numeroDocumentoEstudiantes
+        );
+        if (existencia) {
+          const respons = await EditarEstudiantesCursos(id, {
+            numero_documento_estudiante: numeroDocumentoEstudiantes,
+            id_curso: idCurso,
+          })
+            .then(() => {
+              Swal.fire({
+                icon: "success",
+                text: "Se edito la asignacion del estudiante y la materia de forma exitosa",
+                timer: 3000,
+              });
+              fetchEstudianteCursos();
+              cerrarModal();
+            })
+            .catch((err) => {
+              console.log(err);
+              Swal.fire({
+                icon: "error",
+                text: "Error con el servidor",
+                timer: 3000,
+              });
+            });
+        } else {
+          Swal.fire({
+            icon: "error",
+            text: "No existe el estudiante",
+            timer: 3000,
+          });
+        }
+      } else {
+        Swal.fire({
+          icon: "info",
+          text: "Llene los campos",
+          timer: 3000,
+        });
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const AgregarEstudianteCurso = async () => {
+    try {
+      if (numeroDocumentoEstudiantes && idCurso != 0) {
+        const existencia = estudiantesExistentes.some(
+          (est) => est.numero_documento_estudiante == numeroDocumentoEstudiantes
+        );
+        if (existencia) {
+          const response = await CrearEstudiantesCursos({
+            numero_documento_estudiante: numeroDocumentoEstudiantes,
+            id_curso: idCurso,
+          })
+            .then(() => {
+              Swal.fire({
+                icon: "success",
+                text: "Se asigno el estudiante a la materia de forma exitosa",
+                timer: 3000,
+              });
+              fetchEstudianteCursos();
+              cerrarModal();
+            })
+            .catch((err) => {
+              console.log(err);
+              Swal.fire({
+                icon: "error",
+                text: "Error con el servidor",
+                timer: 3000,
+              });
+            });
+        } else {
+          Swal.fire({
+            icon: "error",
+            text: "No existe el estudiante",
+            timer: 3000,
+          });
+        }
+      } else {
+        Swal.fire({
+          icon: "info",
+          text: "Llene los campos",
+          timer: 3000,
+        });
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+  const EliminarEstudianteCurso = async (item) => {
+    if (item.id_estudiantes_cursos) {
+      const result = await Swal.fire({
+        title: "¿Eliminar curso?",
+        text: "Esta acción eliminará el curso permanentemente.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#c41e3a",
+        cancelButtonColor: "#c41e3a",
+        confirmButtonText: "Sí, eliminar",
+        cancelButtonText: "No, cancelar",
+      });
+
+      if (result.isConfirmed) {
+        try {
+          const respons = await EliminarEstudiantes_cursos(
+            item.id_estudiantes_cursos
+          );
+          Swal.fire({
+            icon: "success",
+            text: "asignacion de Estudiante y cuerso eliminado con exito",
+            timer: 3000,
+          }).then(() => {
+            fetchEstudianteCursos();
+          });
+        } catch (error) {
+          console.log(error);
+          Swal.fire({
+            icon: "error",
+            text: "Error en la respuesta del servidor, intente nuevamente",
+            timer: 3000,
+          });
+        }
+      }
     }
   };
 
@@ -671,9 +802,6 @@ const GestionAcademica = ({ onBack }) => {
                   onClick: (item) => Eliminarcurso(item),
                 },
               ]}
-              onAction={(action, item) => {
-                console.log(`Acción ${action} en curso:`, item);
-              }}
               searchable={true}
               searchPlaceholder="Buscar cursos..."
             />
@@ -793,9 +921,6 @@ const GestionAcademica = ({ onBack }) => {
                   onClick: (item) => Eliminarmateria(item),
                 },
               ]}
-              onAction={(action, item) => {
-                console.log(`Acción ${action} en materia:`, item);
-              }}
               searchable={true}
               searchPlaceholder="Buscar materias..."
             />
@@ -804,18 +929,7 @@ const GestionAcademica = ({ onBack }) => {
       case "asignaciones":
         return (
           <div className="dashboard-section">
-            <div
-              className="gestion-academica-header"
-              onClick={() => {
-                console.log(
-                  numeroDocumetoP,
-                  materiasAsiganad,
-                  cursosAsiganados,
-                  añoAsiganado,
-                  id
-                );
-              }}
-            >
+            <div className="gestion-academica-header">
               <h2 className="gestion-academica-title">
                 Gestión de Asignaciones
               </h2>
@@ -922,60 +1036,42 @@ const GestionAcademica = ({ onBack }) => {
                 )
               : modal && (
                   <Modal
-                    titulo={editar ? "Editar Materia" : "Crear Materia"}
+                    titulo={
+                      editar
+                        ? "Editar Curso Estudiante"
+                        : "Crear Curso Estudiante"
+                    }
                     inputs={[
                       {
-                        nombre: "Nombre de la materia",
-                        type: "text",
-                        placeholder: "nombre",
-                        value: nombremateria,
-                        onChange: (e) => setnombremateria(e.target.value),
-                      },
-                      {
-                        nombre: "porcentaje ponderado",
+                        nombre: "Numero de documento Estudiante.",
                         type: "number",
-                        step: "0.01",
-                        value: porcentajePonderado,
-                        onChange: (e) => setPorsentajePonderado(e.target.value),
-                        placeholder: "Porcetaje de la materia",
+                        placeholder: "numero documento",
+                        value: numeroDocumentoEstudiantes,
+                        onChange: (e) =>
+                          setNumeroDocumentoEstudiantes(e.target.value),
                       },
                     ]}
                     acciones={[
                       editar
                         ? {
                             nombre: "Editar",
-                            click: () => EditarDatosMateria(),
+                            click: () => EditarEstudianteCurso(),
                           }
-                        : { nombre: "Guardar", click: () => AgregarMateria() },
+                        : {
+                            nombre: "Guardar",
+                            click: () => AgregarEstudianteCurso(),
+                          },
                       { nombre: "cerrar", click: () => cerrarModal() },
                     ]}
                     select={[
                       {
-                        nombre: "Areas de conocimineto",
-                        value: areasDeConocimiento,
-                        onChange: (e) => setAreasDeConocimiento(e.target.value),
-                        opciones: [
-                          { value: "1", title: "Biología" },
-                          { value: "2", title: "Lenguaje y Comunicación" },
-                          {
-                            value: "3",
-                            title: "Matemáticas y Razonamiento Lógico",
-                          },
-                          { value: "4", title: "Educación Física y Deportes" },
-                          {
-                            value: "5",
-                            title: "Ciencias Sociales y Humanidades",
-                          },
-                        ],
-                      },
-                      {
-                        nombre: "Estado",
-                        value: estadoMateria,
-                        onChange: (e) => setEstadoMateria(e.target.value),
-                        opciones: [
-                          { value: "Activo", title: "Activo" },
-                          { value: "InActivo", title: "InActivo" },
-                        ],
+                        nombre: "cursos",
+                        value: idCurso,
+                        onChange: (e) => setIdCurso(e.target.value),
+                        opciones: cursos.map((item, index) => ({
+                          value: item.id_curso,
+                          title: item.nombre,
+                        })),
                       },
                     ]}
                   />
@@ -983,6 +1079,8 @@ const GestionAcademica = ({ onBack }) => {
 
             {activeAssignmentTab === "materias-profesores" ? (
               <Table
+                id="MateriaA"
+                busqueda={["materia_nombre", "profesor_nombre", "curso_nombre"]}
                 data={materiaProfesores}
                 columns={[
                   { key: "id_materia_profesores", label: "ID", sortable: true },
@@ -1014,20 +1112,20 @@ const GestionAcademica = ({ onBack }) => {
                     onClick: (item) => EliminarMateriaA(item),
                   },
                 ]}
-                onAction={(action, item) => {
-                  console.log(
-                    `Acción ${action} en asignación materia-profesor:`,
-                    item
-                  );
-                }}
                 searchable={true}
                 searchPlaceholder="Buscar asignaciones materia-profesor..."
               />
             ) : (
               <Table
+                id="EstudianteC"
                 data={estudianteCursos}
+                busqueda={[
+                  "numero_documento_estudiante",
+                  "nombre_estudiante",
+                  "curso_nombre",
+                ]}
                 columns={[
-                  { key: "id_clases_estudiantes", label: "ID", sortable: true },
+                  { key: "id_estudiantes_cursos", label: "ID", sortable: true },
                   {
                     key: "numero_documento_estudiante",
                     label: "Doc. Estudiante",
@@ -1038,7 +1136,7 @@ const GestionAcademica = ({ onBack }) => {
                     label: "Estudiante",
                     sortable: true,
                   },
-                  { key: "curso", label: "Curso", sortable: true },
+                  { key: "curso_nombre", label: "Curso", sortable: true },
                   {
                     key: "año_electivo",
                     label: "Año Electivo",
@@ -1049,24 +1147,29 @@ const GestionAcademica = ({ onBack }) => {
                     label: "Fecha Asignación",
                     sortable: true,
                   },
-                  { key: "estado", label: "Estado", sortable: true },
+                  {
+                    key: "estado_curso",
+                    label: "Estado del curso",
+                    sortable: true,
+                  },
                 ]}
                 actions={[
                   {
                     label: "Editar ✏️",
                     icon: "✏️",
                     variant: "edit",
+                    onClick: (item) => AbrirModalConDatosEstudianteCurso(item),
                   },
-                  { label: "Eliminar 🗑️", icon: "🗑️", variant: "delete" },
+                  {
+                    label: "Eliminar 🗑️",
+                    icon: "🗑️",
+                    variant: "delete",
+                    onClick: (item) => EliminarEstudianteCurso(item),
+                  },
                 ]}
-                onAction={(action, item) => {
-                  console.log(
-                    `Acción ${action} en asignación estudiante-curso:`,
-                    item
-                  );
-                }}
                 searchable={true}
-                searchPlaceholder="Buscar asignaciones estudiante-curso..."
+                searchPlaceholder="Buscar por Num. Doc."
+                type_search="number"
               />
             )}
           </div>

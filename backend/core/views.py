@@ -17,6 +17,7 @@ from django.views.generic import ListView, CreateView, UpdateView, DeleteView, D
 from django.urls import reverse_lazy
 from io import BytesIO
 from django.http import HttpResponse
+from django_filters.rest_framework import DjangoFilterBackend
 import datetime
 try:
     from openpyxl import Workbook, load_workbook
@@ -141,6 +142,22 @@ class MateriasAsignadasViewSet(viewsets.ModelViewSet):
     queryset = MateriasAsignadas.objects.all()
     serializer_class = MateriasAsignadasSerializer
 
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+
+    # Exacto: solo devuelve lo que coincida 100%
+    filterset_fields = ['fk_numero_documento_profesor__numero_documento_profesor']
+
+    # Parcial: devuelve coincidencias parciales
+    search_fields = [
+        'fk_id_materia__nombre', 
+    ]
+
+class EstudiantesCursosViewSet(viewsets.ModelViewSet):
+    queryset = Estudiantes_cursos.objects.all()
+    serializer_class = EstudiantesCursosSerializer
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['numero_documento_estudiante__numero_documento_estudiante', 'id_curso__nombre']
+
 class AreaConocimientoViewSet(viewsets.ModelViewSet):
     queryset = Area_conocimiento.objects.all()
     serializer_class = AreaConocimientoSerializer
@@ -165,6 +182,18 @@ class CursoViewSet(viewsets.ModelViewSet):
     filter_backends = [filters.SearchFilter]
     search_fields = ['nombre']
 
+class SisbenViewSet(viewsets.ModelViewSet):
+    queryset = Sisben.objects.all()
+    serializer_class = SisbenSerializer
+
+class DiscapacidadViewSet(viewsets.ModelViewSet):
+    queryset = Discapacidad.objects.all()
+    serializer_class = DiscapacidadSerializer
+
+class AlergiaViewSet(viewsets.ModelViewSet):
+    queryset = Alergia.objects.all()
+    serializer_class = AlergiaSerializer
+
 class ProfesorViewSet(viewsets.ModelViewSet):
     queryset = Profesores.objects.all()
     serializer_class = ProfesoresSerializer
@@ -177,6 +206,12 @@ class AcudienteViewSet(viewsets.ModelViewSet):
     serializer_class = AcudienteSerializer
     filter_backends = [filters.SearchFilter]
     search_fields = ['numero_documento_acudiente']
+
+class EstudianteNotasViewSet(viewsets.ModelViewSet):
+    queryset = EstudianteNotas.objects.all()
+    serializer_class = EstudianteNotasSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['fk_numero_documento_estudiante']
 
 
 class EstudianteAcudienteViewSet(viewsets.ModelViewSet):

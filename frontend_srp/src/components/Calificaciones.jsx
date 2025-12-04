@@ -1,32 +1,92 @@
-import React, { useState } from 'react';
-import '../styles/Coordinacion.css';
-import '../styles/Calificaciones.css';
-import Breadcrumbs from './Breadcrumbs';
+import React, { useEffect, useState } from "react";
+import "../styles/Coordinacion.css";
+import "../styles/Calificaciones.css";
+import Breadcrumbs from "./Breadcrumbs";
+import Table from "./Table";
+import { EstudiantesGET } from "../api/usuarios";
+import {
+  Cursos,
+  Estudiantes_cursos,
+  Estudiantes_cursosBucar,
+  Estudiantes_notas,
+} from "../api/cursos";
+import VerNotas from "./VerNotas";
+import VerCursos from "./VerCursos";
 
 const Calificaciones = ({ onBack }) => {
   const [currentSubSection, setCurrentSubSection] = useState(null);
-
-  
+  //estudiantes y notas
+  const [EstudianteN, setEstudianteN] = useState([]);
+  const [listaNueva, setListaNueva] = useState([]);
+  const [VerCalificacion, setVerCalificacion] = useState(false);
+  const [nombre, setNombre] = useState("");
+  const [Grado, setGrado] = useState(false);
+  const [cursos, setCursos] = useState([]);
+  //cargar Estudiantes y notas
+  const CargarEN = async () => {
+    try {
+      const response2 = await Cursos();
+      setCursos(response2.data);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+  //useEffect para cargar todo
+  useEffect(() => {
+    CargarEN();
+  }, []);
+  //buscar notas
+  const Notas = async (item) => {
+    if (item) {
+      try {
+        const respons = await Estudiantes_notas(
+          item.numero_documento_estudiante
+        );
+        const ListaC = respons.data.map((nota) => ({
+          documento: nota.estudiante.numero_documento_estudiante,
+          nombre: nota.estudiante.nombre_completo,
+          calificacion: nota.calificacion,
+          actividad: nota.actividad.Tipo_Actividad,
+          porcentaje: nota.actividad.porcentaje,
+          materia: nota.actividad.MateriaProfesores.materia_nombre,
+          curso: nota.actividad.MateriaProfesores.curso_nombre,
+        }));
+        setNombre(item.nombre1);
+        setListaNueva(ListaC);
+        setVerCalificacion(true);
+      } catch (err) {
+        console.log(err);
+      }
+    }
+  };
+  //breadcrums
   const breadcrumbItems = [
-    { label: 'Inicio', path: '/coordinacion' },
-    { label: 'Coordinación Administrativa', path: '/coordinacion' },
-    { label: 'Calificaciones', path: '/coordinacion/calificaciones' },
-    ...(currentSubSection ? [{ 
-      label: currentSubSection === 'cno' ? 'CNO' :
-             currentSubSection === 'carga masiva' ? 'Carga Masiva' : 'Carga Masiva',
-      path: `/coordinacion/calificaciones/${currentSubSection}` 
-    }] : [])
-    
+    { label: "Inicio", path: "/coordinacion" },
+    { label: "Coordinación Administrativa", path: "/coordinacion" },
+    { label: "Calificaciones", path: "/coordinacion/calificaciones" },
+    ...(currentSubSection
+      ? [
+          {
+            label:
+              currentSubSection === "cno"
+                ? "CNO"
+                : currentSubSection === "carga masiva"
+                ? "Carga Masiva"
+                : "Carga Masiva",
+            path: `/coordinacion/calificaciones/${currentSubSection}`,
+          },
+        ]
+      : []),
   ];
 
   const handleNavigate = (path) => {
-    if (path === '/coordinacion') {
+    if (path === "/coordinacion") {
       onBack();
-    } else if (path === '/coordinacion/calificaciones') {
+    } else if (path === "/coordinacion/calificaciones") {
       setCurrentSubSection(null);
     } else {
-      const subsection = path.split('/').pop();
-      if (['cno', 'carga masiva'].includes(subsection)) {
+      const subsection = path.split("/").pop();
+      if (["cno", "carga masiva"].includes(subsection)) {
         setCurrentSubSection(subsection);
       }
     }
@@ -34,182 +94,107 @@ const Calificaciones = ({ onBack }) => {
 
   const calificationSections = [
     {
-      id: 'cno',
-      title: 'CNO',
-      description: 'Accede al sistema CNO para la gestión de calificaciones y certificaciones.',
-      icon: '🎓',
-      buttonText: 'Acceder a CNO'
+      id: "cno",
+      title: "CNO",
+      description:
+        "Accede al sistema CNO para la gestión de calificaciones y certificaciones.",
+      icon: "🎓",
+      buttonText: "Acceder a CNO",
     },
     {
-      id: 'carga-masiva',
-      title: 'Carga Masiva',
-      description: 'Realiza carga masiva de calificaciones mediante archivos Excel o CSV.',
-      icon: '📊',
-      buttonText: 'Cargar Calificaciones'
-    }
-  ];
-
-  const cursos = ['Sexto A', 'Sexto B', 'Séptimo A', 'Séptimo B', 'Octavo A', 'Noveno B'];
-  const materias = ['Matemáticas', 'Español', 'Ciencias Naturales', 'Ciencias Sociales', 'Inglés'];
-  const periodos = ['Primer Período', 'Segundo Período', 'Tercer Período', 'Cuarto Período'];
-
-  const calificaciones = [
-    {
-      id: 1,
-      estudiante: 'Ana María Rojas',
-      identificacion: '1002938475',
-      nota1: 4.2,
-      nota2: 3.8,
-      nota3: 4.5,
-      promedio: 4.17
+      id: "carga-masiva",
+      title: "Carga Masiva",
+      description:
+        "Realiza carga masiva de calificaciones mediante archivos Excel o CSV.",
+      icon: "📊",
+      buttonText: "Cargar Calificaciones",
     },
-    {
-      id: 2,
-      estudiante: 'Carlos Andrés Pérez',
-      identificacion: '1003485769',
-      nota1: 3.5,
-      nota2: 4.0,
-      nota3: 3.8,
-      promedio: 3.77
-    }
   ];
-
-  const containerStyle = {
-    padding: '20px',
-    paddingTop: '160px', /* Espacio para navbar + breadcrumb */
-    backgroundColor: 'var(--gris-claro-fondo)',
-    minHeight: '100vh'
-  };
-
-  const headerStyle = {
-    marginBottom: '30px'
-  };
-
-  const titleStyle = {
-    fontSize: '24px',
-    fontWeight: 'bold',
-    color: 'var(--gris-principal)',
-    margin: 0
-  };
-
-  const subtitleStyle = {
-    fontSize: '16px',
-    color: 'var(--gris-secundario)',
-    margin: '8px 0 0 0'
-  };
-
-  const contentStyle = {
-    backgroundColor: 'var(--blanco)',
-    border: '1px solid var(--borde-color)',
-    borderRadius: '8px',
-    padding: '20px',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-  };
-
-  const gridStyle = {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-    gap: '20px',
-    marginTop: '20px'
-  };
-
-  const cardStyle = {
-    backgroundColor: 'var(--blanco)',
-    border: '1px solid var(--borde-color)',
-    borderRadius: '8px',
-    padding: '20px',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-    transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-    cursor: 'pointer',
-    height: 'fit-content'
-  };
-
-  const cardHoverStyle = {
-    transform: 'translateY(-2px)',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
-  };
-
-  const cardHeaderStyle = {
-    display: 'flex',
-    alignItems: 'center',
-    marginBottom: '15px'
-  };
-
-  const iconStyle = {
-    fontSize: '24px',
-    marginRight: '12px'
-  };
-
-  const cardTitleStyle = {
-    fontSize: '18px',
-    fontWeight: '600',
-    color: 'var(--gris-principal)',
-    margin: 0
-  };
-
-  const descriptionStyle = {
-    fontSize: '14px',
-    color: 'var(--gris-secundario)',
-    lineHeight: '1.5',
-    marginBottom: '20px'
-  };
-
-  const buttonStyle = {
-    backgroundColor: 'var(--rojo-institucional)',
-    color: 'var(--blanco)',
-    border: 'none',
-    padding: '10px 20px',
-    borderRadius: '4px',
-    fontSize: '14px',
-    fontWeight: '500',
-    cursor: 'pointer',
-    width: '100%',
-    transition: 'background-color 0.3s ease'
-  };
-
-  const backButtonStyle = {
-    backgroundColor: 'var(--gris-secundario)',
-    color: 'var(--blanco)',
-    border: 'none',
-    padding: '10px 20px',
-    borderRadius: '4px',
-    fontSize: '14px',
-    fontWeight: '500',
-    cursor: 'pointer',
-    marginBottom: '20px',
-    transition: 'background-color 0.3s ease'
-  };
 
   const handleSectionClick = (sectionId) => {
     setCurrentSubSection(sectionId);
   };
 
-  const handleBackToSections = () => {
-    setCurrentSubSection(null);
+  const Regresar = () => {
+    setGrado(false);
+    setEstudianteN([]);
+  };
+
+  const Vercalificacion = async (item) => {
+    try {
+      setGrado(true);
+      const filtro = await Estudiantes_cursosBucar(item);
+      const filtro2 = filtro.data.filter(
+        (curs) => curs.estado_curso == "Activo"
+      );
+      setEstudianteN(filtro2);
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   const renderSubSection = () => {
     switch (currentSubSection) {
-      case 'cno':
+      case "cno":
         return (
           <div>
-            <div style={headerStyle}>
-              <h2 style={titleStyle}>Sistema CNO</h2>
-              <p style={subtitleStyle}>Accede al sistema CNO para gestión de calificaciones</p>
-            </div>
-            <div style={contentStyle}>
-              <p>Funcionalidad de acceso al sistema CNO en desarrollo...</p>
-            </div>
+            {!Grado && (
+              <VerCursos
+                cursosC={cursos}
+                onClick={(item) => Vercalificacion(item)}
+              />
+            )}
+            {Grado && (
+              <div>
+                <p className="RegresarG" onClick={Regresar}>
+                  Regresar a los Grados
+                </p>
+                {VerCalificacion && (
+                  <VerNotas
+                    notas={listaNueva}
+                    estudiante={nombre}
+                    onClickSalir={() => setVerCalificacion(false)}
+                  />
+                )}
+                <Table
+                  id="EstudianteC"
+                  busqueda={[
+                    "numero_documento_estudiante",
+                    "nombre_estudiante",
+                  ]}
+                  title="Notas Estudiantes"
+                  description="Aqui se podran visualizar las notas de los estudiantes"
+                  columns={[
+                    {
+                      key: "numero_documento_estudiante",
+                      label: "DOCUMENTO",
+                    },
+                    { key: "nombre_estudiante", label: "NOMBRE" },
+                  ]}
+                  data={EstudianteN}
+                  searchPlaceholder="Buscar por documento..."
+                  actions={[
+                    {
+                      label: "Ver Notas",
+                      onClick: (item) => {
+                        Notas(item);
+                      },
+                    },
+                  ]}
+                  type_search="number"
+                />
+              </div>
+            )}
           </div>
         );
-      case 'carga-masiva':
+      case "carga-masiva":
         return (
           <div>
-            <div style={headerStyle}>
-              <h2 style={titleStyle}>Carga Masiva de Calificaciones</h2>
-              <p style={subtitleStyle}>Carga masiva mediante archivos Excel o CSV</p>
+            <div>
+              <h2>Carga Masiva de Calificaciones</h2>
+              <p>Carga masiva mediante archivos Excel o CSV</p>
             </div>
-            <div style={contentStyle}>
+            <div>
               <p>Funcionalidad de carga masiva en desarrollo...</p>
             </div>
           </div>
@@ -219,105 +204,10 @@ const Calificaciones = ({ onBack }) => {
     }
   };
 
-  const filtersContainerStyle = {
-    backgroundColor: 'var(--blanco)',
-    border: '1px solid var(--borde-color)',
-    borderRadius: '8px',
-    padding: '20px',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-    marginBottom: '20px'
-  };
-
-  const filtersGridStyle = {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-    gap: '15px',
-    marginBottom: '20px'
-  };
-
-  const filterGroupStyle = {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '5px'
-  };
-
-  const labelStyle = {
-    fontSize: '14px',
-    fontWeight: '500',
-    color: 'var(--gris-principal)'
-  };
-
-  const selectStyle = {
-    padding: '8px 12px',
-    border: '1px solid var(--borde-color)',
-    borderRadius: '4px',
-    fontSize: '14px',
-    backgroundColor: 'var(--blanco)',
-    color: 'var(--gris-principal)'
-  };
-
-  const buttonGroupStyle = {
-    display: 'flex',
-    gap: '10px',
-    justifyContent: 'flex-end'
-  };
-
-  const tableContainerStyle = {
-    backgroundColor: 'var(--blanco)',
-    border: '1px solid var(--borde-color)',
-    borderRadius: '8px',
-    padding: '20px',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-    overflowX: 'auto'
-  };
-
-  const tableStyle = {
-    width: '100%',
-    borderCollapse: 'collapse',
-    fontSize: '14px'
-  };
-
-  const thStyle = {
-    backgroundColor: 'var(--gris-claro-fondo)',
-    color: 'var(--gris-principal)',
-    padding: '12px 8px',
-    textAlign: 'left',
-    fontWeight: '600',
-    borderBottom: '1px solid var(--borde-color)'
-  };
-
-  const tdStyle = {
-    padding: '12px 8px',
-    borderBottom: '1px solid var(--borde-color)',
-    verticalAlign: 'middle',
-    color: 'var(--gris-principal)'
-  };
-
-  const getNotaColor = (nota) => {
-    if (nota >= 4.0) return 'var(--success-color, #28a745)';
-    if (nota >= 3.0) return 'var(--warning-color, #ffc107)';
-    return 'var(--error-color, #dc3545)';
-  };
-
-  const getPromedioColor = (promedio) => {
-    if (promedio >= 4.0) return 'var(--success-color, #28a745)';
-    if (promedio >= 3.0) return 'var(--warning-color, #ffc107)';
-    return 'var(--error-color, #dc3545)';
-  };
-
-  const inputStyle = {
-    padding: '4px 8px',
-    border: '1px solid var(--borde-color)',
-    borderRadius: '4px',
-    fontSize: '12px',
-    width: '60px',
-    textAlign: 'center'
-  };
-
   return (
     <div className="dashboard-container">
       <Breadcrumbs items={breadcrumbItems} onNavigate={handleNavigate} />
-      
+
       <div className="dashboard-content">
         {currentSubSection ? (
           renderSubSection()
@@ -325,7 +215,9 @@ const Calificaciones = ({ onBack }) => {
           <>
             <div className="dashboard-header">
               <h1 className="dashboard-title">Calificaciones</h1>
-              <p className="dashboard-subtitle">Gestión de calificaciones y certificaciones académicas</p>
+              <p className="dashboard-subtitle">
+                Gestión de calificaciones y certificaciones académicas
+              </p>
             </div>
 
             <div className="dashboard-grid">
@@ -340,9 +232,7 @@ const Calificaciones = ({ onBack }) => {
                     <h3 className="card-title">{section.title}</h3>
                   </div>
                   <p className="card-description">{section.description}</p>
-                  <button className="card-button">
-                    {section.buttonText}
-                  </button>
+                  <button className="card-button">{section.buttonText}</button>
                 </div>
               ))}
             </div>
