@@ -47,13 +47,31 @@ const CargaMasiva = ({ onBack }) => {
 
   const downloadTemplate = async () => {
     try {
-      const api = tipo === "estudiantes" ? estudiantesAPI : profesoresAPI;
-      const resp = await api.downloadTemplate();
-      const blob = new Blob([resp.data], { type: resp.headers["content-type"] || "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+      const isEst = tipo === "estudiantes";
+      const publicUrl = isEst
+        ? "/utils/plantilla_estudiantes.xlsx"
+        : "/utils/plantilla_profesores.xlsx";
+
+      let blob;
+      try {
+        const r = await fetch(publicUrl);
+        if (!r.ok) throw new Error("public-not-found");
+        blob = await r.blob();
+      } catch (_) {
+        const api = isEst ? estudiantesAPI : profesoresAPI;
+        const resp = await api.downloadTemplate();
+        blob = new Blob([resp.data], {
+          type:
+            resp.headers["content-type"] ||
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        });
+      }
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = tipo === "estudiantes" ? "plantilla_estudiantes.xlsx" : "plantilla_profesores.xlsx";
+      a.download = isEst
+        ? "plantilla_estudiantes.xlsx"
+        : "plantilla_profesores.xlsx";
       document.body.appendChild(a);
       a.click();
       a.remove();

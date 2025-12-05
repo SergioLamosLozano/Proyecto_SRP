@@ -590,6 +590,18 @@ class EstudiantesBulkUploadView(APIView):
                     Alergia
                 )
 
+                today = datetime.date.today()
+                try:
+                    edad_calc = (
+                        today.year - fecha_nacimiento.year - (
+                            (today.month, today.day) < (fecha_nacimiento.month, fecha_nacimiento.day)
+                        )
+                    ) if fecha_nacimiento else None
+                    if edad_calc is not None and edad_calc < 0:
+                        edad_calc = None
+                except Exception:
+                    edad_calc = None
+
                 defaults = {
                     'nombre1': data.get('nombre1') or '',
                     'nombre2': data.get('nombre2') or None,
@@ -601,6 +613,7 @@ class EstudiantesBulkUploadView(APIView):
                     'religion': data.get('religion') or None,
                     'institucion_procedencia': data.get('institucion_procedencia') or data.get('procedencia') or data.get('Procedencia') or None,
                     'fecha_nacimiento': fecha_nacimiento,
+                    'edad': edad_calc,
                     'fk_id_tipo_documento_id': tipo_doc_id,
                     'fk_id_genero_id': genero_id,
                     'fk_codigo_municipio_id': municipio_id,
