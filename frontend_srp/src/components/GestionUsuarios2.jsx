@@ -14,6 +14,7 @@ import {
   EstudiantesGET,
 } from "../api/usuarios";
 import Modal from "./modal";
+import CargaMasiva from "./CargaMasiva";
 
 const GestionUsuarios = ({ onBack }) => {
   // Estados y refs del componente
@@ -808,54 +809,7 @@ const GestionUsuarios = ({ onBack }) => {
           </div>
         );
       case "carga-masiva":
-        const cargaMasivaSections = [
-          {
-            id: "carga-estudiantes",
-            title: "Carga Masiva de Estudiantes",
-            description:
-              "Importa múltiples estudiantes desde un archivo Excel o CSV.",
-            icon: "👨‍🎓",
-            buttonText: "Cargar Estudiantes",
-          },
-        ];
-
-        return (
-          <>
-            <div className="gestion-academica-header">
-              <h1 className="gestion-academica-title">Carga Masiva</h1>
-              <p className="gestion-academica-subtitle">
-                Selecciona el tipo de carga masiva que deseas realizar
-              </p>
-            </div>
-
-            <div className="gestion-academica-grid">
-              {cargaMasivaSections.map((section) => (
-                <div
-                  key={section.id}
-                  className="gestion-academica-card"
-                  onClick={() => handleSectionClick(section.id)}
-                >
-                  <div className="gestion-academica-card-header">
-                    <span className="gestion-academica-icon">
-                      {section.icon}
-                    </span>
-                    <h3 className="gestion-academica-card-title">
-                      {section.title}
-                    </h3>
-                  </div>
-
-                  <p className="gestion-academica-description">
-                    {section.description}
-                  </p>
-
-                  <button className="gestion-academica-button">
-                    {section.buttonText}
-                  </button>
-                </div>
-              ))}
-            </div>
-          </>
-        );
+        return <CargaMasiva onBack={() => setCurrentSubSection(null)} />;
       case "carga-estudiantes":
         // Función para abrir el selector de archivos directamente
         const openFileSelector = () => {

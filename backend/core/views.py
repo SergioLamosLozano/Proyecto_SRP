@@ -29,6 +29,41 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializer import CustomTokenObtainPairSerializer
 import django_filters
 
+def resolve_by_name(Model, value):
+    if value is None:
+        return None
+    if str(value).isdigit():
+        return int(value)
+    s = str(value).strip()
+    if not s:
+        return None
+    if Model.__name__ == 'Ciudad':
+        obj = Model.objects.filter(nombre__iexact=s).first()
+        if obj:
+            return obj.codigo_municipio
+        return None
+    for field in ['descripcion', 'nombre', 'sigla', 'codigo']:
+        if field in [f.name for f in Model._meta.fields]:
+            obj = Model.objects.filter(**{f"{field}__iexact": s}).first()
+            if obj:
+                return obj.pk
+    return None
+
+def normalize_fk(value, Model):
+    if value is None:
+        return None
+    try:
+        if isinstance(value, int):
+            return value
+    except Exception:
+        pass
+    s = str(value).strip()
+    if not s:
+        return None
+    if s.isdigit():
+        return int(s)
+    return resolve_by_name(Model, s)
+
 
 class AcudienteUserMatchViewSet(viewsets.ViewSet):
     """
@@ -486,9 +521,9 @@ class EstudiantesBulkUploadView(APIView):
         for req in required:
             if req not in headers:
                 return Response({'error': f'Columna requerida faltante: {req}'}, status=400)
-        # tipo_documento puede venir como fk_id_tipo_documento o tipo_documento (nombre)
-        if ('fk_id_tipo_documento' not in headers) and ('tipo_documento' not in headers):
-            return Response({'error': 'Columna requerida faltante: fk_id_tipo_documento o tipo_documento'}, status=400)
+        # tipo_documento puede venir como fk_id_tipo_documento, id_tipo_documento (num) o tipo_documento (nombre)
+        if ('fk_id_tipo_documento' not in headers) and ('id_tipo_documento' not in headers) and ('tipo_documento' not in headers):
+            return Response({'error': 'Columna requerida faltante: fk_id_tipo_documento, id_tipo_documento o tipo_documento'}, status=400)
 
         created, updated, errors = 0, 0, []
         header_idx = {h: i for i, h in enumerate(headers)}
@@ -528,25 +563,57 @@ class EstudiantesBulkUploadView(APIView):
                 if not doc:
                     continue
 
-                # Parse fecha_nacimiento si existe
+                # Parse fecha_nacimiento si existe (acepta datetime, string YYYY-MM-DD o serial de Excel)
                 fecha_val = data.get('fecha_nacimiento(YYYY-MM-DD)') or data.get('fecha_nacimiento')
                 if isinstance(fecha_val, datetime.date):
                     fecha_nacimiento = fecha_val
+                elif isinstance(fecha_val, (int, float)):
+                    try:
+                        base = datetime.date(1899, 12, 30)
+                        fecha_nacimiento = base + datetime.timedelta(days=int(fecha_val))
+                    except Exception:
+                        fecha_nacimiento = None
                 elif isinstance(fecha_val, str) and fecha_val:
                     try:
-                        fecha_nacimiento = datetime.datetime.strptime(fecha_val, '%Y-%m-%d').date()
+                        fecha_nacimiento = datetime.datetime.strptime(fecha_val.strip(), '%Y-%m-%d').date()
                     except Exception:
                         fecha_nacimiento = None
                 else:
                     fecha_nacimiento = None
 
                 # Resolver FKs por nombre si vienen en lenguaje natural
-                tipo_doc_id = normalize_fk(data.get('fk_id_tipo_documento') or data.get('tipo_documento'), TipoDocumento)
+                tipo_doc_id = normalize_fk(
+                    data.get('fk_id_tipo_documento') or data.get('id_tipo_documento') or data.get('tipo_documento'),
+                    TipoDocumento
+                )
                 genero_id = normalize_fk(data.get('fk_id_genero') or data.get('genero'), Genero)
-                municipio_id = normalize_fk(data.get('fk_codigo_municipio') or data.get('municipio_id') or data.get('municipio'), Ciudad)
+                municipio_id = normalize_fk(
+                    data.get('fk_codigo_municipio') or data.get('codigo_municipio') or data.get('municipio_id') or data.get('municipio'),
+                    Ciudad
+                )
                 tipo_sangre_id = normalize_fk(data.get('fk_id_tipo_sangre') or data.get('tipo_sangre'), TipoSangre)
                 tipo_sisben_id = normalize_fk(data.get('fk_id_tipo_sisben') or data.get('sisben'), Sisben)
                 estado_id = normalize_fk(data.get('fk_tipo_estado') or data.get('estado'), TipoEstado)
+                discapacidad_id = normalize_fk(
+                    data.get('fk_id_tipo_discapacidad') or data.get('id_tipo_discapacidad') or data.get('discapacidad'),
+                    Discapacidad
+                )
+                alergia_id = normalize_fk(
+                    data.get('fk_id_tipo_alergia') or data.get('id_tipo_alergia') or data.get('alergia'),
+                    Alergia
+                )
+
+                today = datetime.date.today()
+                try:
+                    edad_calc = (
+                        today.year - fecha_nacimiento.year - (
+                            (today.month, today.day) < (fecha_nacimiento.month, fecha_nacimiento.day)
+                        )
+                    ) if fecha_nacimiento else None
+                    if edad_calc is not None and edad_calc < 0:
+                        edad_calc = None
+                except Exception:
+                    edad_calc = None
 
                 defaults = {
                     'nombre1': data.get('nombre1') or '',
@@ -557,12 +624,16 @@ class EstudiantesBulkUploadView(APIView):
                     'direccion': data.get('direccion') or None,
                     'telefono': data.get('telefono') or None,
                     'religion': data.get('religion') or None,
+                    'institucion_procedencia': data.get('institucion_procedencia') or data.get('procedencia') or data.get('Procedencia') or None,
                     'fecha_nacimiento': fecha_nacimiento,
+                    'edad': edad_calc,
                     'fk_id_tipo_documento_id': tipo_doc_id,
                     'fk_id_genero_id': genero_id,
                     'fk_codigo_municipio_id': municipio_id,
                     'fk_id_tipo_sangre_id': tipo_sangre_id,
                     'fk_id_tipo_sisben_id': tipo_sisben_id,
+                    'fk_id_tipo_discapacidad_id': discapacidad_id,
+                    'fk_id_tipo_alergia_id': alergia_id,
                     'fk_tipo_estado_id': estado_id,
                 }
 
@@ -595,7 +666,10 @@ class EstudiantesBulkUploadView(APIView):
                         continue
 
                     # Resolver FKs acudiente por nombre si aplica
-                    tipo_doc_acu_id = normalize_fk(data.get('fk_id_tipo_documento') or data.get('tipo_documento'), TipoDocumento)
+                    tipo_doc_acu_id = normalize_fk(
+                        data.get('fk_id_tipo_documento') or data.get('id_tipo_documento') or data.get('tipo_documento'),
+                        TipoDocumento
+                    )
                     municipio_acu_id = normalize_fk(data.get('fk_codigo_municipio') or data.get('municipio_id') or data.get('municipio'), Ciudad)
                     tipo_acudiente_id = normalize_fk(data.get('fk_id_tipo_acudiente') or data.get('tipo_acudiente'), TipoAcudiente)
 
@@ -719,8 +793,8 @@ class ProfesoresBulkUploadView(APIView):
         for req in required:
             if req not in headers:
                 return Response({'error': f'Columna requerida faltante: {req}'}, status=400)
-        if ('fk_id_tipo_documento' not in headers) and ('tipo_documento' not in headers):
-            return Response({'error': 'Columna requerida faltante: fk_id_tipo_documento o tipo_documento'}, status=400)
+        if ('fk_id_tipo_documento' not in headers) and ('id_tipo_documento' not in headers) and ('tipo_documento' not in headers):
+            return Response({'error': 'Columna requerida faltante: fk_id_tipo_documento, id_tipo_documento o tipo_documento'}, status=400)
 
         created, updated, errors = 0, 0, []
         header_idx = {h: i for i, h in enumerate(headers)}
@@ -732,7 +806,10 @@ class ProfesoresBulkUploadView(APIView):
                 if not doc:
                     continue
                 # Normalizar y resolver FKs por nombre si vienen en lenguaje natural
-                tipo_doc_id = normalize_fk(data.get('fk_id_tipo_documento') or data.get('tipo_documento'), TipoDocumento)
+                tipo_doc_id = normalize_fk(
+                    data.get('fk_id_tipo_documento') or data.get('id_tipo_documento') or data.get('tipo_documento'),
+                    TipoDocumento
+                )
                 municipio_id = normalize_fk(data.get('fk_codigo_municipio') or data.get('municipio'), Ciudad)
                 estado_id = normalize_fk(data.get('fk_id_estado') or data.get('fk_tipo_estado') or data.get('estado'), TipoEstado)
                 tipo_sangre_id = normalize_fk(data.get('fk_id_tipo_sangre') or data.get('tipo_sangre'), TipoSangre)
