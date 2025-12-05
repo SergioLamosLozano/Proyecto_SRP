@@ -1,0 +1,48 @@
+.contenedor_grid_targetasC {
+  width: 100%;
+  height: auto;
+  background-color: white;
+  border-radius: 15px;
+  box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.104);
+  margin-top: 30px;
+  padding: 40px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 30px;
+  justify-content: center;
+}
+
+.Targetas_cursosC {
+  width: 100%;
+  max-width: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100px;
+  border-radius: 15px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.301);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.Targetas_cursosC:hover {
+  animation: bounceScale 0.3s ease forwards;
+}
+
+@keyframes bounceScale {
+  0% {
+    transform: scale(1.03);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+  100% {
+    transform: scale(1.03);
+  }
+}
+
+.Targetas_cursosC span {
+  font-size: 24px;
+  font-weight: bold;
+  color: white;
+}

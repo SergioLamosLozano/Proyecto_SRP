@@ -6,6 +6,7 @@ const Sidebar = ({
   onNavigate,
   isMobile,
   isOpen,
+  menu = "coordinacion",
   collapsed,
   onMouseEnter,
   onMouseLeave,
@@ -18,6 +19,14 @@ const Sidebar = ({
     { id: "calificaciones", label: "Calificaciones", icon: "📝" },
     { id: "reportes", label: "Reportes y Estadísticas", icon: "📈" },
   ];
+
+  const menuItemsDocentes = [
+    { id: "dashboard", label: "Inicio", icon: "📊" },
+    { id: "materias-asignadas", label: "Gestión Académica", icon: "📓" },
+    { id: "gestion-actividades", label: "Gestión de Usuarios", icon: "✍️" },
+  ];
+
+  const menuNuevo = menu == "coordinacion" ? menuItems : menuItemsDocentes;
 
   const sidebarClasses = `sidebar ${isMobile ? "mobile" : ""} ${
     isOpen ? "open" : ""
@@ -44,7 +53,7 @@ const Sidebar = ({
       </div>
 
       <nav className="sidebar-nav">
-        {menuItems.map((item) => (
+        {menuNuevo.map((item) => (
           <div
             key={item.id}
             className={`menu-item ${currentView === item.id ? "active" : ""}`}

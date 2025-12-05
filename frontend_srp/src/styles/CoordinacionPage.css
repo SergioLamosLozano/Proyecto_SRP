@@ -25,6 +25,11 @@
   flex: 1;
 }
 
+.Container-Principal-Docentes {
+  display: flex;
+  flex-direction: column;
+}
+
 /* Estilos para el botón hamburguesa */
 .hamburger-button {
   display: none;
@@ -104,4 +109,119 @@
     font-size: 16px;
     margin-top: 50px;
   }
+}
+
+.navigation-cardsD {
+  width: 100%;
+  height: auto;
+  padding: 40px;
+  border-radius: 10px;
+  background-color: white;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.349);
+  margin-top: 30px;
+  display: flex;
+  gap: 40px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.MateriasAsiganadaD {
+  width: 100%;
+  max-width: 250px;
+  height: 100px;
+  border-radius: 10px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.582);
+  font-size: 26px;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+}
+
+.CursosMaterias {
+  width: 100%;
+  height: auto;
+  padding: 40px;
+  border-radius: 10px;
+  background-color: white;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.349);
+  margin-top: 30px;
+  display: flex;
+  gap: 10px;
+  flex-direction: column;
+}
+
+.TituloMateriasAsignadas {
+  color: var(--rojo-institucional);
+  margin-top: 20px;
+  margin: auto;
+}
+
+.contenedoMatematicas {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.tarjeta-curso {
+  width: 100%; /* Ocupa todo el ancho del contenedor */
+  padding: 12px 16px; /* Espaciado interno */
+  margin-bottom: 8px; /* Separación entre tarjetas */
+  background-color: #e6e5e5; /* Color de fondo suave */
+  border-radius: 6px; /* Bordes redondeados */
+  transition: transform 0.2s ease, background-color 0.2s ease; /* Efecto suave */
+  cursor: pointer; /* Cambia el cursor al pasar el mouse */
+  color: var(--rojo-institucional);
+  font-weight: bold;
+  position: relative;
+}
+
+.fondonegroDocentes {
+  position: fixed;
+  top: 0%;
+  z-index: 20;
+  left: 0%;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.536);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fondonegroDocentes2 {
+  position: relative;
+  background-color: #c9c9c9;
+  padding: 20px;
+}
+
+.fondonegroDocentes span {
+  position: absolute;
+  top: 10%;
+  left: 90%;
+  color: #b02a37;
+  z-index: 10;
+}
+
+.tarjeta-curso label {
+  position: absolute;
+  top: 5%;
+  left: 96%;
+  font-size: 26px;
+  font-weight: bold;
+}
+
+.tarjeta-curso:hover {
+  transform: scale(1.05); /* Se hace un poco más grande */
+  background-color: #c9c9c9; /* Cambio de color al pasar el mouse */
+}
+
+.page-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
