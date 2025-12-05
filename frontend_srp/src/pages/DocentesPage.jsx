@@ -6,6 +6,7 @@ import Logout from "../components/Logout";
 import "../styles/Dashboard.css";
 import "../styles/CoordinacionPage.css";
 import DocentesMaterias from "../components/DocenteMaterias";
+import Actividades from "../components/Actividades";
 
 function DocentesPage() {
   const [currentView, setCurrentView] = useState("dashboard");
@@ -54,12 +55,7 @@ function DocentesPage() {
       case "materias-asignadas":
         return <DocentesMaterias onBack={handleBackToDashboard} />;
       case "gestion-actividades":
-        return (
-          <h1 style={{ padding: "20px" }}>
-            Gestión actividades — (Próximamente sección de docentes)
-            <button onClick={handleBackToDashboard}>Volver</button>
-          </h1>
-        );
+        return <Actividades onBack={handleBackToDashboard} />;
 
       default:
         return <DashboardDocentes onNavigate={handleNavigation} />;

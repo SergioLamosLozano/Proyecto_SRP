@@ -1,0 +1,304 @@
+:root {
+  --rojo-institucional: #c41e3a;
+  --rojo-hover: #a01729;
+  --gris-principal: #2c3e50;
+  --gris-secundario: #7f8c8d;
+  --gris-claro-fondo: #f8f9fa;
+  --blanco: #ffffff;
+  --blanco-puro: #ffffff;
+  --borde-color: #dee2e6;
+  --verde-exito: #28a745;
+  --amarillo-advertencia: #ffc107;
+  --azul-info: #17a2b8;
+  --rojo-error: #dc3545;
+}
+
+.ActividadesContainer {
+  display: flex;
+  width: 100%;
+  height: auto;
+  padding: 15px;
+  flex-direction: column;
+  align-items: center;
+}
+
+.TituloActividades {
+  color: var(--rojo-institucional);
+}
+
+.ActividadesContenedor2 {
+  width: 100%;
+  margin-top: 30px;
+  padding: 20px;
+  background-color: white;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.293);
+  border-radius: 10px;
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+  padding: 30px;
+}
+
+.ActividadesContenedor3 {
+  width: 100%;
+  margin-top: 30px;
+  padding: 20px;
+  background-color: white;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.293);
+  border-radius: 10px;
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  padding: 30px;
+}
+
+/* ---------- CONTENEDOR GENERAL ---------- */
+.crearActividadContenedorFull {
+  width: 100%;
+  min-height: 100vh;
+  padding: 30px;
+  background: #f5f5f5; /* gris claro */
+}
+
+.TituloCrearActividad {
+  text-align: center;
+  color: var(--rojo-institucional);
+  margin-bottom: 25px;
+  font-size: 32px;
+  letter-spacing: 1px;
+}
+
+/* ---------- FORMULARIO FULL WIDTH ---------- */
+.formCrearActividad {
+  width: 100%;
+  max-width: 900px; /* para que no se vea demasiado ancho */
+  margin: 0 auto;
+  background: #fff;
+  padding: 35px;
+  border-radius: 20px;
+  border: 2px solid #e0e0e0;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+
+/* ---------- CAMPOS ---------- */
+.campoActividad {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 18px;
+}
+
+.campoActividad label {
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #333;
+}
+
+.campoActividad input,
+.campoActividad textarea,
+.campoActividad select {
+  padding: 14px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  background: #fafafa;
+  font-size: 15px;
+  outline: none;
+}
+
+.campoActividad input:focus,
+.campoActividad textarea:focus,
+.campoActividad select:focus {
+  border: var(--rojo-institucional) 2px solid;
+  box-shadow: 0px 0px 3px #c41e3ab4;
+}
+
+.campoActividad textarea {
+  resize: none;
+  height: 80px;
+}
+
+/* ---------- DOS CAMPOS EN FILA ---------- */
+.filaActividad {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+/* ---------- BOTÓN ---------- */
+.btnCrearActividad {
+  background: var(--rojo-institucional);
+  color: white;
+  width: 100%;
+  padding: 15px;
+  border: none;
+  margin-top: 10px;
+  border-radius: 12px;
+  font-weight: bold;
+  font-size: 18px;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.btnCrearActividad:hover {
+  background-color: var(--rojo-hover);
+  transform: translateY(-4px);
+}
+
+.TargetaActividades {
+  width: 100%;
+  max-width: 450px;
+  height: auto;
+  padding: 20px;
+  box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.205);
+  display: flex;
+  border-radius: 10px;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.TargetaActividades:hover {
+  transform: translateY(-4px);
+}
+
+.actividadCard {
+  background: #fff;
+  border-left: 6px solid var(--rojo-institucional); /* Rojo elegante */
+  padding: 16px 20px;
+  margin-bottom: 14px;
+  border-radius: 10px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.actividadCard:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
+}
+
+.actividadTitulo {
+  margin: 0 0 10px 0;
+  color: var(--rojo-institucional);
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.actividadCard p {
+  margin: 4px 0;
+  font-size: 0.95rem;
+  color: #333;
+}
+
+.actividadCard strong {
+  color: var(--rojo-institucional);
+}
+
+.TargetaActividades h2 {
+  color: var(--rojo-institucional);
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.TargetaActividades p {
+  color: var(--gris-secundario);
+  font-size: 14px;
+}
+
+.TargetaActividades button {
+  color: white;
+  font-weight: bold;
+  background-color: var(--rojo-institucional);
+  border-radius: 10px;
+  padding: 10px;
+  outline: none;
+  border: none;
+  width: 100%;
+  margin-top: 10px;
+  margin-bottom: 5px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.TargetaActividades button:hover {
+  background-color: #a01729;
+}
+
+/* ---------- CONTENEDOR ---------- */
+.calificarContenedorFull {
+  width: 100%;
+  min-height: 100vh;
+  padding: 30px;
+  background: #f5f5f5;
+}
+
+.TituloCalificar {
+  text-align: center;
+  color: var(--rojo-institucional);
+  margin-bottom: 25px;
+  font-size: 32px;
+  letter-spacing: 1px;
+}
+
+/* ---------- FORMULARIO ---------- */
+.formCalificar {
+  width: 100%;
+  max-width: 650px;
+  margin: 0 auto;
+  background: #fff;
+  padding: 35px;
+  border-radius: 20px;
+  border: 2px solid #e0e0e0;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+
+/* ---------- CAMPOS ---------- */
+.campoCalificar {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 18px;
+}
+
+.campoCalificar label {
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #333;
+}
+
+.campoCalificar input,
+.campoCalificar select {
+  padding: 14px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  background: #fafafa;
+  font-size: 15px;
+  outline: none;
+  transition: all 0.2s ease-in-out;
+}
+
+.campoCalificar input:focus,
+.campoCalificar select:focus {
+  border: var(--rojo-institucional) 2px solid;
+  box-shadow: 0px 0px 3px #c41e3ab4;
+}
+
+/* ---------- BOTÓN ---------- */
+.btnCalificar {
+  background: var(--rojo-institucional);
+  color: white;
+  width: 100%;
+  padding: 15px;
+  border: none;
+  margin-top: 10px;
+  border-radius: 12px;
+  font-weight: bold;
+  font-size: 18px;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.btnCalificar:hover {
+  background-color: var(--rojo-hover);
+  transform: translateY(-2px);
+}

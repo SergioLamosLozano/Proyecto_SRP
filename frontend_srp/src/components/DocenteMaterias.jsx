@@ -9,9 +9,9 @@ import Table from "./Table";
 
 function DocentesMaterias({ onBack }) {
   const [currentSubSection, setCurrentSubSection] = useState(null);
+  const [currentSubSection2, setCurrentSubSection2] = useState(null);
   const [estudiantes, setEstudiantes] = useState([]);
   const [listaPorCurso, setListaPorCurso] = useState([]);
-  const [tabla, setTabla] = useState(false);
   const [materias, setMaterias] = useState([]);
 
   const listaDeColores = [
@@ -83,7 +83,7 @@ function DocentesMaterias({ onBack }) {
         )
     );
     setListaPorCurso(estudiantesFiltrados);
-    setTabla(true);
+    console.log(estudiantesFiltrados);
   };
 
   // MIGAS REALES
@@ -95,7 +95,15 @@ function DocentesMaterias({ onBack }) {
       ? [
           {
             label: currentSubSection,
-            path: `/coordinacion/calificaciones/${currentSubSection}`,
+            path: `/docentes/materias/${currentSubSection}`,
+          },
+        ]
+      : []),
+    ...(currentSubSection2
+      ? [
+          {
+            label: currentSubSection2,
+            path: `/docentes/materias/${currentSubSection2}`,
           },
         ]
       : []),
@@ -106,56 +114,54 @@ function DocentesMaterias({ onBack }) {
       onBack();
     } else if (path === "/docentes/materias") {
       setCurrentSubSection(null);
+      setCurrentSubSection2(null);
+    } else if (path === `/docentes/materias/${currentSubSection}`) {
+      setCurrentSubSection2(null);
     } else {
       const subsection = path.split("/").pop();
       if (["materias", "actividades"].includes(subsection)) {
         setCurrentSubSection(subsection);
+        setCurrentSubSection2(subsection);
       }
+    }
+  };
+
+  const render = () => {
+    if (currentSubSection2) {
+      return (
+        <Table
+          id="EstudiantesC"
+          busqueda={["numero_documento_estudiante"]}
+          title="Gestión de Estudiantes"
+          description="Registro manual de estudiantes."
+          columns={[
+            { key: "nombre_completo", label: "NOMBRE" },
+            {
+              key: "numero_documento_estudiante",
+              label: "IDENTIFICACIÓN",
+            },
+            {
+              key: "curso",
+              label: "CURSO",
+              render: (row) => row.cursos?.[0]?.curso_nombre ?? "Sin curso",
+            },
+            { key: "estado", label: "ESTADO" },
+          ]}
+          data={listaPorCurso}
+          searchPlaceholder="Buscar por Documento..."
+        />
+      );
     }
   };
 
   const handleSectionClick = () => {
     switch (currentSubSection) {
       case "Matemáticas":
-        return (
+        return currentSubSection2 ? (
+          render()
+        ) : (
           <div className="contenedoMatematicas">
             <h2 className="TituloMateriasAsignadas">{currentSubSection}</h2>
-            {tabla && (
-              <div className="fondonegroDocentes">
-                <Table
-                  id="EstudiantesC"
-                  busqueda={["numero_documento_estudiante"]}
-                  title="Gestión de Estudiantes"
-                  description="Registro manual de estudiantes."
-                  columns={[
-                    { key: "nombre_completo", label: "NOMBRE" },
-                    {
-                      key: "numero_documento_estudiante",
-                      label: "IDENTIFICACIÓN",
-                    },
-                    {
-                      key: "cursos",
-                      label: "CURSO",
-                      render: (row) => {
-                        const curso = row.cursos?.find(
-                          (c) =>
-                            (c.estado_curso?.trim().toLowerCase() || "") ===
-                              "activo" &&
-                            (c.curso_nombre?.trim().toLowerCase() || "") ===
-                              currentSubSection.trim().toLowerCase() // <-- usamos currentSubSection
-                        );
-                        return curso ? curso.curso_nombre : "Sin curso";
-                      },
-                    },
-                    { key: "estado", label: "ESTADO" },
-                  ]}
-                  data={listaPorCurso}
-                  salir="salir"
-                  onClickParaSalir={() => setTabla(false)}
-                  searchPlaceholder="Buscar por Documento..."
-                />
-              </div>
-            )}
             <div className="CursosMaterias">
               {materias &&
                 materias
@@ -165,7 +171,10 @@ function DocentesMaterias({ onBack }) {
                     <div
                       key={index}
                       className="tarjeta-curso"
-                      onClick={() => FiltrarEstudiantes(curso)}
+                      onClick={() => {
+                        setCurrentSubSection2(curso);
+                        FiltrarEstudiantes(curso);
+                      }}
                     >
                       <label>&gt;</label>
                       <p>{curso}</p>
@@ -175,45 +184,11 @@ function DocentesMaterias({ onBack }) {
           </div>
         );
       case "ingles":
-        return (
+        return currentSubSection2 ? (
+          render()
+        ) : (
           <div className="contenedoMatematicas">
             <h2 className="TituloMateriasAsignadas">{currentSubSection}</h2>
-            {tabla && (
-              <div className="fondonegroDocentes">
-                <Table
-                  id="EstudiantesC"
-                  busqueda={["numero_documento_estudiante"]}
-                  title="Gestión de Estudiantes"
-                  description="Registro manual de estudiantes."
-                  columns={[
-                    { key: "nombre_completo", label: "NOMBRE" },
-                    {
-                      key: "numero_documento_estudiante",
-                      label: "IDENTIFICACIÓN",
-                    },
-                    {
-                      key: "cursos",
-                      label: "CURSO",
-                      render: (row) => {
-                        const curso = row.cursos?.find(
-                          (c) =>
-                            (c.estado_curso?.trim().toLowerCase() || "") ===
-                              "activo" &&
-                            (c.curso_nombre?.trim().toLowerCase() || "") ===
-                              currentSubSection.trim().toLowerCase() // <-- usamos currentSubSection
-                        );
-                        return curso ? curso.curso_nombre : "Sin curso";
-                      },
-                    },
-                    { key: "estado", label: "ESTADO" },
-                  ]}
-                  data={listaPorCurso}
-                  salir="salir"
-                  onClickParaSalir={() => setTabla(false)}
-                  searchPlaceholder="Buscar por Documento..."
-                />
-              </div>
-            )}
             <div className="CursosMaterias">
               {materias &&
                 materias
@@ -223,7 +198,10 @@ function DocentesMaterias({ onBack }) {
                     <div
                       key={index}
                       className="tarjeta-curso"
-                      onClick={() => FiltrarEstudiantes(curso)}
+                      onClick={() => {
+                        setCurrentSubSection2(curso);
+                        FiltrarEstudiantes(curso);
+                      }}
                     >
                       <label>&gt;</label>
                       <p>{curso}</p>
@@ -233,45 +211,11 @@ function DocentesMaterias({ onBack }) {
           </div>
         );
       case "Ed Fisica":
-        return (
+        return currentSubSection2 ? (
+          render()
+        ) : (
           <div className="contenedoMatematicas">
             <h2 className="TituloMateriasAsignadas">{currentSubSection}</h2>
-            {tabla && (
-              <div className="fondonegroDocentes">
-                <Table
-                  id="EstudiantesC"
-                  busqueda={["numero_documento_estudiante"]}
-                  title="Gestión de Estudiantes"
-                  description="Registro manual de estudiantes."
-                  columns={[
-                    { key: "nombre_completo", label: "NOMBRE" },
-                    {
-                      key: "numero_documento_estudiante",
-                      label: "IDENTIFICACIÓN",
-                    },
-                    {
-                      key: "cursos",
-                      label: "CURSO",
-                      render: (row) => {
-                        const curso = row.cursos?.find(
-                          (c) =>
-                            (c.estado_curso?.trim().toLowerCase() || "") ===
-                              "activo" &&
-                            (c.curso_nombre?.trim().toLowerCase() || "") ===
-                              currentSubSection.trim().toLowerCase() // <-- usamos currentSubSection
-                        );
-                        return curso ? curso.curso_nombre : "Sin curso";
-                      },
-                    },
-                    { key: "estado", label: "ESTADO" },
-                  ]}
-                  data={listaPorCurso}
-                  salir="salir"
-                  onClickParaSalir={() => setTabla(false)}
-                  searchPlaceholder="Buscar por Documento..."
-                />
-              </div>
-            )}
             <div className="CursosMaterias">
               {materias &&
                 materias
@@ -281,7 +225,10 @@ function DocentesMaterias({ onBack }) {
                     <div
                       key={index}
                       className="tarjeta-curso"
-                      onClick={() => FiltrarEstudiantes(curso)}
+                      onClick={() => {
+                        setCurrentSubSection2(curso);
+                        FiltrarEstudiantes(curso);
+                      }}
                     >
                       <label>&gt;</label>
                       <p>{curso}</p>

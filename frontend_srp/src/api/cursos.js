@@ -163,5 +163,5 @@ export const Estudiantes_notas = (id) => {
 };
 
 export const BuscarMateriasAsignadas = (id) => {
-  return api.get(`/materias_asignadas/?fk_numero_documento_estudiante=${id}`);
+  return api.get(`/materias_asignadas/?fk_numero_documento_profesor=${id}`);
 };

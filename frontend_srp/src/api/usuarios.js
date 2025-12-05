@@ -356,3 +356,7 @@ export const CrearUsuarioPadre = (datos) => {
     console.log("✖️ no tienes las credenciales para hacer esta peticion");
   }
 };
+
+export const actividadesAnteriores = (id) => {
+  return api.get(`http://localhost:8000/api/actividades/?profesor=${id}`);
+};

@@ -27,6 +27,7 @@ except Exception:
 
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializer import CustomTokenObtainPairSerializer
+import django_filters
 
 
 class AcudienteUserMatchViewSet(viewsets.ViewSet):
@@ -110,9 +111,21 @@ class TipoActividadViewSet(viewsets.ModelViewSet):
     queryset = TipoActividad.objects.all()
     serializer_class = TipoActividadSerializer
 
+class ActividadesFilter(django_filters.FilterSet):
+    profesor = django_filters.CharFilter(
+        field_name='fk_id_materia_profesores__fk_numero_documento_profesor__numero_documento_profesor',
+        lookup_expr='exact'
+    )
+
+    class Meta:
+        model = Actividades
+        fields = ['profesor']
+
 class ActividadesViewSet(viewsets.ModelViewSet):
     queryset = Actividades.objects.all()
     serializer_class = ActividadesSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = ActividadesFilter
 
 class TipoSangreViewSet(viewsets.ModelViewSet):
     queryset = TipoSangre.objects.all()
@@ -145,7 +158,7 @@ class MateriasAsignadasViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
 
     # Exacto: solo devuelve lo que coincida 100%
-    filterset_fields = ['fk_numero_documento_profesor__numero_documento_profesor']
+    filterset_fields = ['fk_numero_documento_profesor']
 
     # Parcial: devuelve coincidencias parciales
     search_fields = [
