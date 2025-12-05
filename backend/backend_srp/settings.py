@@ -151,6 +151,10 @@ CORS_ALLOWED_ORIGINS = [
 REST_FRAMEWORK = {
     # Configuraciones principales de DRF
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',  # Solo JSON
+    ),
     # Añadimos autenticación por JWT para que Authorization: Bearer <token> sea aceptado
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',

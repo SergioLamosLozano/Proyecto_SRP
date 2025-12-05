@@ -1,4 +1,5 @@
 import axios from "axios";
+import { jwtDecode } from "jwt-decode";
 
 const baseURL = "http://127.0.0.1:8000/api";
 
@@ -243,4 +244,115 @@ export const padresAPI = (acudienteid) => {
   return api.get(
     `/match-acudientes/verificar_coincidencias/?numero_documento_acudiente=${acudienteid}`
   );
+};
+
+export const EstudiantesGET = () => {
+  return api.get(`/estudiantes/`);
+};
+
+export const CrearEstudiante = (datos) => {
+  const token = sessionStorage.getItem("token");
+  return api.post("/estudiantes/", datos, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+};
+
+export const EditarEstudiante = (id, datos) => {
+  const token = sessionStorage.getItem("token");
+  return api.patch(`/estudiantes/${id}/`, datos, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+};
+
+export const Ciudad = () => {
+  return api.get("/ciudad/");
+};
+
+export const Sisben = () => {
+  return api.get("/sisben/");
+};
+
+export const ProfesorGET = () => {
+  return api.get("/profesores/");
+};
+
+export const CrearProfesores = (datos) => {
+  const token = sessionStorage.getItem("token");
+  return api.post("/profesores/", datos, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+};
+
+export const EditarProfesores = (id, datos) => {
+  const token = sessionStorage.getItem("token");
+  return api.patch(`/profesores/${id}/`, datos, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+};
+
+export const PadresGET = () => {
+  return api.get("/acudientes/");
+};
+
+export const CrearPadres = (datos) => {
+  const token = sessionStorage.getItem("token");
+  return api.post("/acudientes/", datos, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+};
+
+export const EditarPadres = (id, datos) => {
+  const token = sessionStorage.getItem("token");
+  return api.patch(`/acudientes/${id}/`, datos, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+};
+
+export const EliminarPadres = (id) => {
+  const token = sessionStorage.getItem("token");
+  return api.delete(`/acudientes/${id}/`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+};
+
+export const AsignacionDeAcudienteAEstudiante = (datos) => {
+  const token = sessionStorage.getItem("token");
+  return api.post(`/estudiantes-acudientes/`, datos, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+};
+
+export const CrearUsuarioPadre = (datos) => {
+  const token = sessionStorage.getItem("token");
+  if (!token) {
+    console.log("Error, no existe token");
+    return;
+  }
+  const decoded = jwtDecode(token);
+  const rol = decoded.rol;
+  if (rol === "coordinacion" || rol === "secretaria") {
+    return api.post("/super-secreta-9834-hj3/register/", datos, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  } else {
+    console.log("✖️ no tienes las credenciales para hacer esta peticion");
+  }
 };

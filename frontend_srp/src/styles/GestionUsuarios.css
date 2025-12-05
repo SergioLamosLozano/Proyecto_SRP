@@ -2,82 +2,216 @@
 
 /* Sobrescribir el padding-top del dashboard para evitar conflicto con breadcrumbs */
 .dashboard {
-    padding-top: 0 !important;
+  padding-top: 0 !important;
 }
 
 /* Variables locales (fallbacks para colores usados en este archivo) */
 :root {
-    --gris-medio: #e6e9ec;
-    --gris-muy-claro: #f1f2f4;
+  --gris-medio: #e6e9ec;
+  --gris-muy-claro: #f1f2f4;
+}
+
+.selector_padres {
+  display: flex;
+  margin-top: 20px;
+  justify-content: center;
+  align-items: center;
+  width: 300px;
+  margin-left: 10px;
+}
+
+.Tergetas-cambio {
+  border-top: 2px solid black;
+  padding: 5px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  opacity: 30%;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.ContenedorAsignacion {
+  width: 100%;
+  margin: auto;
+  margin-top: 50px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 450px;
+  border-radius: 10px;
+  background-color: white;
+  box-shadow: 0px 1px 10px rgba(0, 0, 0, 0.304);
+}
+
+.ContenedorAsignacion h1 {
+  font-size: 32px;
+  margin-top: 20px;
+  font-weight: bold;
+  color: var(--rojo-institucional);
+}
+
+.Contenedor_Infomarcion {
+  width: 100%;
+  max-width: 700px;
+  height: auto;
+  text-align: center;
+  margin-top: 15px;
+  color: var(--gris-secundario);
+}
+
+.Contenedor-Inputs-padres {
+  width: 90%;
+  height: 40%;
+  margin: auto;
+  display: flex;
+  gap: 50px;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.Contenedor-Inputs-padres section {
+  display: flex;
+  gap: 50px;
+  justify-content: center;
+}
+
+.Contenedor-Inputs-padres input {
+  width: 100%;
+  max-width: 300px;
+  height: 30px;
+  border-radius: 5px;
+  padding: 5px;
+  outline: none;
+  border: var(--gris-secundario) 2px solid;
+  transition: all 0.2s ease;
+}
+
+.InputsG {
+  width: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-weight: 600;
+  color: var(--rojo-institucional);
+}
+
+.InputsG select {
+  width: 200px;
+  height: 30px;
+  border-radius: 5px;
+  border: 2px solid var(--gris-secundario);
+  outline: none;
+  padding: 5px;
+  transition: all 0.3s ease;
+}
+.InputsG select:focus {
+  border: var(--rojo-institucional) 2px solid;
+}
+
+.BTN-asociar {
+  width: 100%;
+  max-width: 400px;
+  height: 50px;
+  margin-top: 30px;
+  font-size: 16px;
+  font-weight: bold;
+  background-color: var(--rojo-institucional);
+  color: white;
+  border-radius: 10px;
+  border: none;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.BTN-asociar:hover {
+  cursor: pointer;
+  transform: translateY(-7px);
+  box-shadow: 0px 5px 5px rgba(255, 0, 0, 0.384);
+}
+
+.Contenedor-Inputs-padres input:focus {
+  border: var(--rojo-institucional) 2px solid;
+}
+
+.Tergetas-cambio.activate {
+  border-top: 2px solid black;
+  padding: 5px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  opacity: 100%;
+  transition: all 0.3s ease;
 }
 
 .gestion-usuarios-container {
-    min-height: 100vh;
-    background-color: var(--gris-claro-fondo);
-    padding-top: 160px; /* Espacio para navbar + breadcrumb */
+  min-height: 100vh;
+  background-color: var(--gris-claro-fondo);
+  padding-top: 160px; /* Espacio para navbar + breadcrumb */
 }
 
 .gestion-usuarios-content {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
-    background-color: var(--blanco);
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    margin-bottom: 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: var(--blanco);
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 40px;
 }
 
 .gestion-usuarios-header {
-    text-align: center;
-    margin-bottom: 30px;
-    color: var(--gris-principal);
+  text-align: center;
+  margin-bottom: 30px;
+  color: var(--gris-principal);
 }
 
 .gestion-usuarios-title {
-    font-size: 28px;
-    font-weight: bold;
-    color: var(--rojo-institucional);
-    margin-bottom: 10px;
+  font-size: 28px;
+  font-weight: bold;
+  color: var(--rojo-institucional);
+  margin-bottom: 10px;
 }
 
 .gestion-usuarios-subtitle {
-    font-size: 16px;
-    color: var(--gris-secundario);
-    margin-bottom: 30px;
+  font-size: 16px;
+  color: var(--gris-secundario);
+  margin-bottom: 30px;
 }
 
 /* Contenedores para tablas de previsualización: permiten scroll horizontal sin romper el layout */
 .preview-table-wrapper,
 .edit-table-wrapper {
-    width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    border: 1px solid var(--gris-medio);
-    border-radius: 6px;
-    padding: 8px;
-    background: #fff;
-    box-sizing: border-box;
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border: 1px solid var(--gris-medio);
+  border-radius: 6px;
+  padding: 8px;
+  background: #fff;
+  box-sizing: border-box;
 }
 
 /* Tablas con layout fijo para mantener proporciones y evitar que columnas anchas estiren el contenedor */
 .preview-table,
 .edit-table {
-    width: 100%;
-    border-collapse: collapse;
-    table-layout: fixed; /* clave: columnas con ancho fijo/ proporcionado */
-    font-size: 13px;
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed; /* clave: columnas con ancho fijo/ proporcionado */
+  font-size: 13px;
 }
 
 .preview-table th,
 .preview-table td,
 .edit-table th,
 .edit-table td {
-    border: 1px solid var(--gris-muy-claro);
-    padding: 6px 8px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis; /* muestra '...' si el texto es muy largo */
-    vertical-align: middle;
+  border: 1px solid var(--gris-muy-claro);
+  padding: 6px 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; /* muestra '...' si el texto es muy largo */
+  vertical-align: middle;
 }
 
 /* Permitir romper palabras largas y envolver en pantallas pequeñas sin estirar todo */
@@ -85,14 +219,14 @@
 .edit-table td,
 .preview-table th,
 .edit-table th {
-    overflow-wrap: anywhere; /* rompe palabras largas para evitar stretch */
-    word-break: break-word;
+  overflow-wrap: anywhere; /* rompe palabras largas para evitar stretch */
+  word-break: break-word;
 }
 
 /* Tooltip: mostrar todo el contenido al pasar si está truncado (se añade title en JSX) */
 .preview-table td[title],
 .edit-table td[title] {
-    cursor: help;
+  cursor: help;
 }
 
 /* Limitar ancho máximo de columnas principales para que no dominen la tabla */
@@ -100,133 +234,199 @@
 .preview-table td:first-child,
 .edit-table th:first-child,
 .edit-table td:first-child {
-    max-width: 140px;
+  max-width: 140px;
 }
 
 /* Entradas editables dentro de la tabla deben adaptarse y no crecer fuera */
 .edit-table input[type="text"],
 .edit-table input[type="date"],
 .edit-table input[type="number"] {
-    width: 100%;
-    box-sizing: border-box;
-    border: none;
-    padding: 4px;
-    font-size: 13px;
-    background: transparent;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  width: 100%;
+  box-sizing: border-box;
+  border: none;
+  padding: 4px;
+  font-size: 13px;
+  background: transparent;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Botones bajo la tabla adaptables y centrados */
 .table-actions {
-    display: flex;
-    gap: 12px;
-    justify-content: center;
-    margin-top: 12px;
-    flex-wrap: wrap;
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 12px;
+  flex-wrap: wrap;
 }
 
 /* Pequeños ajustes responsivos */
 @media (max-width: 768px) {
-    .gestion-usuarios-content {
-        padding: 12px;
-    }
-    .preview-table th,
-    .preview-table td,
-    .edit-table th,
-    .edit-table td {
-        padding: 6px 4px;
-        font-size: 12px;
-    }
+  .gestion-usuarios-content {
+    padding: 12px;
+  }
+  .preview-table th,
+  .preview-table td,
+  .edit-table th,
+  .edit-table td {
+    padding: 6px 4px;
+    font-size: 12px;
+  }
 }
 
 /* Modal de previsualización (simple) */
 .gv-modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.55); /* ligeramente más oscuro para mayor contraste */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 99999; /* elevar mucho para evitar stacking context issues */
-    -webkit-backdrop-filter: blur(2px);
-    backdrop-filter: blur(2px);
+  position: fixed;
+  inset: 0;
+  background: rgba(
+    0,
+    0,
+    0,
+    0.55
+  ); /* ligeramente más oscuro para mayor contraste */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999; /* elevar mucho para evitar stacking context issues */
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
 }
 .gv-modal {
-    width: 90%;
-    max-width: 1100px;
-    max-height: 85vh;
-    background: var(--blanco);
-    border-radius: 8px;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 8px 40px rgba(10,10,10,0.4);
-    transform: translateZ(0); /* evita que algunos navegadores creen stacking context inesperado */
+  width: 90%;
+  max-width: 1100px;
+  max-height: 85vh;
+  background: var(--blanco);
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 40px rgba(10, 10, 10, 0.4);
+  transform: translateZ(
+    0
+  ); /* evita que algunos navegadores creen stacking context inesperado */
 }
 
 /* Fallback helper in case a parent stacking context hides the modal: apply to body when opening modal via JS if needed */
 .gv-modal-hidden-fix {
-    position: relative !important;
-    z-index: 100000 !important;
+  position: relative !important;
+  z-index: 100000 !important;
 }
 .gv-modal-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 14px 18px;
-    border-bottom: 1px solid rgba(0,0,0,0.06);
-    background: linear-gradient(90deg, #b71c30, #d32f2f); /* color institucional */
-    color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  background: linear-gradient(
+    90deg,
+    #b71c30,
+    #d32f2f
+  ); /* color institucional */
+  color: #fff;
 }
-.gv-modal-header h3 { margin: 0; font-size: 18px; }
-.modal-close { background: transparent; border: none; color: #fff; font-size: 20px; cursor: pointer; }
+.gv-modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+}
+.modal-close {
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+}
 .gv-modal-body {
-    padding: 12px;
-    overflow: auto;
-    flex: 1 1 auto;
+  padding: 12px;
+  overflow: auto;
+  flex: 1 1 auto;
 }
 .gv-modal-actions {
-    padding: 12px;
-    display: flex;
-    gap: 8px;
-    justify-content: flex-end;
-    border-top: 1px solid var(--gris-medio);
-    background: #fff;
+  padding: 12px;
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  border-top: 1px solid var(--gris-medio);
+  background: #fff;
 }
-.gv-modal .preview-table th, .gv-modal .preview-table td {
-    padding: 8px 10px;
+.gv-modal .preview-table th,
+.gv-modal .preview-table td {
+  padding: 8px 10px;
 }
 .gv-modal .preview-table thead th {
-    position: sticky;
-    top: 0;
-    background: #fff;
-    z-index: 2;
-    box-shadow: 0 2px 0 rgba(0,0,0,0.04) inset;
+  position: sticky;
+  top: 0;
+  background: #fff;
+  z-index: 2;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.04) inset;
 }
-.gv-modal .preview-table { border-radius: 6px; }
-.gv-modal .btn-secondary { background: #e9ecef; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; }
-.gv-modal .btn-primary { background: #b71c30; color: #fff; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; flex: 1 1 auto; }
-.gv-modal .btn-success { background: #28a745; color: #fff; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; }
-.gv-modal .gv-modal-actions { align-items: center; }
-.gv-modal input { width: 100%; box-sizing: border-box; padding: 6px 8px; }
+.gv-modal .preview-table {
+  border-radius: 6px;
+}
+.gv-modal .btn-secondary {
+  background: #e9ecef;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.gv-modal .btn-primary {
+  background: #b71c30;
+  color: #fff;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+  flex: 1 1 auto;
+}
+.gv-modal .btn-success {
+  background: #28a745;
+  color: #fff;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.gv-modal .gv-modal-actions {
+  align-items: center;
+}
+.gv-modal input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 6px 8px;
+}
 
 /* Tabla simple para Padres de familia */
 .simple-table {
-    width: 100%;
-    border-collapse: collapse;
+  width: 100%;
+  border-collapse: collapse;
 }
-.simple-table th, .simple-table td {
-    border: 1px solid var(--gris-muy-claro);
-    padding: 8px;
-    text-align: left;
+.simple-table th,
+.simple-table td {
+  border: 1px solid var(--gris-muy-claro);
+  padding: 8px;
+  text-align: left;
 }
-.simple-table input { width: 100%; box-sizing: border-box; padding: 6px; }
+.simple-table input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 6px;
+}
 
 /* Modal simple para asignar estudiante */
 .modal-backdrop {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.45); display:flex; align-items:center; justify-content:center; z-index:99999;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
 }
-.modal-card { background: #fff; padding: 18px; border-radius: 8px; width: 420px; max-width: 95%; }
-
+.modal-card {
+  background: #fff;
+  padding: 18px;
+  border-radius: 8px;
+  width: 420px;
+  max-width: 95%;
+}
