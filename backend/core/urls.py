@@ -32,7 +32,11 @@ router.register(r'estudiantes_cursos', EstudiantesCursosViewSet, basename='Estud
 urlpatterns = [
     path('token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path("super-secreta-9834-hj3/register/", RegisterView.as_view(), name="register"),
-    path('api/estudiantes/carga-masiva/', EstudiantesBulkUploadView.as_view(), name='carga_masiva_estudiantes'),
+    # Plantillas y carga masiva (sin prefijo 'api/' porque ya incluimos en backend_srp/urls.py)
+    path('estudiantes/template/', EstudiantesTemplateView.as_view(), name='plantilla_estudiantes'),
+    path('profesores/template/', ProfesoresTemplateView.as_view(), name='plantilla_profesores'),
+    path('estudiantes/bulk-upload/', EstudiantesBulkUploadView.as_view(), name='bulk_estudiantes'),
+    path('profesores/bulk-upload/', ProfesoresBulkUploadView.as_view(), name='bulk_profesores'),
 ]
 
 urlpatterns += router.urls
