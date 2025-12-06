@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Sidebar from "../components/Sidebar";
 import Dashboard from "../components/Dashboard";
 import GestionAcademica from "../components/GestionAcademica";
-import GestionUsuarios from "../components/GestionUsuarios";
+import GestionUsuarios from "../components/GestionUsuarios2";
 import Calificaciones from "../components/Calificaciones";
 import ReportesEstadisticas from "../components/ReportesEstadisticas";
 import Logout from "../components/Logout";

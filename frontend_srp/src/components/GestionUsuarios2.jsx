@@ -1,355 +1,135 @@
-import React, { useState, useEffect, useRef } from "react";
-
-import * as XLSX from "xlsx";
-import "../styles/GestionAcademica.css";
-import Breadcrumbs from "./Breadcrumbs";
-import Table from "./Table";
-import UsuarioModal from "./UsuarioModal";
-import Swal from "sweetalert2";
+import React, { useEffect, useState } from "react";
+import Table from "./Table"; // Ajusta según tu proyecto
+import Breadcrumbs from "./Breadcrumbs"; // Ajusta según tu proyecto
 import {
-  estudiantesAPI,
-  profesoresAPI,
-  catalogoAPI,
-  acudientesAPI,
+  AsignacionDeAcudienteAEstudiante,
+  Ciudad,
+  CrearEstudiante,
+  CrearPadres,
+  CrearProfesores,
+  CrearUsuarioPadre,
+  EditarEstudiante,
+  EditarPadres,
+  EditarProfesores,
+  EliminarPadres,
   EstudiantesGET,
+  PadresGET,
+  ProfesorGET,
+  Sisben,
 } from "../api/usuarios";
 import Modal from "./modal";
+import Swal from "sweetalert2";
+import VerMaterias from "./VerMateriasP";
+import "../styles/GestionUsuarios.css";
+import CargaMasiva from "./CargaMasiva";
 
 const GestionUsuarios = ({ onBack }) => {
-  // Estados y refs del componente
   const [currentSubSection, setCurrentSubSection] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-
-  // Modal principal (UsuarioModal)
-  const [modalOpen, setModalOpen] = useState(false);
-  const [modalMode, setModalMode] = useState("view");
-  const [modalTipo, setModalTipo] = useState("profesor");
-  const [modalData, setModalData] = useState(null);
+  //modal
   const [modal, setModal] = useState(false);
-
-  // Listas de datos
-  const [estudiantes, setEstudiantes] = useState([]);
-  const [profesores, setProfesores] = useState([]);
-  const [padres, setPadres] = useState([]);
-
-  // Upload estudiantes
-  const [selectedEstudiantesFile, setSelectedEstudiantesFile] = useState(null);
-  const [estudiantesUploadResult, setEstudiantesUploadResult] = useState(null);
-  const [estudiantesPreview, setEstudiantesPreview] = useState(null);
-  const [estudiantesValidationErrors, setEstudiantesValidationErrors] =
-    useState([]);
-  const [estudiantesEditableRows, setEstudiantesEditableRows] = useState(null);
-  const [estudiantesHeadersFromFile, setEstudiantesHeadersFromFile] =
-    useState(null);
-  const [uploadingEstudiantes, setUploadingEstudiantes] = useState(false);
-
-  // Upload profesores
-  const profesoresFileInputRef = useRef(null);
-  const [selectedProfesoresFile, setSelectedProfesoresFile] = useState(null);
-  const [profesoresUploadResult, setProfesoresUploadResult] = useState(null);
-  const [profesoresPreview, setProfesoresPreview] = useState(null);
-  const [profesoresValidationErrors, setProfesoresValidationErrors] = useState(
-    []
-  );
-  const [profesoresEditableRows, setProfesoresEditableRows] = useState(null);
-  const [profesoresHeadersFromFile, setProfesoresHeadersFromFile] =
-    useState(null);
-  const [uploadingProfesores, setUploadingProfesores] = useState(false);
-
-  // Cache de catálogos para validaciones
-  const [catalogosCache, setCatalogosCache] = useState(null);
-
-  // Asignación de estudiantes a padres
-  const [assignModalOpen, setAssignModalOpen] = useState(false);
-  const [activePadreId, setActivePadreId] = useState(null);
-  // tipos
-  const [ciudades, setCiudades] = useState([]);
-  // Estudiantes
-  const [tipoDocumento, setTipoDocumento] = useState("");
+  const [editar, setEditar] = useState(false);
+  //todos lo datos necesarios
+  const [ciudadesE, setCiudadesE] = useState([]);
+  const [sisbenE, setSisbenE] = useState([]);
+  // estudiante
+  const [Estudiantes, setEstudiantes] = useState([]);
+  const [tipoDocumento, setTipoDocumento] = useState(0);
   const [documento, setDocumento] = useState("");
   const [primerNombre, setPrimerNombre] = useState("");
   const [segundoNombre, setSegundoNombre] = useState("");
   const [primerApellido, setPrimerApellido] = useState("");
   const [segundoApellido, setSegundoApellido] = useState("");
-
   const [correo, setCorreo] = useState("");
   const [telefono, setTelefono] = useState("");
   const [direccion, setDireccion] = useState("");
-
-  const [estadoE, setEstadoE] = useState("");
-  const [ciudad, setCiudad] = useState("");
-  const [genero, setGenero] = useState("");
+  const [estadoE, setEstadoE] = useState(1);
+  const [ciudad, setCiudad] = useState(0);
+  const [genero, setGenero] = useState(0);
   const [religion, setReligion] = useState("");
-  const [tipoSangre, setTipoSangre] = useState("");
-  const [sisben, setSisben] = useState("");
-
-  const downloadWorkbookFromRows = (tipo) => {
+  const [tipoSangre, setTipoSangre] = useState(0);
+  const [sisben, setSisben] = useState(0);
+  const [Edad, setEdad] = useState(0);
+  const [InstitucionP, setInstitucionP] = useState("");
+  const [FechaN, setFechaN] = useState("");
+  const [Discapacidad, setDiscapacidad] = useState(0);
+  const [Alergia, setAlergia] = useState(0);
+  //deshabilitar campos necesarios
+  const [Disabled, setDisabled] = useState(false);
+  //id que se utiliza para almacenar el id de los diferentes usuarios
+  const [id, setId] = useState("");
+  //boton del filtro 1
+  const [BTNfiltro, setBTNfiltro] = useState(true);
+  //filtro Activos (estudiantes)
+  const filtro1 = Estudiantes.filter((est) => est.estado == "Activo");
+  //cargar todo lo que se necesita del estudiante
+  const CargarEstudiante = async () => {
     try {
-      let headers = [];
-      let rows = [];
-      if (tipo === "estudiantes") {
-        headers =
-          estudiantesHeadersFromFile ||
-          (estudiantesEditableRows &&
-            Object.keys(estudiantesEditableRows[0] || {})) ||
-          [];
-        rows = estudiantesEditableRows || [];
-      }
-      const aoa = [headers];
-      rows.forEach((r) => {
-        const rowArr = headers.map((h) => r[h] ?? "");
-        aoa.push(rowArr);
-      });
-      const wb = XLSX.utils.book_new();
-      const ws = XLSX.utils.aoa_to_sheet(aoa);
-      XLSX.utils.book_append_sheet(
-        wb,
-        ws,
-        tipo === "estudiantes" ? "Estudiantes" : "Profesores"
-      );
-      const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
-      const blob = new Blob([wbout], {
-        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      });
-      const filename =
-        tipo === "estudiantes"
-          ? "estudiantes_corregido.xlsx"
-          : "profesores_corregido.xlsx";
-      const a = document.createElement("a");
-      a.href = window.URL.createObjectURL(blob);
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(a.href);
+      const response = await EstudiantesGET();
+      const respons2 = await Ciudad();
+      const respons3 = await Sisben();
+      setCiudadesE(respons2.data);
+      setEstudiantes(response.data);
+      setSisbenE(respons3.data);
     } catch (err) {
-      console.error("Error descargando workbook corregido:", err);
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: "No se pudo generar el archivo corregido.",
-      });
+      console.log(err);
     }
   };
-
-  const uploadEditedWorkbook = async (tipo) => {
+  //profesores
+  const [Profesores, setProfesores] = useState([]);
+  const [tipoDocumentoP, setTipoDocumentoP] = useState(0);
+  const [documentoP, setDocumentoP] = useState("");
+  const [primerNombreP, setPrimerNombreP] = useState("");
+  const [segundoNombreP, setSegundoNombreP] = useState("");
+  const [primerApellidoP, setPrimerApellidoP] = useState("");
+  const [segundoApellidoP, setSegundoApellidoP] = useState("");
+  const [correoP, setCorreoP] = useState("");
+  const [telefonoP, setTelefonoP] = useState("");
+  const [telefono2P, setTelefono2P] = useState("");
+  const [estadoP, setEstadoP] = useState(0);
+  const [ciudadP, setCiudadP] = useState(0);
+  const [direccionP, setDireccionP] = useState("");
+  const [tipoSangreP, setTipoSangreP] = useState(0);
+  const [seleccionP, setSeleccionP] = useState([]);
+  // filtro para profesore
+  const filtro2 = Profesores.filter((prof) => prof.estado_desc == "Activo");
+  //ver materias asignada
+  const [verMaterias, setVerMaterias] = useState(false);
+  //cargar todo lo necesario del profesor
+  const CargarProfesor = async () => {
     try {
-      let headers = [];
-      let rows = [];
-      if (tipo === "estudiantes") {
-        headers =
-          estudiantesHeadersFromFile ||
-          (estudiantesEditableRows &&
-            Object.keys(estudiantesEditableRows[0] || {})) ||
-          [];
-        rows = estudiantesEditableRows || [];
-      }
-      const aoa = [headers];
-      rows.forEach((r) => {
-        const rowArr = headers.map((h) => r[h] ?? "");
-        aoa.push(rowArr);
-      });
-      const wb = XLSX.utils.book_new();
-      const ws = XLSX.utils.aoa_to_sheet(aoa);
-      XLSX.utils.book_append_sheet(
-        wb,
-        ws,
-        tipo === "estudiantes" ? "Estudiantes" : "Profesores"
-      );
-      const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
-      const blob = new Blob([wbout], {
-        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      });
-      const filename =
-        tipo === "estudiantes"
-          ? "estudiantes_corregido.xlsx"
-          : "profesores_corregido.xlsx";
-      const fileObj = new File([blob], filename, {
-        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      });
-      if (tipo === "estudiantes") {
-        setUploadingEstudiantes(true);
-        const resp = await estudiantesAPI.bulkUpload(fileObj);
-        setEstudiantesUploadResult(resp.data);
-        setUploadingEstudiantes(false);
-        Swal.fire({
-          icon: "success",
-          title: "Subida completada",
-          text: "Se subió la versión corregida.",
-        });
-      }
+      const response = await ProfesorGET();
+      setProfesores(response.data);
     } catch (err) {
-      console.error("Error subiendo versión corregida:", err);
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: "No se pudo subir la versión corregida.",
-      });
+      console.log(err);
     }
   };
-
-  // Referencias para los inputs de archivo
-  const estudiantesFileInputRef = useRef(null);
-
-  // Helper: leer un workbook usando SheetJS (XLSX)
-  const readWorkbook = (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onerror = (e) => reject(e);
-      reader.onload = (e) => {
-        try {
-          const data = new Uint8Array(e.target.result);
-          const wb = XLSX.read(data, { type: "array" });
-          resolve(wb);
-        } catch (err) {
-          reject(err);
-        }
-      };
-      reader.readAsArrayBuffer(file);
-    });
-  };
-
-  // Helper: cargar catálogos necesarios para validar/interpretar el Excel
-  const loadCatalogsForValidation = async () => {
+  // padres
+  const [padres, setPadres] = useState([]);
+  const [tipoDocumentoC, setTipoDocumentoC] = useState(0);
+  const [documentoC, setDocumentoC] = useState("");
+  const [primerNombreC, setPrimerNombreC] = useState("");
+  const [segundoNombreC, setSegundoNombreC] = useState("");
+  const [primerApellidoC, setPrimerApellidoC] = useState("");
+  const [segundoApellidoC, setSegundoApellidoC] = useState("");
+  const [telefonoC, setTelefonoC] = useState("");
+  const [telefono2C, setTelefono2C] = useState("");
+  const [ciudadC, setCiudadC] = useState(0);
+  const [direccionC, setDireccionC] = useState("");
+  const [activate, setActivate] = useState("Padres");
+  //asignar acudiente al estudiante
+  const [AsignacionD, setAsignacionD] = useState("");
+  const [AsignacionD2, setAsignacionD2] = useState("");
+  const [AsignacionD3, setAsignacionD3] = useState("");
+  //Cargar Padres
+  const CargarPadres = async () => {
     try {
-      const [
-        tiposDocResp,
-        generosResp,
-        estadosResp,
-        tiposSangreResp,
-        sisbenResp,
-        departamentosResp,
-        ciudadesResp,
-        tiposAcudienteResp,
-      ] = await Promise.all([
-        catalogoAPI.getTiposDocumento(),
-        catalogoAPI.getGeneros(),
-        catalogoAPI.getEstados(),
-        catalogoAPI.getTiposSangre(),
-        catalogoAPI.getSisben(),
-        catalogoAPI.getDepartamentos(),
-        catalogoAPI.getCiudades(),
-        catalogoAPI.getTipoAcudiente(),
-      ]);
-      return {
-        tiposDocumento: tiposDocResp.data || [],
-        generos: generosResp.data || [],
-        estados: estadosResp.data || [],
-        tiposSangre: tiposSangreResp.data || [],
-        sisben: sisbenResp.data || [],
-        departamentos: departamentosResp.data || [],
-        ciudades: ciudadesResp.data || [],
-        tiposAcudiente: tiposAcudienteResp.data || [],
-      };
+      const ressponse = await PadresGET();
+      setPadres(ressponse.data);
     } catch (err) {
-      console.warn("No se pudieron cargar catálogos para validación:", err);
-      return null;
+      console.log(err);
     }
   };
-
-  // Construir índices simples para búsqueda rápida en catálogos
-  const buildCatalogIndex = (catalogs) => {
-    if (!catalogs) return null;
-    const idx = {};
-    Object.keys(catalogs).forEach((k) => {
-      idx[k] = {
-        byId: {},
-        byName: {},
-      };
-      (catalogs[k] || []).forEach((item) => {
-        const id =
-          item.id ||
-          item.pk ||
-          item.codigo_municipio ||
-          item.id_tipo_documento ||
-          item.id_tipo_estado ||
-          item.id_tipo_sangre ||
-          item.id_tipo_sisben ||
-          item.id_tipo_acudiente ||
-          item.id_tipo_acudiente;
-        const name = (
-          item.descripcion ||
-          item.nombre ||
-          item.sigla ||
-          item.nombre_completo ||
-          ""
-        )
-          .toString()
-          .toLowerCase();
-        if (id != null) idx[k].byId[id] = item;
-        if (name) idx[k].byName[name] = item;
-      });
-    });
-    return idx;
-  };
-
-  // Validación mínima y previsualización para Estudiantes
-  const validateEstudiantesWorkbook = (wb, catalogsIndex) => {
-    const errors = [];
-    try {
-      const sheetName =
-        wb.SheetNames.find((n) => /estudiantes?/i.test(n)) || wb.SheetNames[0];
-      const ws = wb.Sheets[sheetName];
-      const raw = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "" });
-      if (!raw || raw.length === 0) {
-        errors.push("No se detectó contenido en la hoja de estudiantes");
-        return { errors, preview: null };
-      }
-      const headers = raw[0].map((h) => String(h || "").trim());
-      const dataRows = raw.slice(1).map((r) => {
-        const obj = {};
-        headers.forEach((h, i) => {
-          obj[h] = r[i] ?? "";
-        });
-        return obj;
-      });
-      const preview = {
-        rowsCount: dataRows.length,
-        headers,
-        sample: dataRows.slice(0, 5),
-        rows: dataRows,
-      };
-      return { errors, preview };
-    } catch (err) {
-      errors.push(`Error parseando workbook: ${err.message || err}`);
-      return { errors, preview: null };
-    }
-  };
-
-  // Validación mínima y previsualización para Profesores (similar)
-  const validateProfesoresWorkbook = (wb, catalogsIndex) => {
-    const errors = [];
-    try {
-      const sheetName =
-        wb.SheetNames.find((n) => /profesores?/i.test(n)) || wb.SheetNames[0];
-      const ws = wb.Sheets[sheetName];
-      const raw = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "" });
-      if (!raw || raw.length === 0) {
-        errors.push("No se detectó contenido en la hoja de profesores");
-        return { errors, preview: null };
-      }
-      const headers = raw[0].map((h) => String(h || "").trim());
-      const dataRows = raw.slice(1).map((r) => {
-        const obj = {};
-        headers.forEach((h, i) => {
-          obj[h] = r[i] ?? "";
-        });
-        return obj;
-      });
-      const preview = {
-        rowsCount: dataRows.length,
-        headers,
-        sample: dataRows.slice(0, 5),
-        rows: dataRows,
-      };
-      return { errors, preview };
-    } catch (err) {
-      errors.push(`Error parseando workbook: ${err.message || err}`);
-      return { errors, preview: null };
-    }
-  };
-
+  // Breadcrumbs
   const breadcrumbItems = [
     { label: "Inicio", path: "/coordinacion" },
     { label: "Coordinación Administrativa", path: "/coordinacion" },
@@ -373,6 +153,89 @@ const GestionUsuarios = ({ onBack }) => {
       : []),
   ];
 
+  useEffect(() => {
+    CargarEstudiante();
+    CargarProfesor();
+    CargarPadres();
+  }, []);
+
+  // Navegación
+  const handleNavigate = (path) => {
+    if (path === "/coordinacion") {
+      onBack();
+    } else if (path === "/coordinacion/gestion-usuarios") {
+      setCurrentSubSection(null);
+    } else {
+      const subsection = path.split("/").pop();
+      if (
+        [
+          "profesores",
+          "estudiantes",
+          "carga-masiva",
+          "carga-estudiantes",
+        ].includes(subsection)
+      ) {
+        setCurrentSubSection(subsection);
+      }
+    }
+  };
+  const handleSectionClick = (id) => {
+    setCurrentSubSection(id);
+  };
+  //cerrar modal
+  const cerrarModal = () => {
+    //ditar
+    setEditar(false);
+    //cerrar modal
+    setModal(false);
+    //habilitamos
+    setDisabled(false);
+    //limpiar campos de el estudiante
+    setDocumento("");
+    setPrimerNombre("");
+    setSegundoNombre("");
+    setPrimerApellido("");
+    setSegundoApellido("");
+    setCorreo("");
+    setTelefono("");
+    setDireccion("");
+    setEstadoE("");
+    setEdad("");
+    setInstitucionP("");
+    setFechaN("");
+    setGenero("");
+    setSisben("");
+    setTipoDocumento("");
+    setTipoSangre("");
+    setReligion("");
+    setCiudad("");
+    //campos profesor
+    setDocumentoP("");
+    setPrimerNombreP("");
+    setSegundoNombreP("");
+    setPrimerApellidoP("");
+    setSegundoApellidoP("");
+    setDireccionP("");
+    setCorreoP("");
+    setTelefonoP("");
+    setTelefono2P("");
+    setEstadoP("");
+    setTipoDocumentoP("");
+    setTipoSangreP("");
+    setCiudadP("");
+    //campos Padre
+    setDocumentoC("");
+    setPrimerNombreC("");
+    setSegundoNombreC("");
+    setPrimerApellidoC("");
+    setSegundoApellidoC("");
+    setTelefonoC("");
+    setTelefono2C("");
+    setDireccionC("");
+    setTipoDocumentoC("");
+    setCiudadC("");
+  };
+  // Secciones del dashboard
   const userSections = [
     {
       id: "profesores",
@@ -407,367 +270,1009 @@ const GestionUsuarios = ({ onBack }) => {
       buttonText: "Carga Masiva",
     },
   ];
-
-  // Función para cargar estudiantes desde el backend
-  const cargarEstudiantes = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await EstudiantesGET();
-      setEstudiantes(response.data);
-    } catch (error) {
-      console.error("Error al cargar estudiantes:", error);
-      setError("Error al cargar los estudiantes");
-      // No usar datos de ejemplo; mantener la tabla vacía para evitar confusión
-      setEstudiantes([]);
-    } finally {
-      setLoading(false);
+  //cruds Estudiante
+  const AbrirModalParaEditarE = (item) => {
+    if (item) {
+      //Abrir modal
+      setModal(true);
+      //Edicion
+      setEditar(true);
+      if (item.numero_documento_estudiante) {
+        //primary keys
+        setDocumento(item.numero_documento_estudiante);
+        //deshabilitamos documento porque es la llave primaria y no se puede modificar
+        setDisabled(true);
+        setPrimerNombre(item.nombre1);
+        setSegundoNombre(item.nombre2);
+        setPrimerApellido(item.apellido1);
+        setSegundoApellido(item.apellido2);
+        setCorreo(item.correo);
+        setTelefono(item.telefono);
+        setDireccion(item.direccion);
+        setEstadoE(item.fk_tipo_estado);
+        setGenero(item.fk_id_genero);
+        setEdad(item.edad);
+        setInstitucionP(item.institucion_procedencia);
+        setFechaN(item.fecha_nacimiento);
+        setSisben(item.fk_id_tipo_sisben);
+        setTipoDocumento(item.fk_id_tipo_documento);
+        setTipoSangre(item.fk_id_tipo_sangre);
+        setReligion(item.religion);
+        setAlergia(item.fk_id_tipo_alergia);
+        setCiudad(item.fk_codigo_municipio);
+      } else if (item.numero_documento_profesor) {
+        //primary keys
+        setDocumentoP(item.numero_documento_profesor);
+        //deshabilitamos documento porque es la llave primaria y no se puede modificar
+        setDisabled(true);
+        setPrimerNombreP(item.nombre1);
+        setSegundoNombreP(item.nombre2);
+        setPrimerApellidoP(item.apellido1);
+        setSegundoApellidoP(item.apellido2);
+        setDireccionP(item.direccion);
+        setCorreoP(item.correo);
+        setTelefonoP(item.telefono1);
+        setTelefono2P(item.telefono2);
+        setEstadoP(item.fk_id_estado);
+        setTipoDocumentoP(item.fk_id_tipo_documento);
+        setTipoSangreP(item.fk_id_tipo_sangre);
+        setCiudadP(item.fk_codigo_municipio);
+      } else if (item.numero_documento_acudiente) {
+        setDocumentoC(item.numero_documento_acudiente);
+        setDisabled(true);
+        setPrimerNombreC(item.nombre1);
+        setSegundoNombreC(item.nombre2);
+        setPrimerApellidoC(item.apellido1);
+        setSegundoApellidoC(item.apellido2);
+        setTelefonoC(item.telefono1);
+        setTelefono2C(item.telefono2);
+        setDireccionC(item.direccion);
+        setTipoDocumentoC(item.fk_id_tipo_documento);
+        setCiudadC(item.fk_codigo_municipio);
+      }
+    } else {
+      Swal.fire({
+        icon: "info",
+        text: "Error, los datos no coinciden",
+        timer: 3000,
+      });
     }
   };
 
-  // Función para cargar padres (acudientes) desde el backend
-  const cargarPadres = async () => {
+  const editarEstudiante = async () => {
     try {
-      setLoading(true);
-      setError(null);
-      const response = await acudientesAPI.getAll();
-      console.log(response.data);
-      const padresFormateados = response.data.map((a) => ({
-        id: a.numero_documento_acudiente,
-        nombre:
-          a.nombre_completo ||
-          `${a.nombre1} ${a.nombre2 || ""} ${a.apellido1} ${
-            a.apellido2 || ""
-          }`.trim(),
-        identificacion: a.numero_documento_acudiente,
-        telefono: a.telefono1 || a.telefono2 || "",
-        municipio: a.ciudad_nombre || "",
-      }));
-      setPadres(padresFormateados);
-    } catch (error) {
-      console.error("Error al cargar padres:", error);
-      setError("Error al cargar los padres");
-      setPadres([]);
-    } finally {
-      setLoading(false);
+      if (
+        estadoE != 0 &&
+        genero != 0 &&
+        sisben != 0 &&
+        tipoDocumento != 0 &&
+        tipoSangre != 0 &&
+        ciudad != 0 &&
+        Edad != 0 &&
+        Alergia != 0 &&
+        Discapacidad != 0
+      ) {
+        const respons = await EditarEstudiante(documento, {
+          numero_documento_estudiante: documento,
+          nombre1: primerNombre,
+          nombre2: segundoNombre,
+          apellido1: primerApellido,
+          apellido2: segundoApellido,
+          correo: correo,
+          institucion_procedencia: InstitucionP,
+          fk_id_tipo_documento: tipoDocumento,
+          direccion: direccion,
+          fk_id_genero: genero,
+          edad: Edad,
+          fecha_nacimiento: FechaN,
+          fk_codigo_municipio: ciudad,
+          telefono: telefono,
+          fk_id_tipo_sangre: tipoSangre,
+          fk_id_tipo_sisben: sisben,
+          fk_id_tipo_discapacidad: Discapacidad,
+          fk_id_tipo_alergia: Alergia,
+          fk_tipo_estado: estadoE,
+          religion: religion,
+        })
+          .then(() => {
+            Swal.fire({
+              icon: "success",
+              text: "Esudiante Editado Con Exito",
+              timer: 3000,
+            });
+            CargarEstudiante();
+            cerrarModal();
+          })
+          .catch((err) => {
+            console.log(err);
+            Swal.fire({
+              icon: "error",
+              text: "Error Con El Servidor",
+              timer: 3000,
+            });
+          });
+      } else {
+        Swal.fire({
+          icon: "info",
+          text: "Algunos de los campos de seleccion estan vacios por favor llenelos",
+          timer: 5000,
+        });
+      }
+    } catch (err) {
+      console.log(err);
     }
   };
 
-  // Función para cargar profesores desde el backend
-  const cargarProfesores = async () => {
+  const deshabilitarE = async (item) => {
     try {
-      setLoading(true);
-      setError(null);
-      const response = await profesoresAPI.getAll();
-
-      // Transformar los datos del backend al formato esperado por la tabla
-      const profesoresFormateados = response.data.map((profesor) => ({
-        id: profesor.numero_documento_profesor,
-        nombre:
-          profesor.nombre_completo ||
-          `${profesor.nombre1} ${profesor.nombre2 || ""} ${
-            profesor.apellido1
-          } ${profesor.apellido2 || ""}`.trim(),
-        identificacion: profesor.numero_documento_profesor,
-        materia: "Sin asignar",
-        estado: profesor.estado_desc || "Sin estado",
-      }));
-
-      setProfesores(profesoresFormateados);
-    } catch (error) {
-      console.error("Error al cargar profesores:", error);
-      setError("Error al cargar los profesores");
-      // No usar datos de ejemplo; mantener la tabla vacía para evitar confusión
-      setProfesores([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const abrirModal = async (mode, tipo, id = null) => {
-    setModalMode(mode);
-    setModalTipo(tipo);
-    setModalData(null);
-    if (id) {
-      try {
-        let resp;
-        if (tipo === "profesor") resp = await profesoresAPI.getById(id);
-        else if (tipo === "estudiante") resp = await estudiantesAPI.getById(id);
-        else if (tipo === "acudiente") resp = await acudientesAPI.getById(id);
-        else resp = null;
-        setModalData(resp.data);
-      } catch (e) {
-        console.error("Error cargando detalle", e);
+      if (item) {
+        if (item.numero_documento_estudiante) {
+          const respons = await EditarEstudiante(
+            item.numero_documento_estudiante,
+            {
+              fk_tipo_estado: 2,
+            }
+          )
+            .then(() => {
+              Swal.fire({
+                icon: "success",
+                text: "Estudiante deshabilitado con exito",
+                timer: 3000,
+              });
+              CargarEstudiante();
+            })
+            .catch((err) => {
+              console.log(err);
+              Swal.fire({
+                icon: "error",
+                text: "Estudiante no se pudo deshabilitar",
+                timer: 3000,
+              });
+            });
+        } else if (item.numero_documento_profesor) {
+          const respons = await EditarProfesores(
+            item.numero_documento_profesor,
+            {
+              fk_id_estado: 2,
+            }
+          )
+            .then(() => {
+              Swal.fire({
+                icon: "success",
+                text: "Profesor deshabilitado con exito",
+                timer: 3000,
+              });
+              CargarProfesor();
+            })
+            .catch((err) => {
+              console.log(err);
+              Swal.fire({
+                icon: "error",
+                text: "Profesor no se pudo deshabilitar",
+                timer: 3000,
+              });
+            });
+        }
+      } else {
         Swal.fire({
           icon: "error",
-          title: "Error",
-          text: "No se pudo cargar el detalle.",
+          text: "No se encontro el item necesario para deshabilitar el usuario",
+          timer: 3000,
         });
-        return;
       }
+    } catch (err) {
+      console.log(err);
     }
-    setModalOpen(true);
   };
 
-  const onSaved = async () => {
-    if (modalTipo === "profesor") await cargarProfesores();
-    else await cargarEstudiantes();
-  };
-
-  const AbrirModalEstudiante = (item) => {};
-
-  const eliminarItem = async (tipo, id) => {
-    const confirm = await Swal.fire({
-      icon: "warning",
-      title: "¿Eliminar registro?",
-      text: "Esta acción no se puede deshacer.",
-      showCancelButton: true,
-      confirmButtonText: "Sí, eliminar",
-      cancelButtonText: "Cancelar",
-    });
-    if (!confirm.isConfirmed) return;
+  const crearProfesor = async () => {
     try {
-      if (tipo === "profesor") await profesoresAPI.delete(id);
-      else if (tipo === "estudiante") await estudiantesAPI.delete(id);
-      else if (tipo === "acudiente") await acudientesAPI.delete(id);
+      if (
+        documentoP &&
+        primerNombreP &&
+        primerApellidoP &&
+        correoP &&
+        telefonoP &&
+        direccionP &&
+        estadoP != 0 &&
+        tipoDocumentoP != 0 &&
+        tipoSangreP != 0 &&
+        ciudadP != 0
+      ) {
+        const respons = await CrearProfesores({
+          numero_documento_profesor: documentoP,
+          nombre1: primerNombreP,
+          nombre2: segundoNombreP,
+          apellido1: primerApellidoP,
+          apellido2: segundoApellidoP,
+          correo: correoP,
+          telefono1: telefonoP,
+          telefono2: telefono2P,
+          fk_id_tipo_documento: tipoDocumentoP,
+          direccion: direccionP,
+          fk_codigo_municipio: ciudadP,
+          fk_id_tipo_sangre: tipoSangreP,
+          fk_id_estado: estadoP,
+        })
+          .then(() => {
+            Swal.fire({
+              icon: "success",
+              text: "Profesor Creado Con Exito",
+              timer: 3000,
+            });
+            CargarProfesor();
+            cerrarModal();
+          })
+          .catch((err) => {
+            console.log(err);
+            Swal.fire({
+              icon: "error",
+              text: "Error Con El Servidor",
+              timer: 3000,
+            });
+          });
+      } else {
+        Swal.fire({
+          icon: "info",
+          text: "Llene Todos Los Campos",
+          timer: 3000,
+        });
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+  //cruds profesores
+  const editarProfesor = async () => {
+    try {
+      if (
+        estadoP != 0 &&
+        tipoDocumentoP != 0 &&
+        tipoSangreP != 0 &&
+        ciudadP != 0
+      ) {
+        const respons = await EditarProfesores(documentoP, {
+          numero_documento_profesor: documentoP,
+          nombre1: primerNombreP,
+          nombre2: segundoNombreP,
+          apellido1: primerApellidoP,
+          apellido2: segundoApellidoP,
+          correo: correoP,
+          telefono1: telefonoP,
+          telefono2: telefono2P,
+          fk_id_tipo_documento: tipoDocumentoP,
+          direccion: direccionP,
+          fk_codigo_municipio: ciudadP,
+          fk_id_tipo_sangre: tipoSangreP,
+          fk_id_estado: estadoP,
+        })
+          .then(() => {
+            Swal.fire({
+              icon: "success",
+              text: "Profesor editado con exito",
+              timer: 3000,
+            });
+            CargarProfesor();
+            cerrarModal();
+          })
+          .catch((err) => {
+            console.log(err);
+            Swal.fire({
+              icon: "error",
+              text: "Error Con El Servidor",
+              timer: 3000,
+            });
+          });
+      } else {
+        Swal.fire({
+          icon: "info",
+          text: "Algunos de los campos de seleccion estan vacios por favor llenelos",
+          timer: 5000,
+        });
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const crearEstudiante = async () => {
+    try {
+      if (
+        documento &&
+        primerNombre &&
+        primerApellido &&
+        correo &&
+        telefono &&
+        direccion &&
+        estadoE != 0 &&
+        genero != 0 &&
+        sisben != 0 &&
+        tipoDocumento != 0 &&
+        tipoSangre != 0 &&
+        ciudad != 0 &&
+        religion &&
+        Edad != 0 &&
+        Alergia != 0 &&
+        Discapacidad != 0 &&
+        InstitucionP &&
+        FechaN
+      ) {
+        const respons = await CrearEstudiante({
+          numero_documento_estudiante: documento,
+          nombre1: primerNombre,
+          nombre2: segundoNombre,
+          apellido1: primerApellido,
+          apellido2: segundoApellido,
+          correo: correo,
+          institucion_procedencia: InstitucionP,
+          fk_id_tipo_documento: tipoDocumento,
+          direccion: direccion,
+          fk_id_genero: genero,
+          edad: Edad,
+          fecha_nacimiento: FechaN,
+          fk_codigo_municipio: ciudad,
+          telefono: telefono,
+          fk_id_tipo_sangre: tipoSangre,
+          fk_id_tipo_sisben: sisben,
+          fk_id_tipo_discapacidad: Discapacidad,
+          fk_id_tipo_alergia: Alergia,
+          fk_tipo_estado: estadoE,
+          religion: religion,
+        })
+          .then(() => {
+            Swal.fire({
+              icon: "success",
+              text: "Esudiante Creado Con Exito",
+              timer: 3000,
+            });
+            CargarEstudiante();
+            cerrarModal();
+          })
+          .catch((err) => {
+            console.log(err);
+            Swal.fire({
+              icon: "error",
+              text: "Error Con El Servidor",
+              timer: 3000,
+            });
+          });
+      } else {
+        Swal.fire({
+          icon: "info",
+          text: "Llene Todos Los Campos",
+          timer: 3000,
+        });
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+  //Cruds Padres
+  const crearPadres = async () => {
+    try {
+      if (
+        !documentoC ||
+        !primerNombreC ||
+        !primerApellidoC ||
+        !telefonoC ||
+        !direccionC ||
+        tipoDocumentoC === "0" ||
+        ciudadC === "0"
+      ) {
+        return Swal.fire({
+          icon: "info",
+          text: "Llene Todos Los Campos",
+          timer: 3000,
+        });
+      }
+      const response = await CrearPadres({
+        numero_documento_acudiente: documentoC,
+        nombre1: primerNombreC,
+        nombre2: segundoNombreC,
+        apellido1: primerApellidoC,
+        apellido2: segundoApellidoC,
+        telefono1: telefonoC,
+        telefono2: telefono2C,
+        fk_id_tipo_documento: tipoDocumentoC,
+        direccion: direccionC,
+        fk_codigo_municipio: ciudadC,
+      });
+      await CrearUsuarioPadre({
+        username: documentoC,
+        password: documentoC,
+        rol: "padres",
+        first_name: primerNombreC,
+        last_name: primerApellidoC,
+      });
       Swal.fire({
         icon: "success",
-        title: "Eliminado",
-        text: "Registro eliminado correctamente",
+        text: "Se creó el acudiente de manera exitosa",
+        timer: 3000,
       });
-      if (tipo === "profesor") await cargarProfesores();
-      else if (tipo === "estudiante") await cargarEstudiantes();
-      else if (tipo === "acudiente") await cargarPadres();
-    } catch (e) {
-      console.error("Error al eliminar", e);
+      CargarPadres();
+      cerrarModal();
+    } catch (err) {
+      console.log(err);
       Swal.fire({
         icon: "error",
-        title: "Error",
-        text: "No se pudo eliminar.",
+        text: "Error con el servidor",
+        timer: 3000,
       });
     }
   };
 
-  // Cargar datos cuando se cambia de sección
-  useEffect(() => {
-    if (currentSubSection === "estudiantes") {
-      cargarEstudiantes();
-    } else if (currentSubSection === "profesores") {
-      cargarProfesores();
-    } else if (currentSubSection === "padres") {
-      cargarPadres();
-    }
-  }, [currentSubSection]);
-
-  const handleSectionClick = (sectionId) => {
-    setCurrentSubSection(sectionId);
-  };
-
-  const handleNavigate = (path) => {
-    if (path === "/coordinacion") {
-      onBack();
-    } else if (path === "/coordinacion/gestion-usuarios") {
-      setCurrentSubSection(null);
-    } else {
-      const subsection = path.split("/").pop();
-      if (
-        [
-          "profesores",
-          "estudiantes",
-          "carga-masiva",
-          "carga-estudiantes",
-        ].includes(subsection)
-      ) {
-        setCurrentSubSection(subsection);
+  const editarPadres = async () => {
+    try {
+      if (tipoDocumentoC != 0 && ciudadC != 0) {
+        const respons = await EditarPadres(documentoC, {
+          numero_documento_acudiente: documentoC,
+          nombre1: primerNombreC,
+          nombre2: segundoNombreC,
+          apellido1: primerApellidoC,
+          apellido2: segundoApellidoC,
+          telefono1: telefonoC,
+          telefono2: telefono2C,
+          fk_id_tipo_documento: tipoDocumentoC,
+          direccion: direccionC,
+          fk_codigo_municipio: ciudadC,
+        })
+          .then(() => {
+            Swal.fire({
+              icon: "success",
+              text: "Padre editado con exito",
+              timer: 3000,
+            });
+            CargarPadres();
+            cerrarModal();
+          })
+          .catch((err) => {
+            console.log(err);
+            Swal.fire({
+              icon: "error",
+              text: "Error Con El Servidor",
+              timer: 3000,
+            });
+          });
+      } else {
+        Swal.fire({
+          icon: "info",
+          text: "Algunos de los campos de seleccion estan vacios por favor llenelos",
+          timer: 5000,
+        });
       }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+  const eliminarPadres = async (item) => {
+    try {
+      if (item.numero_documento_acudiente) {
+        const result = await Swal.fire({
+          title: "¿Eliminar curso?",
+          text: "Esta acción eliminará el acudiente permanentemente.",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#c41e3a",
+          cancelButtonColor: "#c41e3a",
+          confirmButtonText: "Sí, eliminar",
+          cancelButtonText: "No, cancelar",
+        });
+        if (result.isConfirmed) {
+          try {
+            const respons = await EliminarPadres(
+              item.numero_documento_acudiente
+            )
+              .then(() => {
+                Swal.fire({
+                  icon: "success",
+                  text: "El acudiente se elimino exitosamente",
+                  timer: 3000,
+                });
+                CargarPadres();
+              })
+              .catch((err) => {
+                console.log(err);
+                Swal.fire({
+                  icon: "error",
+                  text: "Error, intente nuevamente",
+                  timer: 3000,
+                });
+              });
+          } catch (err) {
+            console.log(err);
+            Swal.fire({
+              icon: "error",
+              text: "Error en la respuesta del servidor, intente nuevamente",
+              timer: 3000,
+            });
+          }
+        }
+      }
+    } catch (err) {
+      console.log(err);
     }
   };
 
+  const AsignacionAE = async (e) => {
+    e.preventDefault();
+
+    const estudiante = Estudiantes.find(
+      (est) => est.numero_documento_estudiante == AsignacionD
+    );
+    const padre = padres.find(
+      (pdr) => pdr.numero_documento_acudiente == AsignacionD2
+    );
+
+    if (estudiante) {
+      if (padre) {
+        if (AsignacionD3 != 0) {
+          try {
+            const respons = await AsignacionDeAcudienteAEstudiante({
+              fk_numero_documento_acudiente: parseInt(AsignacionD),
+              fk_numero_documento_estudiante: parseInt(AsignacionD2),
+              fk_id_tipo_acudiente: AsignacionD3,
+            })
+              .then(() => {
+                Swal.fire({
+                  icon: "success",
+                  text: "Asignacion creada con exito",
+                  timer: 3000,
+                });
+                setAsignacionD("");
+                setAsignacionD2("");
+                setAsignacionD3("");
+              })
+              .catch((err) => {
+                console.log(err);
+                Swal.fire({
+                  icon: "error",
+                  text: "Error al crear la asignacion",
+                  timer: 3000,
+                });
+              });
+          } catch (err) {
+            console.log(err);
+          }
+        } else {
+          Swal.fire({
+            icon: "info",
+            text: "Seleccione un campo en el tipo padre",
+            timer: 3000,
+          });
+        }
+      } else {
+        Swal.fire({
+          icon: "error",
+          text: "El padre no existe",
+          timer: 3000,
+        });
+      }
+    } else {
+      Swal.fire({
+        icon: "error",
+        text: "El estudiante no existe",
+        timer: 3000,
+      });
+    }
+  };
   const renderSubSection = () => {
     switch (currentSubSection) {
-      case "profesores":
-        // Configuración de columnas para profesores
-        const profesoresColumns = [
-          { key: "nombre", label: "NOMBRE" },
-          { key: "identificacion", label: "IDENTIFICACIÓN" },
-          { key: "materia", label: "MATERIA" },
-          { key: "estado", label: "ESTADO" },
-        ];
-
-        // Configuración de acciones para profesores
-        const profesoresActions = [
-          {
-            label: "Ver Detalles",
-            onClick: (item) => abrirModal("view", "profesor", item.id),
-          },
-          {
-            label: "Editar",
-            onClick: (item) => abrirModal("edit", "profesor", item.id),
-          },
-          {
-            label: "Eliminar",
-            onClick: (item) => eliminarItem("profesor", item.id),
-          },
-        ];
-
-        return (
-          <Table
-            id="Profesores"
-            busqueda={["numero_documento_profesor", "nombre_completo"]}
-            title="Gestion de Profesores"
-            description="Registro manual de Profesores"
-            columns={profesoresColumns}
-            data={profesores}
-            searchPlaceholder="Buscar por nombre..."
-            filterPlaceholder="Filtrar por Materia"
-            addButtonText="Añadir Profesor"
-            actions={profesoresActions}
-            onAdd={() => abrirModal("create", "profesor")}
-            loading={loading}
-            error={error}
-          />
+      case "padres":
+        return activate == "Padres" ? (
+          <div>
+            <div className="selector_padres">
+              <div
+                className={`Tergetas-cambio ${
+                  activate == "Padres" ? "activate" : ""
+                }`}
+                onClick={() => setActivate("Padres")}
+              >
+                Acudientes
+              </div>
+              <div
+                className={`Tergetas-cambio ${
+                  activate == "Asignacion" ? "activate" : ""
+                }`}
+                onClick={() => setActivate("Asignacion")}
+              >
+                Asignar Estudiante
+              </div>
+            </div>
+            {modal && (
+              <Modal
+                titulo={editar ? "Editar Padre" : "Crear Padre"}
+                inputs={[
+                  {
+                    nombre: "Documento",
+                    type: "text",
+                    value: documentoC ?? "",
+                    disabled: Disabled,
+                    onChange: (e) => setDocumentoC(e.target.value),
+                  },
+                  {
+                    nombre: "Primer Nombre",
+                    type: "text",
+                    value: primerNombreC ?? "",
+                    onChange: (e) => setPrimerNombreC(e.target.value),
+                  },
+                  {
+                    nombre: "Segundo Nombre",
+                    type: "text",
+                    value: segundoNombreC ?? "",
+                    onChange: (e) => setSegundoNombreC(e.target.value),
+                  },
+                  {
+                    nombre: "Primer Apellido",
+                    type: "text",
+                    value: primerApellidoC ?? "",
+                    onChange: (e) => setPrimerApellidoC(e.target.value),
+                  },
+                  {
+                    nombre: "Segundo Apellido",
+                    type: "text",
+                    value: segundoApellidoC ?? "",
+                    onChange: (e) => setSegundoApellidoC(e.target.value),
+                  },
+                  {
+                    nombre: "Dirección",
+                    type: "text",
+                    value: direccionC ?? "",
+                    onChange: (e) => setDireccionC(e.target.value),
+                  },
+                  {
+                    nombre: "Teléfono 1",
+                    type: "text",
+                    value: telefonoC ?? "",
+                    onChange: (e) => setTelefonoC(e.target.value),
+                  },
+                  {
+                    nombre: "Teléfono 2",
+                    type: "text",
+                    value: telefono2C ?? "",
+                    onChange: (e) => setTelefono2C(e.target.value),
+                  },
+                ]}
+                acciones={[
+                  editar
+                    ? { nombre: "Editar", click: () => editarPadres() }
+                    : { nombre: "Guardar", click: () => crearPadres() },
+                  { nombre: "cerrar", click: () => cerrarModal() },
+                ]}
+                select={[
+                  {
+                    nombre: "Tipo Documento",
+                    value: tipoDocumentoC ?? 0,
+                    onChange: (e) => setTipoDocumentoC(e.target.value),
+                    opciones: [
+                      { value: 1, title: "Cédula" },
+                      { value: 2, title: "Tarjeta de Identidad" },
+                    ],
+                  },
+                ]}
+                selectConBusqueda={[
+                  {
+                    nombre: "Ciudades",
+                    value: ciudadC ?? 0,
+                    placeholder: "Buscar Ciudad...",
+                    options: ciudadesE.map((item) => ({
+                      value: item.codigo_municipio,
+                      label: item.nombre,
+                    })),
+                    onChange: (seleccion) =>
+                      setCiudadC(seleccion ? seleccion.value : null),
+                  },
+                ]}
+                SalirM={() => cerrarModal()}
+              />
+            )}
+            <Table
+              id="Acudientes"
+              title="Gestión de Padres"
+              description="Registro manual de padres de familia."
+              columns={[
+                { key: "nombre_completo", label: "Nombre" },
+                { key: "numero_documento_acudiente", label: "Documento" },
+                { key: "telefono1", label: "Telefono" },
+              ]}
+              data={padres}
+              searchPlaceholder="Buscar por nombre..."
+              addButtonText="Añadir Padre"
+              actions={[
+                {
+                  label: "Editar",
+                  onClick: (item) => AbrirModalParaEditarE(item),
+                },
+                {
+                  label: "Eliminar",
+                  onClick: (item) => eliminarPadres(item),
+                },
+              ]}
+              onAdd={() => setModal(true)}
+            />
+          </div>
+        ) : (
+          <div>
+            <div className="selector_padres">
+              <div
+                className={`Tergetas-cambio ${
+                  activate == "Padres" ? "activate" : ""
+                }`}
+                onClick={() => setActivate("Padres")}
+              >
+                Acudientes
+              </div>
+              <div
+                className={`Tergetas-cambio ${
+                  activate == "Asignacion" ? "activate" : ""
+                }`}
+                onClick={() => setActivate("Asignacion")}
+              >
+                Asignar Estudiante
+              </div>
+            </div>
+            <div className="ContenedorAsignacion">
+              <h1>Asignacion manual de estudiantes</h1>
+              <div className="Contenedor_Infomarcion">
+                <p>
+                  En este apartado se va a asociar un estudiante con su padre de
+                  familia correspondiente. A continuacion ingrese en los campos
+                  lo datos necessarios para hacer la asociacion
+                </p>
+              </div>
+              <form
+                className="Contenedor-Inputs-padres"
+                onSubmit={(e) => {
+                  AsignacionAE(e);
+                }}
+              >
+                <section>
+                  <div className="InputsG">
+                    <label>Documento estudiante</label>
+                    <input
+                      placeholder="Documento E."
+                      type="number"
+                      value={AsignacionD}
+                      onChange={(e) => setAsignacionD(e.target.value)}
+                    ></input>
+                  </div>
+                  <div className="InputsG">
+                    <label>Documento padre</label>
+                    <input
+                      placeholder="Documento P."
+                      type="number"
+                      value={AsignacionD2}
+                      onChange={(e) => setAsignacionD2(e.target.value)}
+                    ></input>
+                  </div>
+                  <div className="InputsG">
+                    <label>Tipo de acudiente</label>
+                    <select
+                      value={AsignacionD3}
+                      onChange={(e) => setAsignacionD3(e.target.value)}
+                    >
+                      <option value="" hidden>
+                        Seleccione
+                      </option>
+                      <option value={1}>Madre</option>
+                      <option value={2}>Padre</option>
+                      <option value={3}>Tio</option>
+                      <option value={4}>Tia</option>
+                      <option value={5}>Hermano</option>
+                      <option value={6}>Hermana</option>
+                      <option value={7}>Otro</option>
+                    </select>
+                  </div>
+                </section>
+                <button className="BTN-asociar" type="submit">
+                  Asociar
+                </button>
+              </form>
+            </div>
+          </div>
         );
+
       case "estudiantes":
         return (
           <div>
             {modal && (
               <Modal
-                titulo="Crear Estudiante"
+                titulo={editar ? "Editar Estudiante" : "Crear Estudiante"}
                 inputs={[
                   {
                     nombre: "Documento",
                     type: "text",
-                    value: documento,
+                    value: documento ?? "",
+                    disabled: Disabled,
                     onChange: (e) => setDocumento(e.target.value),
                   },
                   {
                     nombre: "Primer Nombre",
                     type: "text",
-                    value: primerNombre,
+                    value: primerNombre ?? "",
                     onChange: (e) => setPrimerNombre(e.target.value),
                   },
                   {
                     nombre: "Segundo Nombre",
                     type: "text",
-                    value: segundoNombre,
+                    value: segundoNombre ?? "",
                     onChange: (e) => setSegundoNombre(e.target.value),
                   },
                   {
                     nombre: "Primer Apellido",
                     type: "text",
-                    value: primerApellido,
+                    value: primerApellido ?? "",
                     onChange: (e) => setPrimerApellido(e.target.value),
                   },
                   {
                     nombre: "Segundo Apellido",
                     type: "text",
-                    value: segundoApellido,
+                    value: segundoApellido ?? "",
                     onChange: (e) => setSegundoApellido(e.target.value),
                   },
                   {
                     nombre: "Correo",
                     type: "email",
-                    value: correo,
+                    value: correo ?? "",
                     onChange: (e) => setCorreo(e.target.value),
                   },
                   {
                     nombre: "Teléfono",
                     type: "text",
-                    value: telefono,
+                    value: telefono ?? "",
                     onChange: (e) => setTelefono(e.target.value),
                   },
                   {
                     nombre: "Dirección",
                     type: "text",
-                    value: direccion,
+                    value: direccion ?? "",
                     onChange: (e) => setDireccion(e.target.value),
+                  },
+                  {
+                    nombre: "Institucion de procedencia",
+                    type: "text",
+                    value: InstitucionP ?? "",
+                    onChange: (e) => setInstitucionP(e.target.value),
+                  },
+                  {
+                    nombre: "Edad",
+                    type: "number",
+                    value: Edad ?? "",
+                    onChange: (e) => setEdad(e.target.value),
+                  },
+                  {
+                    nombre: "Fecha nacimiento",
+                    type: "date",
+                    value: FechaN ?? "",
+                    onChange: (e) => setFechaN(e.target.value),
                   },
                 ]}
                 acciones={[
-                  { nombre: "Guardar" },
-                  { nombre: "cerrar", click: () => setModal(false) },
+                  editar
+                    ? { nombre: "Editar", click: () => editarEstudiante() }
+                    : { nombre: "Guardar", click: () => crearEstudiante() },
+                  { nombre: "cerrar", click: () => cerrarModal() },
                 ]}
                 select={[
                   {
                     nombre: "Estado",
-                    value: estadoE,
+                    value: estadoE ?? 1,
                     onChange: (e) => setEstadoE(e.target.value),
                     opciones: [
-                      { value: "Activo", title: "Activo" },
-                      { value: "InActivo", title: "InActivo" },
-                    ],
-                  },
-                  {
-                    nombre: "Ciudad",
-                    value: ciudad,
-                    onChange: (e) => setCiudad(e.target.value),
-                    opciones: [
-                      { value: "Bogotá", title: "Bogotá" },
-                      { value: "Medellín", title: "Medellín" },
-                      // cambia por tu lista real
+                      { value: 1, title: "Activo" },
+                      { value: 2, title: "InActivo" },
                     ],
                   },
                   {
                     nombre: "Género",
-                    value: genero,
+                    value: genero ?? 0,
                     onChange: (e) => setGenero(e.target.value),
                     opciones: [
-                      { value: "Masculino", title: "Masculino" },
-                      { value: "Femenino", title: "Femenino" },
-                      { value: "Otro", title: "Otro" },
+                      { value: 1, title: "Masculino" },
+                      { value: 2, title: "Femenino" },
+                      { value: 3, title: "No binario" },
+                      { value: 4, title: "Prefiere no decirlo" },
+                      { value: 5, title: "Otro" },
                     ],
                   },
                   {
                     nombre: "Sisbén",
-                    value: sisben,
+                    value: sisben ?? 0,
                     onChange: (e) => setSisben(e.target.value),
-                    opciones: [
-                      { value: "A", title: "A" },
-                      { value: "B", title: "B" },
-                      { value: "C", title: "C" },
-                    ],
+                    opciones: sisbenE.map((item) => ({
+                      value: item.id_tipo_sisben,
+                      title: item.descripcion,
+                    })),
                   },
                   {
                     nombre: "Tipo Documento",
-                    value: tipoDocumento,
+                    value: tipoDocumento ?? 0,
                     onChange: (e) => setTipoDocumento(e.target.value),
                     opciones: [
-                      { value: "CC", title: "Cédula" },
-                      { value: "TI", title: "Tarjeta de Identidad" },
-                      { value: "RC", title: "Registro Civil" },
+                      { value: 1, title: "Cédula" },
+                      { value: 2, title: "Tarjeta de Identidad" },
                     ],
                   },
                   {
                     nombre: "Tipo de Sangre",
-                    value: tipoSangre,
+                    value: tipoSangre ?? 0,
                     onChange: (e) => setTipoSangre(e.target.value),
                     opciones: [
-                      { value: "A+", title: "A+" },
-                      { value: "A-", title: "A-" },
-                      { value: "O+", title: "O+" },
-                      { value: "O-", title: "O-" },
-                      // agrega los demás
+                      { value: 1, title: "O+" },
+                      { value: 2, title: "O-" },
+                      { value: 3, title: "A+" },
+                      { value: 4, title: "A-" },
+                      { value: 5, title: "B+" },
+                      { value: 6, title: "B-" },
+                      { value: 7, title: "AB+" },
+                      { value: 8, title: "AB-" },
                     ],
                   },
                   {
                     nombre: "Religión",
-                    value: religion,
+                    value: religion ?? "",
                     onChange: (e) => setReligion(e.target.value),
                     opciones: [
-                      { value: "Católica", title: "Católica" },
+                      { value: "Catolica", title: "Católica" },
                       { value: "Cristiana", title: "Cristiana" },
                       { value: "Ateo", title: "Ateo" },
-                      // o lo que uses
+                    ],
+                  },
+                  {
+                    nombre: "Discapacidad",
+                    value: Discapacidad ?? 1,
+                    onChange: (e) => setDiscapacidad(e.target.value),
+                    opciones: [
+                      { value: 1, title: "Ninguna" },
+                      { value: 2, title: "Discapacidad física" },
+                      { value: 3, title: "Discapacidad visual" },
+                      { value: 4, title: "Discapacidad auditiva" },
+                      { value: 5, title: "Discapacidad cognitiva" },
+                      { value: 6, title: "Discapacidad múltiple" },
+                      { value: 7, title: "Discapacidad psicosocial" },
+                      { value: 8, title: "Discapacidad intelectual" },
+                      { value: 9, title: "Discapacidad del habla" },
+                      { value: 10, title: "Movilidad reducida" },
+                    ],
+                  },
+                  {
+                    nombre: "Alergias",
+                    value: Alergia ?? 1,
+                    onChange: (e) => setAlergia(e.target.value),
+                    opciones: [
+                      { value: 1, title: "Ninguna" },
+                      { value: 2, title: "Asma" },
+                      { value: 3, title: "Polen" },
+                      { value: 4, title: "Ácaros" },
+                      { value: 5, title: "Picaduras de insectos" },
+                      { value: 6, title: "Medicamentos" },
+                      { value: 7, title: "Lácteos" },
+                      { value: 8, title: "Gluten" },
+                      { value: 9, title: "Mariscos" },
+                      { value: 10, title: "Frutos secos" },
                     ],
                   },
                 ]}
+                selectConBusqueda={[
+                  {
+                    nombre: "Ciudades",
+                    value: ciudad ?? 0,
+                    placeholder: "Buscar Ciudad...",
+                    options: ciudadesE.map((item) => ({
+                      value: item.codigo_municipio,
+                      label: item.nombre,
+                    })),
+                    onChange: (seleccion) =>
+                      setCiudad(seleccion ? seleccion.value : null),
+                  },
+                ]}
+                SalirM={() => cerrarModal()}
               />
             )}
             <Table
               id="Estudiantes"
-              busqueda={[]}
-              title="Gestion de Estudiantes"
-              description="Registro manual de Estudiantes"
+              busqueda={["numero_documento_estudiante", "nombre_completo"]}
+              title="Gestión de Estudiantes"
+              description="Registro manual de estudiantes."
               columns={[
                 { key: "nombre_completo", label: "NOMBRE" },
                 { key: "numero_documento_estudiante", label: "IDENTIFICACIÓN" },
@@ -783,53 +1288,227 @@ const GestionUsuarios = ({ onBack }) => {
                 },
                 { key: "estado", label: "ESTADO" },
               ]}
-              data={estudiantes}
-              searchPlaceholder="Buscar por nombre..."
-              filterPlaceholder="Filtrar por Curso"
-              addButtonText="Añadir Estudiante"
+              data={BTNfiltro ? filtro1 : Estudiantes}
+              check={[
+                {
+                  title: "filtro solo activos",
+                  check: BTNfiltro,
+                  onChange: (e) => setBTNfiltro(e.target.checked),
+                },
+              ]}
+              searchPlaceholder="Buscar por Documento..."
+              addButtonText="Añadir estudiante"
               actions={[
                 {
-                  label: "Ver Detalles",
-                  onClick: (item) => abrirModal("view", "estudiante", item.id),
-                },
-                {
                   label: "Editar",
-                  onClick: (item) => abrirModal("edit", "estudiante", item.id),
+                  onClick: (item) => AbrirModalParaEditarE(item),
                 },
                 {
                   label: "Eliminar",
-                  onClick: (item) => eliminarItem("estudiante", item.id),
+                  onClick: (item) => deshabilitarE(item),
                 },
               ]}
               onAdd={() => setModal(true)}
-              loading={loading}
-              error={error}
+            />
+          </div>
+        );
+      case "profesores":
+        return (
+          <div>
+            {verMaterias && (
+              <VerMaterias
+                ProfesorSeleccionado={seleccionP}
+                titulo="Materias Asignadas"
+                salir={() => {
+                  setVerMaterias(false);
+                  setSeleccionP([]);
+                }}
+              />
+            )}
+            {modal && (
+              <Modal
+                titulo={editar ? "Editar Profesor" : "Crear Profesor"}
+                inputs={[
+                  {
+                    nombre: "Documento",
+                    type: "text",
+                    value: documentoP ?? "",
+                    disabled: Disabled,
+                    onChange: (e) => setDocumentoP(e.target.value),
+                  },
+                  {
+                    nombre: "Primer Nombre",
+                    type: "text",
+                    value: primerNombreP ?? "",
+                    onChange: (e) => setPrimerNombreP(e.target.value),
+                  },
+                  {
+                    nombre: "Segundo Nombre",
+                    type: "text",
+                    value: segundoNombreP ?? "",
+                    onChange: (e) => setSegundoNombreP(e.target.value),
+                  },
+                  {
+                    nombre: "Primer Apellido",
+                    type: "text",
+                    value: primerApellidoP ?? "",
+                    onChange: (e) => setPrimerApellidoP(e.target.value),
+                  },
+                  {
+                    nombre: "Segundo Apellido",
+                    type: "text",
+                    value: segundoApellidoP ?? "",
+                    onChange: (e) => setSegundoApellidoP(e.target.value),
+                  },
+                  {
+                    nombre: "Correo",
+                    type: "email",
+                    value: correoP ?? "",
+                    onChange: (e) => setCorreoP(e.target.value),
+                  },
+                  {
+                    nombre: "Dirección",
+                    type: "text",
+                    value: direccionP ?? "",
+                    onChange: (e) => setDireccionP(e.target.value),
+                  },
+                  {
+                    nombre: "Teléfono 1",
+                    type: "text",
+                    value: telefonoP ?? "",
+                    onChange: (e) => setTelefonoP(e.target.value),
+                  },
+                  {
+                    nombre: "Teléfono 2",
+                    type: "text",
+                    value: telefono2P ?? "",
+                    onChange: (e) => setTelefono2P(e.target.value),
+                  },
+                ]}
+                acciones={[
+                  editar
+                    ? { nombre: "Editar", click: () => editarProfesor() }
+                    : { nombre: "Guardar", click: () => crearProfesor() },
+                  { nombre: "cerrar", click: () => cerrarModal() },
+                ]}
+                select={[
+                  {
+                    nombre: "Estado",
+                    value: estadoP ?? 1,
+                    onChange: (e) => setEstadoP(e.target.value),
+                    opciones: [
+                      { value: 1, title: "Activo" },
+                      { value: 2, title: "InActivo" },
+                    ],
+                  },
+                  {
+                    nombre: "Tipo Documento",
+                    value: tipoDocumentoP ?? 0,
+                    onChange: (e) => setTipoDocumentoP(e.target.value),
+                    opciones: [
+                      { value: 1, title: "Cédula" },
+                      { value: 2, title: "Tarjeta de Identidad" },
+                    ],
+                  },
+                  {
+                    nombre: "Tipo de Sangre",
+                    value: tipoSangreP ?? 0,
+                    onChange: (e) => setTipoSangreP(e.target.value),
+                    opciones: [
+                      { value: 1, title: "O+" },
+                      { value: 2, title: "O-" },
+                      { value: 3, title: "A+" },
+                      { value: 4, title: "A-" },
+                      { value: 5, title: "B+" },
+                      { value: 6, title: "B-" },
+                      { value: 7, title: "AB+" },
+                      { value: 8, title: "AB-" },
+                    ],
+                  },
+                ]}
+                selectConBusqueda={[
+                  {
+                    nombre: "Ciudades",
+                    value: ciudadP ?? 0,
+                    placeholder: "Buscar Ciudad...",
+                    options: ciudadesE.map((item) => ({
+                      value: item.codigo_municipio,
+                      label: item.nombre,
+                    })),
+                    onChange: (seleccion) =>
+                      setCiudadP(seleccion ? seleccion.value : null),
+                  },
+                ]}
+                SalirM={() => cerrarModal()}
+              />
+            )}
+
+            <Table
+              id="Profesores"
+              busqueda={["numero_documento_profesor", "nombre_completo"]}
+              title="Gestión de Profesores"
+              description="Registro manual de profesores."
+              columns={[
+                { key: "nombre_completo", label: "NOMBRE" },
+                { key: "numero_documento_profesor", label: "IDENTIFICACIÓN" },
+                { key: "estado_desc", label: "ESTADO" },
+              ]}
+              data={BTNfiltro ? filtro2 : Profesores}
+              searchPlaceholder="Buscar por cedula..."
+              addButtonText="Añadir Profesor"
+              check={[
+                {
+                  title: "filtro solo activos",
+                  check: BTNfiltro,
+                  onChange: (e) => setBTNfiltro(e.target.checked),
+                },
+              ]}
+              actions={[
+                {
+                  label: "Ver Materias",
+                  onClick: (item) => {
+                    setSeleccionP(item);
+                    setVerMaterias(true);
+                  },
+                },
+                {
+                  label: "Editar",
+                  onClick: (item) => AbrirModalParaEditarE(item),
+                },
+                {
+                  label: "Eliminar",
+                  onClick: (item) => deshabilitarE(item),
+                },
+              ]}
+              onAdd={() => setModal(true)}
             />
           </div>
         );
       case "carga-masiva":
-        const cargaMasivaSections = [
-          {
-            id: "carga-estudiantes",
-            title: "Carga Masiva de Estudiantes",
-            description:
-              "Importa múltiples estudiantes desde un archivo Excel o CSV.",
-            icon: "👨‍🎓",
-            buttonText: "Cargar Estudiantes",
-          },
-        ];
+        return <CargaMasiva />;
+      default:
+        return null;
+    }
+  };
 
-        return (
+  return (
+    <div className="dashboard-container">
+      <Breadcrumbs items={breadcrumbItems} onNavigate={handleNavigate} />
+
+      <div className="gestion-academica-content">
+        {currentSubSection ? (
+          renderSubSection()
+        ) : (
           <>
             <div className="gestion-academica-header">
-              <h1 className="gestion-academica-title">Carga Masiva</h1>
+              <h1 className="gestion-academica-title">Gestión de Usuarios</h1>
               <p className="gestion-academica-subtitle">
-                Selecciona el tipo de carga masiva que deseas realizar
+                Administra profesores y estudiantes del sistema académico
               </p>
             </div>
 
             <div className="gestion-academica-grid">
-              {cargaMasivaSections.map((section) => (
+              {userSections.map((section) => (
                 <div
                   key={section.id}
                   className="gestion-academica-card"
@@ -855,1262 +1534,9 @@ const GestionUsuarios = ({ onBack }) => {
               ))}
             </div>
           </>
-        );
-      case "carga-estudiantes":
-        // Función para abrir el selector de archivos directamente
-        const openFileSelector = () => {
-          console.log("openFileSelector called"); // Debug log
-          if (estudiantesFileInputRef.current) {
-            console.log("Clicking file input via ref"); // Debug log
-            estudiantesFileInputRef.current.click();
-          } else {
-            console.log("File input ref not found"); // Debug log
-          }
-        };
-
-        const handleEstudiantesFileChange = async (e) => {
-          console.log("handleEstudiantesFileChange called", e); // Debug log
-          const file = e.target.files?.[0] || null;
-          console.log("Selected file:", file); // Debug log
-          setSelectedEstudiantesFile(file);
-          setEstudiantesUploadResult(null);
-          setEstudiantesPreview(null);
-          setEstudiantesValidationErrors([]);
-          if (!file) return;
-          if (!/\.(xlsx|xls)$/i.test(file.name)) {
-            setEstudiantesValidationErrors([
-              "Formato inválido. Solo se admite Excel (.xlsx/.xls).",
-            ]);
-            return;
-          }
-          try {
-            const wb = await readWorkbook(file);
-
-            // Cargar catálogos para validación
-            const catalogs = await loadCatalogsForValidation();
-            const catalogsIndex = buildCatalogIndex(catalogs);
-
-            // Validar workbook completo
-            const { errors, preview } = validateEstudiantesWorkbook(
-              wb,
-              catalogsIndex
-            );
-
-            setEstudiantesPreview(preview);
-            setEstudiantesValidationErrors(errors);
-            if (errors.length === 0) {
-              // permitir edición en UI
-              setEstudiantesEditableRows(preview.rows);
-              setEstudiantesHeadersFromFile(preview.headers || null);
-            } else {
-              setEstudiantesEditableRows(null);
-              setEstudiantesHeadersFromFile(null);
-            }
-          } catch (err) {
-            console.error("Error leyendo Excel estudiantes:", err);
-            setEstudiantesValidationErrors([
-              `No se pudo leer el archivo Excel: ${err.message || err}`,
-            ]);
-          }
-        };
-
-        const handleEstudiantesUpload = async () => {
-          alert("🚀 Función handleEstudiantesUpload ejecutada!");
-          console.log("🚀 handleEstudiantesUpload iniciado");
-          console.log("📁 Archivo seleccionado:", selectedEstudiantesFile);
-          console.log("⚠️ Errores de validación:", estudiantesValidationErrors);
-          console.log("📤 Estado de carga:", uploadingEstudiantes);
-
-          if (!selectedEstudiantesFile) {
-            console.log("❌ No hay archivo seleccionado");
-            alert("❌ No hay archivo seleccionado");
-            Swal.fire({
-              icon: "warning",
-              title: "Sin archivo",
-              text: "Selecciona un archivo Excel (.xlsx).",
-            });
-            return;
-          }
-
-          if (
-            estudiantesValidationErrors &&
-            estudiantesValidationErrors.length > 0
-          ) {
-            console.log(
-              "❌ Hay errores de validación:",
-              estudiantesValidationErrors
-            );
-            alert(
-              "❌ Hay errores de validación: " +
-                estudiantesValidationErrors.join(", ")
-            );
-            Swal.fire({
-              icon: "warning",
-              title: "Errores de validación",
-              text: "Corrige los errores antes de subir el archivo.",
-            });
-            return;
-          }
-
-          try {
-            // Validación previa: asegurarse de que los fk_* referencien IDs válidos o nombres que existan en los catálogos
-            let catalogos = catalogosCache;
-            if (!catalogos) {
-              try {
-                const [
-                  tiposDocResp,
-                  generosResp,
-                  estadosResp,
-                  tiposSangreResp,
-                  sisbenResp,
-                  departamentosResp,
-                  ciudadesResp,
-                  tiposAcudienteResp,
-                ] = await Promise.all([
-                  catalogoAPI.getTiposDocumento(),
-                  catalogoAPI.getGeneros(),
-                  catalogoAPI.getEstados(),
-                  catalogoAPI.getTiposSangre(),
-                  catalogoAPI.getSisben(),
-                  catalogoAPI.getDepartamentos(),
-                  catalogoAPI.getCiudades(),
-                  catalogoAPI.getTipoAcudiente(),
-                ]);
-                catalogos = {
-                  tiposDocumento: tiposDocResp.data,
-                  generos: generosResp.data,
-                  estados: estadosResp.data,
-                  tiposSangre: tiposSangreResp.data,
-                  sisben: sisbenResp.data,
-                  departamentos: departamentosResp.data,
-                  ciudades: ciudadesResp.data,
-                  tiposAcudiente: tiposAcudienteResp.data,
-                };
-                setCatalogosCache(catalogos);
-              } catch (err) {
-                console.warn(
-                  "No se pudo obtener catálogos para validación previa:",
-                  err
-                );
-                catalogos = null;
-              }
-            }
-
-            // Si hay catálogos disponibles, validar el Excel cargado contra ellos (simple check)
-            if (catalogos) {
-              // No hacemos parsing completo aquí; asumimos que el backend realizará la validación definitiva.
-              // Solo bloquearemos si detectamos formatos claramente inválidos (p. ej. campos obligatorios vacíos)
-              if (!selectedEstudiantesFile)
-                throw new Error("No hay archivo seleccionado");
-            }
-
-            console.log("🔄 Iniciando carga...");
-            alert("🔄 Iniciando carga del archivo...");
-            setUploadingEstudiantes(true);
-            const token = sessionStorage.getItem("token");
-            console.log("📡 Llamando a estudiantesAPI.bulkUpload...");
-            console.log(
-              "🔐 Token (localStorage.token) preview:",
-              token ? `${token.slice(0, 20)}...` : "NO_TOKEN"
-            );
-            // Llamada al API (se usa el interceptor que agrega Authorization)
-            const resp = await estudiantesAPI.bulkUpload(
-              selectedEstudiantesFile
-            );
-            console.log("✅ Respuesta recibida:", resp);
-            setEstudiantesUploadResult(resp.data);
-            Swal.fire({
-              icon: "success",
-              title: "Carga completada",
-              text: "Se procesó el archivo correctamente.",
-            });
-            // Refrescar lista de estudiantes para reflejar los cambios
-            try {
-              await cargarEstudiantes();
-              console.log(
-                "Lista de estudiantes actualizada después de la carga."
-              );
-            } catch (e) {
-              console.warn(
-                "No se pudo refrescar la lista de estudiantes automáticamente:",
-                e
-              );
-            }
-          } catch (err) {
-            console.error("❌ Error en carga masiva estudiantes:", err);
-            console.error(
-              "📋 Detalles del error:",
-              err.response?.data || err.message || err
-            );
-            console.error("🧾 Error.config (request):", err.config || null);
-            console.error("🧾 Error.response (full):", err.response || null);
-            // Manejo específico para 403 (Forbidden) - autenticación/permiso
-            if (err.response && err.response.status === 403) {
-              const msg =
-                "No tiene permiso para realizar esta acción. Inicie sesión con una cuenta autorizada.";
-              alert("❌ Error: " + msg);
-              Swal.fire({
-                icon: "error",
-                title: "Permisos insuficientes",
-                text: msg,
-              });
-            } else {
-              alert(
-                "❌ Error: " +
-                  (err.response?.data?.message ||
-                    err.message ||
-                    "Error desconocido")
-              );
-              Swal.fire({
-                icon: "error",
-                title: "Error",
-                text:
-                  err.response?.data?.message ||
-                  err.message ||
-                  "No se pudo procesar el archivo.",
-              });
-            }
-          } finally {
-            console.log("🏁 Finalizando carga...");
-            setUploadingEstudiantes(false);
-          }
-        };
-
-        const handleDownloadEstudiantesTemplate = async () => {
-          try {
-            console.log("🔥 DEBUG: Descargando plantilla desde servidor...");
-            const response = await estudiantesAPI.downloadTemplate();
-
-            // Crear blob y descargar
-            const blob = new Blob([response.data], {
-              type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            });
-
-            const url = window.URL.createObjectURL(blob);
-            const link = document.createElement("a");
-            link.href = url;
-            link.download = "plantilla_estudiantes.xlsx";
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            window.URL.revokeObjectURL(url);
-
-            console.log("✅ Plantilla descargada exitosamente");
-          } catch (error) {
-            console.error("❌ Error al descargar plantilla:", error);
-            alert(
-              "Error al descargar la plantilla. Por favor, intenta nuevamente."
-            );
-          }
-        };
-
-        // Eventos de drag and drop para estudiantes
-        const handleEstudiantesDragOver = (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-        };
-
-        const handleEstudiantesDragEnter = (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-        };
-
-        const handleEstudiantesDragLeave = (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-        };
-
-        const handleEstudiantesDrop = (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          const files = e.dataTransfer.files;
-          if (files.length > 0) {
-            const file = files[0];
-            if (
-              file.type ===
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
-              file.type === "application/vnd.ms-excel" ||
-              file.name.endsWith(".xlsx") ||
-              file.name.endsWith(".xls")
-            ) {
-              setSelectedEstudiantesFile(file);
-              handleEstudiantesFileChange({ target: { files: [file] } });
-            } else {
-              Swal.fire({
-                icon: "warning",
-                title: "Formato incorrecto",
-                text: "Solo se permiten archivos Excel (.xlsx, .xls).",
-              });
-            }
-          }
-        };
-
-        return (
-          <div className="dashboard-section">
-            <div className="gestion-academica-header">
-              <h1 className="gestion-academica-title">
-                Carga Masiva de Estudiantes
-              </h1>
-              <p className="gestion-academica-subtitle">
-                Importa múltiples estudiantes desde un archivo
-              </p>
-            </div>
-
-            <div className="carga-masiva-content">
-              <div className="upload-section">
-                <div
-                  className="upload-area"
-                  onDragOver={handleEstudiantesDragOver}
-                  onDragEnter={handleEstudiantesDragEnter}
-                  onDragLeave={handleEstudiantesDragLeave}
-                  onDrop={handleEstudiantesDrop}
-                >
-                  <div className="upload-icon">📁</div>
-                  <h3 className="Botonupload">Selecciona un archivo</h3>
-                  <p>
-                    Arrastra y suelta tu archivo aquí o haz clic para
-                    seleccionar
-                  </p>
-                  <p className="file-types">Formatos soportados: .xlsx, .csv</p>
-                  <input
-                    ref={estudiantesFileInputRef}
-                    type="file"
-                    accept=".xlsx,.xls"
-                    style={{ display: "none" }}
-                    id="file-upload-estudiantes"
-                    onChange={handleEstudiantesFileChange}
-                    onClick={(e) => console.log("Input clicked", e)} // Debug log
-                  />
-                  <button
-                    type="button"
-                    className="upload-button"
-                    onClick={openFileSelector}
-                  >
-                    Seleccionar Archivo
-                  </button>
-                </div>
-
-                {/* Área separada para el botón de subir archivo */}
-                {selectedEstudiantesFile && (
-                  <div
-                    className="upload-actions"
-                    style={{
-                      marginTop: "20px",
-                      padding: "15px",
-                      border: "2px solid #007bff",
-                      borderRadius: "8px",
-                      backgroundColor: "#f8f9fa",
-                    }}
-                  >
-                    <div className="selected-file-info">
-                      <span style={{ fontWeight: "bold", color: "#28a745" }}>
-                        ✅ Archivo seleccionado: {selectedEstudiantesFile.name}
-                      </span>
-                    </div>
-                    <button
-                      className="upload-button"
-                      onClick={() => {
-                        alert(
-                          "¡BOTÓN CLICKEADO! Esto confirma que el evento onClick funciona"
-                        );
-                        console.log(
-                          "🔥 BOTÓN CLICKEADO - onClick funciona correctamente"
-                        );
-                        console.log(
-                          "📊 Estado uploadingEstudiantes:",
-                          uploadingEstudiantes
-                        );
-                        console.log(
-                          "📊 Estado estudiantesValidationErrors:",
-                          estudiantesValidationErrors
-                        );
-                        console.log(
-                          "📊 Botón disabled?",
-                          uploadingEstudiantes ||
-                            (estudiantesValidationErrors &&
-                              estudiantesValidationErrors.length > 0)
-                        );
-                        handleEstudiantesUpload();
-                      }}
-                      disabled={false} // Temporalmente deshabilitamos la validación disabled
-                      style={{
-                        marginTop: "10px",
-                        padding: "12px 24px",
-                        fontSize: "16px",
-                        backgroundColor: "#28a745",
-                        color: "white",
-                        border: "none",
-                        borderRadius: "5px",
-                        cursor: "pointer",
-                        width: "100%",
-                      }}
-                    >
-                      {uploadingEstudiantes
-                        ? "Subiendo..."
-                        : "📤 Subir Archivo a la Base de Datos"}
-                    </button>
-                  </div>
-                )}
-                {estudiantesValidationErrors &&
-                  estudiantesValidationErrors.length > 0 && (
-                    <div
-                      className="validation-errors"
-                      style={{ marginTop: "12px", color: "#c0392b" }}
-                    >
-                      <h4>Errores detectados</h4>
-                      <ul>
-                        {estudiantesValidationErrors.map((err, i) => (
-                          <li key={i}>{err}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                {estudiantesPreview && (
-                  <div
-                    className="preview-controls"
-                    style={{ marginTop: "12px" }}
-                  >
-                    <h4>Previsualización</h4>
-                    <p>
-                      Filas detectadas:{" "}
-                      <strong>{estudiantesPreview.rowsCount}</strong>
-                    </p>
-                    {estudiantesValidationErrors &&
-                    estudiantesValidationErrors.length > 0 ? (
-                      <div style={{ marginTop: "8px", color: "#c0392b" }}>
-                        <strong>Errores detectados:</strong>
-                        <ul>
-                          {estudiantesValidationErrors.map((err, i) => (
-                            <li key={i}>{err}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    ) : null}
-                  </div>
-                )}
-              </div>
-
-              <div className="template-section">
-                <h3>Plantilla de Ejemplo</h3>
-                <p>
-                  Descarga la plantilla para asegurar el formato correcto de los
-                  datos
-                </p>
-                <div className="boton_plantilla">
-                  <a href="/utils/plantilla_estudiantes.xlsx" download>
-                    Descargar plantilla 📄
-                  </a>
-                </div>
-              </div>
-
-              {estudiantesUploadResult && (
-                <div className="results-section">
-                  <h3>Resultado de la carga</h3>
-                  <ul>
-                    <li>
-                      Estudiantes creados: {estudiantesUploadResult.created}
-                    </li>
-                    <li>
-                      Estudiantes actualizados:{" "}
-                      {estudiantesUploadResult.updated}
-                    </li>
-                    <li>
-                      Errores estudiantes:{" "}
-                      {estudiantesUploadResult.errors?.length || 0}
-                    </li>
-                  </ul>
-                  {estudiantesUploadResult.acudientes && (
-                    <>
-                      <h4>Acudientes</h4>
-                      <ul>
-                        <li>
-                          Acudientes creados:{" "}
-                          {estudiantesUploadResult.acudientes.created}
-                        </li>
-                        <li>
-                          Acudientes actualizados:{" "}
-                          {estudiantesUploadResult.acudientes.updated}
-                        </li>
-                        <li>
-                          Relaciones creadas:{" "}
-                          {
-                            estudiantesUploadResult.acudientes
-                              .relaciones_creadas
-                          }
-                        </li>
-                        <li>
-                          Errores acudientes:{" "}
-                          {estudiantesUploadResult.acudientes.errors?.length ||
-                            0}
-                        </li>
-                      </ul>
-                    </>
-                  )}
-
-                  {/* Mostrar errores detallados si existen */}
-                  {estudiantesUploadResult.errors &&
-                    estudiantesUploadResult.errors.length > 0 && (
-                      <div
-                        style={{
-                          marginTop: "12px",
-                          background: "#fff6f6",
-                          padding: "10px",
-                          borderRadius: "6px",
-                        }}
-                      >
-                        <h4 style={{ color: "#c0392b" }}>Errores detallados</h4>
-                        <p>
-                          Se produjeron errores al procesar algunas filas. Copia
-                          los detalles y pégalos aquí para diagnóstico.
-                        </p>
-                        <pre
-                          style={{
-                            maxHeight: "240px",
-                            overflow: "auto",
-                            background: "#fff",
-                            padding: "8px",
-                            borderRadius: "4px",
-                          }}
-                        >
-                          {JSON.stringify(
-                            estudiantesUploadResult.errors,
-                            null,
-                            2
-                          )}
-                        </pre>
-                        <div
-                          style={{
-                            marginTop: "8px",
-                            display: "flex",
-                            gap: "8px",
-                          }}
-                        >
-                          <button
-                            className="copy-errors-button"
-                            onClick={() => {
-                              try {
-                                navigator.clipboard.writeText(
-                                  JSON.stringify(
-                                    estudiantesUploadResult.errors,
-                                    null,
-                                    2
-                                  )
-                                );
-                                Swal.fire({
-                                  icon: "success",
-                                  title: "Copiado",
-                                  text: "Errores copiados al portapapeles.",
-                                });
-                              } catch (e) {
-                                console.error("Error copiando errores:", e);
-                                Swal.fire({
-                                  icon: "error",
-                                  title: "Error",
-                                  text: "No se pudo copiar al portapapeles.",
-                                });
-                              }
-                            }}
-                          >
-                            📋 Copiar errores
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                </div>
-              )}
-
-              <div className="instructions-section">
-                <h3>Instrucciones</h3>
-                <ul>
-                  <li>
-                    Usa la plantilla oficial. Incluye hojas: "Estudiantes" y
-                    "Acudientes".
-                  </li>
-                  <li>
-                    Llena IDs de catálogos según valores existentes (tipo
-                    documento, ciudad, etc.).
-                  </li>
-                  <li>
-                    La relación se crea con el campo
-                    "numero_documento_estudiante" en la hoja Acudientes.
-                  </li>
-                  <li>Formatos soportados: Excel (.xlsx/.xls). No usar CSV.</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        );
-      case "padres":
-        // Columnas para padres de familia (usar el componente Table para igualar look & feel)
-        const padresColumns = [
-          { key: "nombre", label: "NOMBRE" },
-          { key: "identificacion", label: "IDENTIFICACIÓN" },
-          { key: "telefono", label: "TELÉFONO" },
-          { key: "municipio", label: "MUNICIPIO" },
-        ];
-
-        const padresActions = [
-          {
-            label: "Ver Detalles",
-            onClick: (item) => abrirModal("view", "acudiente", item.id),
-          },
-          {
-            label: "Editar",
-            onClick: (item) => abrirModal("edit", "acudiente", item.id),
-          },
-          {
-            label: "Asignar Estudiante",
-            onClick: (item) => {
-              setActivePadreId(item.id);
-              setAssignModalOpen(true);
-            },
-          },
-          {
-            label: "Eliminar",
-            onClick: (item) => eliminarItem("acudiente", item.id),
-          },
-        ];
-
-        return (
-          <div>
-            <Table
-              id="Acudientes"
-              title="Gestion de Padres"
-              description="Registro manual de padres de familia, Para carga masiva usar la opción de Estudiantes (se crean vía estudiantes)."
-              columns={padresColumns}
-              data={padres}
-              searchPlaceholder="Buscar por nombre..."
-              addButtonText="Añadir Padre"
-              actions={padresActions}
-              onAdd={() => abrirModal("create", "acudiente")}
-            />
-          </div>
-        );
-      case "carga-profesores":
-        // Función para abrir el selector de archivos de profesores directamente
-        const openProfesoresFileSelector = () => {
-          console.log("openProfesoresFileSelector called"); // Debug log
-          if (profesoresFileInputRef.current) {
-            console.log("Clicking profesores file input via ref"); // Debug log
-            profesoresFileInputRef.current.click();
-          } else {
-            console.log("Profesores file input ref not found"); // Debug log
-          }
-        };
-
-        const handleProfesoresFileChange = async (e) => {
-          const file = e.target.files?.[0] || null;
-          setSelectedProfesoresFile(file);
-          setProfesoresUploadResult(null);
-          setProfesoresPreview(null);
-          setProfesoresValidationErrors([]);
-          if (!file) return;
-          if (!/\.(xlsx|xls)$/i.test(file.name)) {
-            setProfesoresValidationErrors([
-              "Formato inválido. Solo se admite Excel (.xlsx/.xls).",
-            ]);
-            return;
-          }
-          try {
-            const wb = await readWorkbook(file);
-            const catalogs = await loadCatalogsForValidation();
-            const catalogsIndex = buildCatalogIndex(catalogs);
-            const { errors, preview } = validateProfesoresWorkbook(
-              wb,
-              catalogsIndex
-            );
-            setProfesoresPreview(preview);
-            setProfesoresValidationErrors(errors);
-            if (errors.length === 0) {
-              setProfesoresEditableRows(preview.rows);
-              setProfesoresHeadersFromFile(preview.headers || null);
-            } else {
-              setProfesoresEditableRows(null);
-              setProfesoresHeadersFromFile(null);
-            }
-          } catch (err) {
-            console.error("Error leyendo Excel profesores:", err);
-            setProfesoresValidationErrors([
-              `No se pudo leer el archivo Excel: ${err.message || err}`,
-            ]);
-          }
-        };
-
-        const handleProfesoresUpload = async () => {
-          if (!selectedProfesoresFile) {
-            Swal.fire({
-              icon: "warning",
-              title: "Sin archivo",
-              text: "Selecciona un archivo Excel (.xlsx).",
-            });
-            return;
-          }
-          if (
-            profesoresValidationErrors &&
-            profesoresValidationErrors.length > 0
-          ) {
-            Swal.fire({
-              icon: "warning",
-              title: "Errores de validación",
-              text: "Corrige los errores antes de subir el archivo.",
-            });
-            return;
-          }
-
-          try {
-            let catalogos = catalogosCache;
-            if (!catalogos) {
-              try {
-                const [
-                  tiposDocResp,
-                  generosResp,
-                  estadosResp,
-                  tiposSangreResp,
-                  sisbenResp,
-                  departamentosResp,
-                  ciudadesResp,
-                  tiposAcudienteResp,
-                ] = await Promise.all([
-                  catalogoAPI.getTiposDocumento(),
-                  catalogoAPI.getGeneros(),
-                  catalogoAPI.getEstados(),
-                  catalogoAPI.getTiposSangre(),
-                  catalogoAPI.getSisben(),
-                  catalogoAPI.getDepartamentos(),
-                  catalogoAPI.getCiudades(),
-                  catalogoAPI.getTipoAcudiente(),
-                ]);
-                catalogos = {
-                  tiposDocumento: tiposDocResp.data,
-                  generos: generosResp.data,
-                  estados: estadosResp.data,
-                  tiposSangre: tiposSangreResp.data,
-                  sisben: sisbenResp.data,
-                  departamentos: departamentosResp.data,
-                  ciudades: ciudadesResp.data,
-                  tiposAcudiente: tiposAcudienteResp.data,
-                };
-                setCatalogosCache(catalogos);
-              } catch (err) {
-                console.warn(
-                  "No se pudo obtener catálogos para validación previa (profesores):",
-                  err
-                );
-                catalogos = null;
-              }
-            }
-
-            // Si hay catálogos disponibles, hacemos una validación previa ligera
-            if (catalogos) {
-              // No bloqueamos fuertemente; asumimos que el backend hará validación final
-            }
-
-            setUploadingProfesores(true);
-            const resp = await profesoresAPI.bulkUpload(selectedProfesoresFile);
-            setProfesoresUploadResult(resp.data);
-            Swal.fire({
-              icon: "success",
-              title: "Carga completada",
-              text: "Se procesó el archivo correctamente.",
-            });
-            try {
-              await cargarProfesores();
-            } catch (e) {
-              console.warn(
-                "No se pudo refrescar la lista de profesores automáticamente:",
-                e
-              );
-            }
-          } catch (err) {
-            console.error("Error en carga masiva profesores:", err);
-            console.error(
-              "Detalles:",
-              err.response?.data || err.message || err
-            );
-            if (err.response && err.response.status === 403) {
-              Swal.fire({
-                icon: "error",
-                title: "Permisos insuficientes",
-                text: "No tiene permiso para realizar esta acción.",
-              });
-            } else {
-              Swal.fire({
-                icon: "error",
-                title: "Error",
-                text:
-                  err.response?.data?.message ||
-                  err.message ||
-                  "No se pudo procesar el archivo.",
-              });
-            }
-          } finally {
-            setUploadingProfesores(false);
-          }
-        };
-
-        const handleDownloadProfesoresTemplate = async () => {
-          try {
-            // Descargar la plantilla desde el backend (blob)
-            const response = await profesoresAPI.downloadTemplate();
-            const blob = new Blob([response.data], {
-              type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            });
-            const url = window.URL.createObjectURL(blob);
-            const link = document.createElement("a");
-            link.href = url;
-            link.download = "plantilla_profesores.xlsx";
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            window.URL.revokeObjectURL(url);
-          } catch (err) {
-            console.error("❌ Error al descargar plantilla profesores:", err);
-            Swal.fire({
-              icon: "error",
-              title: "Error",
-              text: "Error al descargar la plantilla. Por favor, intenta nuevamente.",
-            });
-          }
-        };
-
-        // Eventos de drag and drop para profesores
-        const handleProfesoresDragOver = (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-        };
-
-        const handleProfesoresDragEnter = (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-        };
-
-        const handleProfesoresDragLeave = (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-        };
-
-        const handleProfesoresDrop = (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          const files = e.dataTransfer.files;
-          if (files.length > 0) {
-            const file = files[0];
-            if (
-              file.type ===
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
-              file.type === "application/vnd.ms-excel" ||
-              file.name.endsWith(".xlsx") ||
-              file.name.endsWith(".xls")
-            ) {
-              setSelectedProfesoresFile(file);
-              handleProfesoresFileChange({ target: { files: [file] } });
-            } else {
-              Swal.fire({
-                icon: "warning",
-                title: "Formato incorrecto",
-                text: "Solo se permiten archivos Excel (.xlsx, .xls).",
-              });
-            }
-          }
-        };
-
-        return (
-          <div className="dashboard-section">
-            <div className="gestion-academica-header">
-              <h1 className="gestion-academica-title">
-                Carga Masiva de Profesores
-              </h1>
-              <p className="gestion-academica-subtitle">
-                Importa múltiples profesores desde un archivo
-              </p>
-            </div>
-
-            <div className="carga-masiva-content">
-              <div className="upload-section">
-                <div
-                  className="upload-area"
-                  onDragOver={handleProfesoresDragOver}
-                  onDragEnter={handleProfesoresDragEnter}
-                  onDragLeave={handleProfesoresDragLeave}
-                  onDrop={handleProfesoresDrop}
-                >
-                  <div className="upload-icon">📁</div>
-                  <h3>Selecciona un archivo</h3>
-                  <p>
-                    Arrastra y suelta tu archivo aquí o haz clic para
-                    seleccionar
-                  </p>
-                  <p className="file-types">Formatos soportados: .xlsx, .csv</p>
-                  <input
-                    ref={profesoresFileInputRef}
-                    type="file"
-                    accept=".xlsx,.xls"
-                    style={{ display: "none" }}
-                    id="file-upload-profesores"
-                    onChange={handleProfesoresFileChange}
-                  />
-                  <button
-                    type="button"
-                    className="upload-button"
-                    onClick={openProfesoresFileSelector}
-                  >
-                    Seleccionar Archivo
-                  </button>
-                  {selectedProfesoresFile && (
-                    <div className="selected-file">
-                      <span>Archivo: {selectedProfesoresFile.name}</span>
-                      <button
-                        className="upload-button"
-                        onClick={handleProfesoresUpload}
-                        disabled={
-                          uploadingProfesores ||
-                          (profesoresValidationErrors &&
-                            profesoresValidationErrors.length > 0)
-                        }
-                      >
-                        {uploadingProfesores ? "Subiendo..." : "Subir Archivo"}
-                      </button>
-                    </div>
-                  )}
-                  {profesoresValidationErrors &&
-                    profesoresValidationErrors.length > 0 && (
-                      <div
-                        className="validation-errors"
-                        style={{ marginTop: "12px", color: "#c0392b" }}
-                      >
-                        <h4>Errores detectados</h4>
-                        <ul>
-                          {profesoresValidationErrors.map((err, i) => (
-                            <li key={i}>{err}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  {profesoresPreview && (
-                    <div
-                      className="preview-section"
-                      style={{ marginTop: "12px" }}
-                    >
-                      <h4>Previsualización</h4>
-                      <p>Filas detectadas: {profesoresPreview.rowsCount}</p>
-                      {profesoresPreview.sample &&
-                        profesoresPreview.sample.length > 0 && (
-                          <div
-                            className="preview-table-wrapper"
-                            style={{ marginTop: "8px" }}
-                          >
-                            <table className="preview-table">
-                              <thead>
-                                <tr>
-                                  {(
-                                    profesoresPreview.headers ||
-                                    Object.keys(
-                                      profesoresPreview.sample[0] || {}
-                                    )
-                                  )
-                                    .slice(0, 10)
-                                    .map((h) => (
-                                      <th key={h}>{h}</th>
-                                    ))}
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {profesoresPreview.sample.map((row, ridx) => (
-                                  <tr key={ridx}>
-                                    {(
-                                      profesoresPreview.headers ||
-                                      Object.keys(row)
-                                    )
-                                      .slice(0, 10)
-                                      .map((col) => (
-                                        <td key={col}>
-                                          {String(row[col] ?? "")}
-                                        </td>
-                                      ))}
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                            <p
-                              style={{
-                                fontSize: "12px",
-                                color: "#666",
-                                marginTop: "6px",
-                              }}
-                            >
-                              Mostrando hasta 5 filas y primeras 10 columnas.
-                            </p>
-                          </div>
-                        )}
-                      {profesoresEditableRows &&
-                        profesoresEditableRows.length > 0 && (
-                          <div style={{ marginTop: "12px" }}>
-                            <h5>Editar filas antes de subir</h5>
-                            <div className="edit-table-wrapper">
-                              <table className="edit-table">
-                                <thead>
-                                  <tr>
-                                    {(
-                                      profesoresHeadersFromFile ||
-                                      Object.keys(
-                                        profesoresEditableRows[0] || {}
-                                      )
-                                    ).map((h) => (
-                                      <th key={h}>{h}</th>
-                                    ))}
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {profesoresEditableRows.map((row, ridx) => (
-                                    <tr key={ridx}>
-                                      {(
-                                        profesoresHeadersFromFile ||
-                                        Object.keys(row)
-                                      ).map((col) => (
-                                        <td key={col}>
-                                          <input
-                                            value={row[col] ?? ""}
-                                            onChange={(e) => {
-                                              const updated = [
-                                                ...profesoresEditableRows,
-                                              ];
-                                              updated[ridx] = {
-                                                ...updated[ridx],
-                                                [col]: e.target.value,
-                                              };
-                                              setProfesoresEditableRows(
-                                                updated
-                                              );
-                                            }}
-                                          />
-                                        </td>
-                                      ))}
-                                    </tr>
-                                  ))}
-                                </tbody>
-                              </table>
-                            </div>
-                            <div
-                              className="table-actions"
-                              style={{ marginTop: "8px" }}
-                            >
-                              <button
-                                className="upload-button"
-                                onClick={() =>
-                                  downloadWorkbookFromRows("profesores")
-                                }
-                              >
-                                📥 Descargar corregido
-                              </button>
-                              <button
-                                className="upload-button"
-                                onClick={() =>
-                                  uploadEditedWorkbook("profesores")
-                                }
-                              >
-                                📤 Subir versión corregida
-                              </button>
-                            </div>
-                            {profesoresValidationErrors &&
-                              profesoresValidationErrors.length > 0 && (
-                                <div
-                                  className="validation-errors"
-                                  style={{ marginTop: "12px" }}
-                                >
-                                  <h4 style={{ color: "#c0392b" }}>
-                                    Errores detectados
-                                  </h4>
-                                  <div
-                                    style={{
-                                      overflowX: "auto",
-                                      background: "#fff6f6",
-                                      padding: "8px",
-                                      borderRadius: "6px",
-                                    }}
-                                  >
-                                    <table
-                                      style={{
-                                        width: "100%",
-                                        borderCollapse: "collapse",
-                                      }}
-                                    >
-                                      <thead>
-                                        <tr>
-                                          <th
-                                            style={{
-                                              border: "1px solid #ddd",
-                                              padding: "6px",
-                                              background: "#fee",
-                                            }}
-                                          >
-                                            Fila
-                                          </th>
-                                          <th
-                                            style={{
-                                              border: "1px solid #ddd",
-                                              padding: "6px",
-                                              background: "#fee",
-                                            }}
-                                          >
-                                            Mensaje
-                                          </th>
-                                        </tr>
-                                      </thead>
-                                      <tbody>
-                                        {profesoresValidationErrors.map(
-                                          (err, i) => {
-                                            const m =
-                                              String(err).match(
-                                                /Fila\s*(\d+):\s*(.*)/i
-                                              );
-                                            const fila = m ? m[1] : "-";
-                                            const msg = m ? m[2] : String(err);
-                                            return (
-                                              <tr key={i}>
-                                                <td
-                                                  style={{
-                                                    border: "1px solid #ddd",
-                                                    padding: "6px",
-                                                    width: "80px",
-                                                  }}
-                                                >
-                                                  {fila}
-                                                </td>
-                                                <td
-                                                  style={{
-                                                    border: "1px solid #ddd",
-                                                    padding: "6px",
-                                                  }}
-                                                >
-                                                  {msg}
-                                                </td>
-                                              </tr>
-                                            );
-                                          }
-                                        )}
-                                      </tbody>
-                                    </table>
-                                  </div>
-                                </div>
-                              )}
-                          </div>
-                        )}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="template-section">
-                <h3>Plantilla de Ejemplo</h3>
-                <p>
-                  Descarga la plantilla para asegurar el formato correcto de los
-                  datos
-                </p>
-                <button
-                  className="download-template-button"
-                  onClick={handleDownloadProfesoresTemplate}
-                >
-                  📥 Descargar Plantilla de Profesores
-                </button>
-              </div>
-
-              {profesoresUploadResult && (
-                <div className="results-section">
-                  <h3>Resultado de la carga</h3>
-                  <ul>
-                    <li>
-                      Profesores creados: {profesoresUploadResult.created}
-                    </li>
-                    <li>
-                      Profesores actualizados: {profesoresUploadResult.updated}
-                    </li>
-                    <li>
-                      Errores: {profesoresUploadResult.errors?.length || 0}
-                    </li>
-                  </ul>
-                </div>
-              )}
-
-              <div className="instructions-section">
-                <h3>Instrucciones</h3>
-                <ul>
-                  <li>Usa la plantilla oficial para profesores.</li>
-                  <li>
-                    Llena IDs de catálogos según valores existentes (tipo
-                    documento, ciudad, estado, etc.).
-                  </li>
-                  <li>Formatos soportados: Excel (.xlsx/.xls). No usar CSV.</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        );
-      default:
-        return null;
-    }
-  };
-
-  return (
-    <>
-      <div className="dashboard-container">
-        <Breadcrumbs items={breadcrumbItems} onNavigate={handleNavigate} />
-
-        <div className="gestion-academica-content">
-          {currentSubSection ? (
-            renderSubSection()
-          ) : (
-            <>
-              <div className="gestion-academica-header">
-                <h1 className="gestion-academica-title">Gestión de Usuarios</h1>
-                <p className="gestion-academica-subtitle">
-                  Administra profesores y estudiantes del sistema académico
-                </p>
-              </div>
-
-              <div className="gestion-academica-grid">
-                {userSections.map((section) => (
-                  <div
-                    key={section.id}
-                    className="gestion-academica-card"
-                    onClick={() => handleSectionClick(section.id)}
-                  >
-                    <div className="gestion-academica-card-header">
-                      <span className="gestion-academica-icon">
-                        {section.icon}
-                      </span>
-                      <h3 className="gestion-academica-card-title">
-                        {section.title}
-                      </h3>
-                    </div>
-
-                    <p className="gestion-academica-description">
-                      {section.description}
-                    </p>
-
-                    <button className="gestion-academica-button">
-                      {section.buttonText}
-                    </button>
-                  </div>
-                ))}
-              </div>
-              {/* Modal de previsualización completo: componente separado para mayor fiabilidad */}
-            </>
-          )}
-        </div>
+        )}
       </div>
-      <UsuarioModal
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        mode={modalMode}
-        tipo={modalTipo}
-        initialData={modalData}
-        onSaved={() => {
-          // Si guardamos un acudiente, recargar la lista
-          if (modalTipo === "acudiente") cargarPadres();
-          if (onSaved) onSaved();
-        }}
-      />
-    </>
+    </div>
   );
 };
 
