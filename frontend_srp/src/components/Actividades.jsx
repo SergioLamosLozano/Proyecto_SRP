@@ -163,7 +163,7 @@ function Actividades({ onBack }) {
               <div className="campoActividad">
                 <label>Periodo académico</label>
                 <select>
-                  <option>Seleccione...</option>
+                  <option hidden>Seleccione...</option>
                 </select>
               </div>
 
