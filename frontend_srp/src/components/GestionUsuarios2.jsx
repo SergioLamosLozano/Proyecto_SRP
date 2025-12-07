@@ -808,8 +808,8 @@ const GestionUsuarios = ({ onBack }) => {
         if (AsignacionD3 != 0) {
           try {
             const respons = await AsignacionDeAcudienteAEstudiante({
-              fk_numero_documento_acudiente: parseInt(AsignacionD),
-              fk_numero_documento_estudiante: parseInt(AsignacionD2),
+              fk_numero_documento_acudiente: parseInt(AsignacionD2),
+              fk_numero_documento_estudiante: parseInt(AsignacionD),
               fk_id_tipo_acudiente: AsignacionD3,
             })
               .then(() => {
