@@ -1,59 +1,123 @@
-import "../styles/Dashboard.css";
+import React, { useState, useEffect } from "react";
+import Sidebar from "../components/Sidebar";
+import DashboardS from "../components/DashboardSecretaria";
+import GestionAcademica from "../components/GestionAcademica";
+import GestionUsuarios from "../components/GestionUsuarios2";
+import Calificaciones from "../components/Calificaciones";
+import ReportesEstadisticas from "../components/ReportesEstadisticas";
 import Logout from "../components/Logout";
-import Breadcrumbs from "../components/Breadcrumbs";
 import Footer from "../components/Footer";
-import { useState } from "react";
-import Estadisticas from "../components/Estadisticas";
+import "../styles/Dashboard.css";
+import "../styles/CoordinacionPage.css";
 
-function SecretariaPage() {
-  const [ESTADISTICAS, setESTADISTICAS] = useState(false);
+const CoordinacionPage = () => {
+  const [currentView, setCurrentView] = useState("dashboard");
+  const [isMobile, setIsMobile] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
+
+  const handleNavigation = (view) => {
+    setCurrentView(view);
+    // Cerrar sidebar en móvil después de navegar
+    if (isMobile) {
+      setSidebarOpen(false);
+    }
+  };
+
+  const handleBackToDashboard = () => {
+    setCurrentView("dashboard");
+    // Cerrar sidebar en móvil después de navegar
+    if (isMobile) {
+      setSidebarOpen(false);
+    }
+  };
+
+  // Detectar si es móvil
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  // Funciones para controlar el menú hamburguesa
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
+
+  const closeSidebar = () => {
+    setSidebarOpen(false);
+  };
+
+  const renderContent = () => {
+    switch (currentView) {
+      case "dashboard":
+        return <DashboardS onNavigate={handleNavigation} />;
+      case "gestion-academica":
+        return (
+          <GestionAcademica
+            onBack={handleBackToDashboard}
+            coordinacion={false}
+          />
+        );
+      case "gestion-usuarios":
+        return <GestionUsuarios onBack={handleBackToDashboard} />;
+      case "calificaciones":
+        return <Calificaciones onBack={handleBackToDashboard} />;
+      case "reportes":
+        return <ReportesEstadisticas onBack={handleBackToDashboard} />;
+      default:
+        return <DashboardS onNavigate={handleNavigation} />;
+    }
+  };
 
   return (
-    <div className="dashboard">
+    <div
+      className="page-wrapper"
+      style={{ "--sidebar-width": sidebarCollapsed ? "72px" : "250px" }}
+    >
       <Logout />
-      <Breadcrumbs />
-
-      {!ESTADISTICAS && (
-        <div className="dashboard-content-1">
-          <main className="content">
-            <div className="dashboard-header">
-              <h1>Coordinación Administrativa</h1>
-              <p>Panel de control - Gestión administrativa y recursos</p>
-            </div>
-
-            <div className="dashboard-cards">
-              <div className="card">
-                <h3>⚙️ Gestión de Estudiantes</h3>
-                <p>Crear Estudiantes</p>
-                <button className="btn-primary">Ver Tabla</button>
-              </div>
-
-              <div className="card">
-                <h3>⚙️ Gestión de Docentes</h3>
-                <p>Crear Docentes</p>
-                <button className="btn-primary">Ver Tabla</button>
-              </div>
-
-              <div className="card">
-                <h3>📊 Dashboards</h3>
-                <p>Visualiza algunos diagramas de porcentajes</p>
-                <button
-                  onClick={() => setESTADISTICAS(true)}
-                  className="btn-primary"
-                >
-                  Ver Estadísticas
-                </button>
-              </div>
-            </div>
-          </main>
-        </div>
+      {/* Botón hamburguesa para móvil */}
+      {isMobile && (
+        <button
+          className="hamburger-button"
+          onClick={toggleSidebar}
+          aria-label="Abrir menú"
+        >
+          ☰
+        </button>
       )}
 
-      {ESTADISTICAS && <Estadisticas />}
+      {/* Overlay para cerrar sidebar en móvil */}
+      {isMobile && sidebarOpen && (
+        <div className="sidebar-overlay active" onClick={closeSidebar} />
+      )}
 
+      <div className="coordinacion-container">
+        <Sidebar
+          currentView={currentView}
+          onNavigate={handleNavigation}
+          isMobile={isMobile}
+          isOpen={sidebarOpen}
+          collapsed={sidebarCollapsed}
+          onMouseEnter={() => setSidebarCollapsed(false)}
+          onMouseLeave={() => setSidebarCollapsed(true)}
+        />
+        <div
+          className={`coordinacion-content ${
+            sidebarCollapsed ? "collapsed" : ""
+          }`}
+        >
+          <div className="coordinacion-main-content">{renderContent()}</div>
+        </div>
+      </div>
       <Footer />
     </div>
   );
-}
+};
 
-export default SecretariaPage;
+export default CoordinacionPage;

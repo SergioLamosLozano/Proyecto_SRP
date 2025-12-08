@@ -259,7 +259,16 @@ class EstudianteNotasViewSet(viewsets.ModelViewSet):
     queryset = EstudianteNotas.objects.all()
     serializer_class = EstudianteNotasSerializer
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['fk_numero_documento_estudiante', 'fk_id_actividad']
+    filterset_fields = [
+        'fk_numero_documento_estudiante',
+        'fk_id_actividad__fk_id_periodo_academico',
+        'fk_id_actividad__fk_id_materia_profesores',
+        'fk_id_actividad'
+    ]
+
+class PeriodoViewSet(viewsets.ModelViewSet):
+    queryset = Periodo.objects.all()
+    serializer_class = PeriodoSerializer
 
 
 class EstudianteAcudienteViewSet(viewsets.ModelViewSet):

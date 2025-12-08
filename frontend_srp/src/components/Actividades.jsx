@@ -11,9 +11,13 @@ import {
   ActividadesPost,
   BuscarCoincidenciaNotas,
   BuscarMateriasAsignadas,
+  BuscarNotas,
+  Estudiantes_notasPatch,
   Estudiantes_notasPost,
+  NotasGet,
 } from "../api/cursos";
 import Swal from "sweetalert2";
+import Table from "./Table";
 
 function Actividades({ onBack }) {
   const [currentSubSection, setCurrentSubSection] = useState(null);
@@ -36,7 +40,11 @@ function Actividades({ onBack }) {
   //
   const [estudiantes, setEstudiantes] = useState([]);
   const [DocumentoE, setDocumentoE] = useState("");
+  const [CampoCalificar, setCampoCalificar] = useState("");
+  const [CalificarE, setCalificarE] = useState("");
   const [MateriasAsignadaP, setMateriasAsignadaP] = useState([]);
+  const [CreaOeliminar, setCreaOeliminar] = useState(false);
+  const [Notasget, setNotasGet] = useState([]);
   const filter = materiaseleccionada
     ? MateriasAsignadaP.filter(
         (mat) => mat.materia_nombre == materiaseleccionada
@@ -84,6 +92,113 @@ function Actividades({ onBack }) {
     setPeriodo("");
     setMateriaP("");
     setModalA(false);
+    setDocumentoE("");
+    setCalificarE("");
+    setCampoCalificar("");
+  };
+
+  const NotasPost = async (e) => {
+    e.preventDefault();
+    if (DocumentoE && CampoCalificar)
+      if (CalificarE > 0 && CalificarE < 5.1) {
+        try {
+          const response = await Estudiantes_notasPost({
+            calificacion: CalificarE,
+            fk_numero_documento_estudiante: DocumentoE,
+            fk_id_actividad: CampoCalificar,
+          });
+          Swal.fire({
+            icon: "success",
+            text: `nota de: ${CalificarE}, registrada a: ${DocumentoE}, fue Exitosa`,
+            timer: 2000,
+            showConfirmButton: false,
+          });
+          Notascambio();
+        } catch (err) {
+          Swal.fire({
+            icon: "error",
+            text: "Error con el servidor",
+            timer: 2000,
+            showConfirmButton: false,
+          });
+          console.log(err);
+        }
+      } else {
+        Swal.fire({
+          icon: "info",
+          text: "La nota debe estar entre 0.1 y 5.0",
+          timer: 2000,
+          showCancelButton: false,
+        });
+      }
+    else {
+      Swal.fire({
+        icon: "info",
+        text: "Llene todos los campos",
+        timer: 2000,
+        showCancelButton: false,
+      });
+    }
+  };
+
+  const Notascambio = () => {
+    setDocumentoE("");
+    setCampoCalificar("");
+    setCalificarE("");
+    setMateriaseleccionada("");
+    setCursoseleccionada("");
+  };
+
+  const NotasPatch = async (e) => {
+    e.preventDefault();
+    if (DocumentoE && CalificarE) {
+      try {
+        const response = await BuscarNotas(DocumentoE);
+        const filterN = CampoCalificar
+          ? response.data.filter((not) => not.fk_id_actividad == CampoCalificar)
+          : [];
+
+        if (filterN) {
+          if (CalificarE > 0 && CalificarE < 5.1) {
+            const response2 = await Estudiantes_notasPatch(
+              filterN[0].id_estudiante_notas,
+              {
+                calificacion: CalificarE,
+              }
+            );
+            Swal.fire({
+              icon: "success",
+              text: `Se actualizo la nota de el estudiante`,
+              timer: 2000,
+              showConfirmButton: false,
+            });
+            Notascambio();
+          } else {
+            Swal.fire({
+              icon: "info",
+              text: "La nota debe estar entre 0.1 y 5.0",
+              timer: 2000,
+              showCancelButton: false,
+            });
+          }
+        }
+      } catch (err) {
+        console.log(err);
+        Swal.fire({
+          icon: "error",
+          text: "Error con el servidor",
+          timer: 2000,
+          showConfirmButton: false,
+        });
+      }
+    } else {
+      Swal.fire({
+        icon: "info",
+        text: "Llene todos los campos",
+        timer: 2000,
+        showCancelButton: false,
+      });
+    }
   };
 
   const CargarActividades = async (id) => {
@@ -103,7 +218,16 @@ function Actividades({ onBack }) {
   const CargarActividades2 = async (id) => {
     try {
       const response = await actividadesAnteriores(id);
+      const response2 = await NotasGet();
       setActividadesA(response.data);
+      setNotasGet(
+        response2.data.map((nota) => ({
+          documento: nota.estudiante.numero_documento_estudiante,
+          nombre: nota.estudiante.nombre_completo,
+          actividad: nota.actividad.nombre,
+          calificacion: nota.calificacion,
+        }))
+      );
     } catch (err) {
       console.log(err);
     }
@@ -463,8 +587,6 @@ function Actividades({ onBack }) {
       case "Crear actividades 📒":
         return (
           <div className="crearActividadContenedorFull">
-            <h1 className="TituloCrearActividad">Crear nueva actividad</h1>
-
             <form
               className="formCrearActividad"
               onSubmit={(e) => PostActividades(e)}
@@ -573,80 +695,237 @@ function Actividades({ onBack }) {
       case "Calificar ✏️":
         return (
           <div className="calificarContenedorFull">
-            <h1 className="TituloCalificar">Calificar actividad</h1>
+            {CreaOeliminar ? (
+              <>
+                <h1 className="TituloCalificar">Calificar actividad</h1>
 
-            <div className="formCalificar">
-              <div className="campoCalificar">
-                <div className="SeleccionarMaterias">
-                  <div>
-                    <label>Materia</label>
-                    <select
-                      value={materiaseleccionada}
-                      onChange={(e) => setMateriaseleccionada(e.target.value)}
+                <form className="formCalificar" onSubmit={(e) => NotasPatch(e)}>
+                  <div className="CrearOEditar">
+                    <div
+                      className={`divA ${CreaOeliminar ? "" : "activate"}`}
+                      onClick={() => {
+                        setCreaOeliminar(false);
+                        Notascambio();
+                      }}
                     >
-                      <option hidden>seleciona...</option>
-                      {MateriasAsignadaP.map((item, index) => (
-                        <option key={index} value={item.materia_nombre}>
-                          {item.materia_nombre}
+                      <p>Crear</p>
+                    </div>
+                    <div
+                      className={`divA ${CreaOeliminar ? "activate" : ""}`}
+                      onClick={() => {
+                        setCreaOeliminar(true);
+                        Notascambio();
+                      }}
+                    >
+                      <p>Editar</p>
+                    </div>
+                  </div>
+                  <div className="campoCalificar">
+                    <div className="SeleccionarMaterias">
+                      <div>
+                        <label>Materia</label>
+                        <select
+                          value={materiaseleccionada}
+                          onChange={(e) =>
+                            setMateriaseleccionada(e.target.value)
+                          }
+                        >
+                          <option hidden>seleciona...</option>
+                          {MateriasAsignadaP.map((item, index) => (
+                            <option key={index} value={item.materia_nombre}>
+                              {item.materia_nombre}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label>Curso</label>
+                        <select
+                          value={cursoseleccionada}
+                          onChange={(e) => setCursoseleccionada(e.target.value)}
+                        >
+                          <option hidden>seleciona...</option>
+                          {filter.map((item, index) => (
+                            <option key={index} value={item.curso_nombre}>
+                              {item.curso_nombre}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                    <label>Documento del estudiante</label>
+                    <Select
+                      className="SelectA"
+                      classNamePrefix="selectA"
+                      isDisabled={!cursoseleccionada}
+                      value={
+                        filtroparaselect.find((e) => e.value === DocumentoE) ||
+                        null
+                      }
+                      options={filtroparaselect}
+                      onChange={(option) => setDocumentoE(option?.value || "")}
+                      placeholder="Seleccione un estudiante..."
+                      isClearable
+                    />
+                  </div>
+                  <div className="campoCalificar">
+                    <label>Seleccione actividad</label>
+                    <select
+                      value={CampoCalificar}
+                      onChange={(e) => setCampoCalificar(e.target.value)}
+                      disabled={!cursoseleccionada}
+                    >
+                      <option hidden>Seleccione...</option>
+                      {filtroActividad.map((item, index) => (
+                        <option key={index} value={item.id_actividades}>
+                          {item.nombre}
                         </option>
                       ))}
                     </select>
                   </div>
-                  <div>
-                    <label>Curso</label>
-                    <select
-                      value={cursoseleccionada}
-                      onChange={(e) => setCursoseleccionada(e.target.value)}
+
+                  <div className="campoCalificar">
+                    <label>Calificacion</label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      placeholder="Ej: 4.5"
+                      value={CalificarE}
+                      onChange={(e) => setCalificarE(e.target.value)}
+                      className="inputsA"
+                      disabled={!DocumentoE}
+                    />
+                  </div>
+                  <button className="btnCalificar" type="submit">
+                    Editar calificacion
+                  </button>
+                </form>
+              </>
+            ) : (
+              <>
+                <h1 className="TituloCalificar">Calificar actividad</h1>
+
+                <form className="formCalificar" onSubmit={(e) => NotasPost(e)}>
+                  <div className={`CrearOEditar`}>
+                    <div
+                      className={`divA ${CreaOeliminar ? "" : "activate"}`}
+                      onClick={() => {
+                        setCreaOeliminar(false);
+                        Notascambio();
+                      }}
                     >
-                      <option hidden>seleciona...</option>
-                      {filter.map((item, index) => (
-                        <option key={index} value={item.curso_nombre}>
-                          {item.curso_nombre}
+                      <p>Crear</p>
+                    </div>
+                    <div
+                      className={`divA ${CreaOeliminar ? "activate" : ""}`}
+                      onClick={() => {
+                        setCreaOeliminar(true);
+                        Notascambio();
+                      }}
+                    >
+                      <p>Editar</p>
+                    </div>
+                  </div>
+                  <div className="campoCalificar">
+                    <div className="SeleccionarMaterias">
+                      <div>
+                        <label>Materia</label>
+                        <select
+                          value={materiaseleccionada}
+                          onChange={(e) =>
+                            setMateriaseleccionada(e.target.value)
+                          }
+                        >
+                          <option hidden>seleciona...</option>
+                          {MateriasAsignadaP.map((item, index) => (
+                            <option key={index} value={item.materia_nombre}>
+                              {item.materia_nombre}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label>Curso</label>
+                        <select
+                          value={cursoseleccionada}
+                          onChange={(e) => setCursoseleccionada(e.target.value)}
+                        >
+                          <option hidden>seleciona...</option>
+                          {filter.map((item, index) => (
+                            <option key={index} value={item.curso_nombre}>
+                              {item.curso_nombre}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                    <label>Documento del estudiante</label>
+                    <Select
+                      className="SelectA"
+                      classNamePrefix="selectA"
+                      isDisabled={!cursoseleccionada}
+                      value={
+                        filtroparaselect.find((e) => e.value === DocumentoE) ||
+                        null
+                      }
+                      options={filtroparaselect}
+                      onChange={(option) => setDocumentoE(option?.value || "")}
+                      placeholder="Seleccione un estudiante..."
+                      isClearable
+                    />
+                  </div>
+
+                  <div className="campoCalificar">
+                    <label>Seleccione actividad</label>
+                    <select
+                      value={CampoCalificar}
+                      onChange={(e) => setCampoCalificar(e.target.value)}
+                      disabled={!cursoseleccionada}
+                    >
+                      <option hidden>Seleccione...</option>
+                      {filtroActividad.map((item, index) => (
+                        <option key={index} value={item.id_actividades}>
+                          {item.nombre}
                         </option>
                       ))}
                     </select>
                   </div>
-                </div>
-                <label>Documento del estudiante</label>
-                <Select
-                  className="SelectA"
-                  classNamePrefix="selectA"
-                  isDisabled={!cursoseleccionada}
-                  value={
-                    filtroparaselect.find((e) => e.value === DocumentoE) || null
-                  }
-                  options={filtroparaselect}
-                  onChange={(option) => setDocumentoE(option?.value || "")}
-                  placeholder="Seleccione un estudiante..."
-                  isClearable
-                />
-              </div>
 
-              <div className="campoCalificar">
-                <label>Seleccione actividad</label>
-                <select disabled={!cursoseleccionada}>
-                  <option hidden>Seleccione...</option>
-                  {filtroActividad.map((item, index) => (
-                    <option key={index} value={item.id_actividades}>
-                      {item.nombre}
-                    </option>
-                  ))}
-                </select>
-              </div>
+                  <div className="campoCalificar">
+                    <label>Calificación</label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      placeholder="Ej: 4,5"
+                      value={CalificarE}
+                      onChange={(e) => setCalificarE(e.target.value)}
+                      className="inputsA"
+                      disabled={!cursoseleccionada}
+                    />
+                  </div>
 
-              <div className="campoCalificar">
-                <label>Calificación</label>
-                <input
-                  type="number"
-                  step="0.1"
-                  placeholder="Ej: 4,5"
-                  className="inputsA"
-                  disabled={!cursoseleccionada}
-                />
-              </div>
-
-              <button className="btnCalificar">Guardar calificación</button>
-            </div>
+                  <button className="btnCalificar" type="submit">
+                    Guardar calificación
+                  </button>
+                </form>
+              </>
+            )}
+            <Table
+              title="Notas Estudiantes"
+              description="Aqui se podran visualizar las notas de los estudiantes"
+              columns={[
+                {
+                  key: "documento",
+                  label: "DOCUMENTO",
+                },
+                { key: "nombre", label: "NOMBRE" },
+                { key: "actividad", label: "ACTIVIDAD" },
+                { key: "calificacion", label: "CALIFICACION" },
+              ]}
+              data={Notasget}
+              type_search="number"
+            />
           </div>
         );
     }
