@@ -162,6 +162,46 @@ export const Estudiantes_notas = (id) => {
   return api.get(`/notas/?fk_numero_documento_estudiante=${id}`);
 };
 
+export const Estudiantes_notasPost = (datos) => {
+  const token = sessionStorage.getItem("token");
+  return api.post(`/notas/`, datos, {
+    headers: {
+      Authorization: `Bearer: ${token}`,
+    },
+  });
+};
+
+export const ActividadesPost = (datos) => {
+  const token = sessionStorage.getItem("token");
+  return api.post(`/actividades/`, datos, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+};
+
+export const ActividadesPatch = (id, datos) => {
+  const token = sessionStorage.getItem("token");
+  return api.patch(`/actividades/${id}/`, datos, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+};
+
+export const ActividadesDelete = (id) => {
+  const token = sessionStorage.getItem("token");
+  return api.delete(`/actividades/${id}/`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+};
+
 export const BuscarMateriasAsignadas = (id) => {
   return api.get(`/materias_asignadas/?fk_numero_documento_profesor=${id}`);
+};
+
+export const BuscarCoincidenciaNotas = (id) => {
+  return api.get(`/notas/?fk_id_actividad=${id}`);
 };
