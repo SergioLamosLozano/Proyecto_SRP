@@ -652,6 +652,12 @@ function Actividades({ onBack }) {
                     <option value={1}>Examen</option>
                     <option value={2}>Taller</option>
                     <option value={3}>Tarea</option>
+                    <option value={4}>Proyecto</option>
+                    <option value={5}>Quiz</option>
+                    <option value={6}>Actividad en clase</option>
+                    <option value={7}>Práctica de laboratorio</option>
+                    <option value={8}>Foro</option>
+                    <option value={9}>Lectura guiada</option>
                   </select>
                 </div>
 

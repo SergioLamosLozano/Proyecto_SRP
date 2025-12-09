@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import Swal from "sweetalert2";
 import { estudiantesAPI, profesoresAPI } from "../api/usuarios";
 import * as XLSX from "xlsx";
-import "../styles/GestionUsuarios.css";
+import "../styles/CargaMasiva.css";
 
 const CargaMasiva = ({ CargarEstudiante }) => {
   const [tipo, setTipo] = useState("estudiantes");
@@ -165,29 +165,26 @@ const CargaMasiva = ({ CargarEstudiante }) => {
   };
 
   return (
-    <div className="gestion-usuarios-content">
-      <div className="gestion-usuarios-header">
-        <h2 className="gestion-usuarios-title">Carga Masiva</h2>
-        <p className="gestion-usuarios-subtitle">
+    <div className="cm-container">
+      <div className="cm-header">
+        <h2 className="cm-title">Carga Masiva</h2>
+        <p className="cm-subtitle">
           Sube tu plantilla de {tipo} para registrar datos masivos.
         </p>
       </div>
 
-      <div className="gestion-academica-filters carga-masiva-controls">
+      <div className="cm-controls">
         <input
-          className="upload-input"
+          className="cm-input"
           type="file"
           accept=".xlsx,.xls"
           onChange={handleFileChange}
         />
-        <button
-          className="gestion-academica-button"
-          onClick={uploadFile}
-          disabled={loading}
-        >
+        <button className="cm-btn" onClick={uploadFile} disabled={loading}>
           {loading ? "Procesando..." : "Subir"}
         </button>
-        <button className="gestion-academica-button" onClick={downloadTemplate}>
+
+        <button className="cm-btn" onClick={downloadTemplate}>
           Descargar plantilla
         </button>
       </div>
@@ -198,12 +195,14 @@ const CargaMasiva = ({ CargarEstudiante }) => {
             "Previsualización Estudiantes (primeros 25)",
             preview.estudiantes
           )}
+
           {renderTable(
             "Previsualización Acudientes (primeros 25)",
             preview.acudientes
           )}
         </>
       )}
+
       {tipo === "profesores" &&
         renderTable(
           "Previsualización Profesores (primeros 25)",
@@ -211,24 +210,28 @@ const CargaMasiva = ({ CargarEstudiante }) => {
         )}
 
       {result && (
-        <div className="preview-table-wrapper" style={{ marginTop: 16 }}>
+        <div className="cm-table-wrapper" style={{ marginTop: 16 }}>
           <h4>Resultado</h4>
+
           {tipo === "estudiantes" ? (
             <>
-              <p>
+              <p className="cm-result-text">
                 Estudiantes: creados {result.created} | actualizados{" "}
                 {result.updated}
               </p>
+
               {Array.isArray(result.errors) &&
                 result.errors.length > 0 &&
                 renderTable("Errores estudiantes", result.errors)}
+
               {result.acudientes && (
                 <>
-                  <p>
+                  <p className="cm-result-text">
                     Acudientes: creados {result.acudientes.created} |
                     actualizados {result.acudientes.updated} | relaciones{" "}
                     {result.acudientes.relaciones_creadas}
                   </p>
+
                   {Array.isArray(result.acudientes.errors) &&
                     result.acudientes.errors.length > 0 &&
                     renderTable("Errores acudientes", result.acudientes.errors)}
@@ -237,10 +240,11 @@ const CargaMasiva = ({ CargarEstudiante }) => {
             </>
           ) : (
             <>
-              <p>
+              <p className="cm-result-text">
                 Profesores: creados {result.created} | actualizados{" "}
                 {result.updated}
               </p>
+
               {Array.isArray(result.errors) &&
                 result.errors.length > 0 &&
                 renderTable("Errores", result.errors)}
