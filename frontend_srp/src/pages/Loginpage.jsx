@@ -105,7 +105,12 @@ function LoginPage() {
               </section>
               <h1>Redes</h1>
               <div className="Login-container-4">
-                <div className="whatsapp">
+                <a
+                  href="https://api.whatsapp.com/message/E3XV7S5IKPXJD1?autoload=1&app_absent=0"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="whatsapp"
+                >
                   <svg viewBox="0 0 24 24">
                     <path
                       fill="currentColor"
@@ -113,8 +118,13 @@ function LoginPage() {
                     />
                   </svg>
                   <h2>Whatsapp</h2>
-                </div>
-                <div className="instagram">
+                </a>
+                <a
+                  href="https://www.instagram.com/institutorafaelpombotulua/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="instagram"
+                >
                   <svg viewBox="0 0 24 24">
                     <path
                       fill="currentColor"
@@ -122,8 +132,13 @@ function LoginPage() {
                     />
                   </svg>
                   <h2>Instagram</h2>
-                </div>
-                <div className="facebook">
+                </a>
+                <a
+                  href="https://www.facebook.com/irafaelpombo"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="facebook"
+                >
                   <svg viewBox="0 0 24 24">
                     <path
                       fill="currentColor"
@@ -131,8 +146,13 @@ function LoginPage() {
                     />
                   </svg>
                   <h2>Facebook</h2>
-                </div>
-                <div className="network">
+                </a>
+                <a
+                  href="https://contableyfinancier7.wixsite.com/rafaelpombotulua"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="network"
+                >
                   <svg viewBox="0 0 24 24">
                     <path
                       fill="currentColor"
@@ -140,7 +160,7 @@ function LoginPage() {
                     />
                   </svg>
                   <h2>Network</h2>
-                </div>
+                </a>
               </div>
             </div>
           </div>
