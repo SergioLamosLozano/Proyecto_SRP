@@ -57,7 +57,7 @@
 }
 
 .Login-container-3 section {
-  width: 300px;
+  width: 340px;
   height: auto;
   color: rgb(255, 255, 255);
   margin-top: 10px;
@@ -80,6 +80,8 @@
   height: 70px;
   margin-top: 40px;
   display: flex;
+  align-items: center;
+  justify-content: center;
   flex-direction: row;
   gap: 10px;
 }
@@ -88,8 +90,16 @@
   border-radius: 25px;
   width: 120px;
   height: 40px;
+  display: flex;
+  align-items: center;
   border: 3px white solid;
   transition: all 0.4s ease;
+  margin-top: 90px;
+  cursor: pointer;
+}
+
+.Login-container-4 a {
+  text-decoration: none;
 }
 
 .whatsapp {

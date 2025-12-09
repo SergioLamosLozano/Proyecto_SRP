@@ -103,12 +103,13 @@ function LoginPage() {
                   Página de administración, institución educativa Rafael Pombo
                 </p>
               </section>
-              <h1>Redes</h1>
               <div className="Login-container-4">
-                <a
-                  href="https://api.whatsapp.com/message/E3XV7S5IKPXJD1?autoload=1&app_absent=0"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <div
+                  onClick={() =>
+                    window.open(
+                      "https://api.whatsapp.com/message/E3XV7S5IKPXJD1?autoload=1&app_absent=0"
+                    )
+                  }
                   className="whatsapp"
                 >
                   <svg viewBox="0 0 24 24">
@@ -118,11 +119,13 @@ function LoginPage() {
                     />
                   </svg>
                   <h2>Whatsapp</h2>
-                </a>
-                <a
-                  href="https://www.instagram.com/institutorafaelpombotulua/"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                </div>
+                <div
+                  onClick={() =>
+                    window.open(
+                      "https://www.instagram.com/institutorafaelpombotulua/"
+                    )
+                  }
                   className="instagram"
                 >
                   <svg viewBox="0 0 24 24">
@@ -132,12 +135,12 @@ function LoginPage() {
                     />
                   </svg>
                   <h2>Instagram</h2>
-                </a>
-                <a
-                  href="https://www.facebook.com/irafaelpombo"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                </div>
+                <div
                   className="facebook"
+                  onClick={() =>
+                    window.open("https://www.facebook.com/irafaelpombo")
+                  }
                 >
                   <svg viewBox="0 0 24 24">
                     <path
@@ -146,12 +149,14 @@ function LoginPage() {
                     />
                   </svg>
                   <h2>Facebook</h2>
-                </a>
-                <a
-                  href="https://contableyfinancier7.wixsite.com/rafaelpombotulua"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                </div>
+                <div
                   className="network"
+                  onClick={() =>
+                    window.open(
+                      "https://contableyfinancier7.wixsite.com/rafaelpombotulua"
+                    )
+                  }
                 >
                   <svg viewBox="0 0 24 24">
                     <path
@@ -160,7 +165,7 @@ function LoginPage() {
                     />
                   </svg>
                   <h2>Network</h2>
-                </a>
+                </div>
               </div>
             </div>
           </div>
