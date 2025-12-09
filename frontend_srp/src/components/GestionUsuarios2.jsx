@@ -377,7 +377,7 @@ const GestionUsuarios = ({ onBack }) => {
           .then(() => {
             Swal.fire({
               icon: "success",
-              text: "Esudiante Editado Con Exito",
+              text: "Estudiante editado con éxito",
               timer: 3000,
             });
             CargarEstudiante();
@@ -622,7 +622,7 @@ const GestionUsuarios = ({ onBack }) => {
           .then(() => {
             Swal.fire({
               icon: "success",
-              text: "Esudiante Creado Con Exito",
+              text: "Estudiante creado con éxito",
               timer: 3000,
             });
             CargarEstudiante();
@@ -748,7 +748,7 @@ const GestionUsuarios = ({ onBack }) => {
     try {
       if (item.numero_documento_acudiente) {
         const result = await Swal.fire({
-          title: "¿Eliminar curso?",
+          title: "¿Eliminar acudiente?",
           text: "Esta acción eliminará el acudiente permanentemente.",
           icon: "warning",
           showCancelButton: true,
@@ -765,7 +765,7 @@ const GestionUsuarios = ({ onBack }) => {
               .then(() => {
                 Swal.fire({
                   icon: "success",
-                  text: "El acudiente se elimino exitosamente",
+                  text: "El acudiente se eliminó exitosamente",
                   timer: 3000,
                 });
                 CargarPadres();
@@ -979,11 +979,11 @@ const GestionUsuarios = ({ onBack }) => {
               addButtonText="Añadir Padre"
               actions={[
                 {
-                  label: "Editar",
+                  label: "Editar ✏️",
                   onClick: (item) => AbrirModalParaEditarE(item),
                 },
                 {
-                  label: "Eliminar",
+                  label: "Eliminar 🗑️",
                   onClick: (item) => eliminarPadres(item),
                 },
               ]}
@@ -1159,7 +1159,7 @@ const GestionUsuarios = ({ onBack }) => {
                     onChange: (e) => setEstadoE(e.target.value),
                     opciones: [
                       { value: 1, title: "Activo" },
-                      { value: 2, title: "InActivo" },
+                      { value: 2, title: "Inactivo" },
                     ],
                   },
                   {
@@ -1291,7 +1291,7 @@ const GestionUsuarios = ({ onBack }) => {
               data={BTNfiltro ? filtro1 : Estudiantes}
               check={[
                 {
-                  title: "filtro solo activos",
+                  title: "Filtro solo activos",
                   check: BTNfiltro,
                   onChange: (e) => setBTNfiltro(e.target.checked),
                 },
@@ -1300,11 +1300,11 @@ const GestionUsuarios = ({ onBack }) => {
               addButtonText="Añadir estudiante"
               actions={[
                 {
-                  label: "Editar",
+                  label: "Editar ✏️",
                   onClick: (item) => AbrirModalParaEditarE(item),
                 },
                 {
-                  label: "Eliminar",
+                  label: "Inactivar 🗑️",
                   onClick: (item) => deshabilitarE(item),
                 },
               ]}
@@ -1398,7 +1398,7 @@ const GestionUsuarios = ({ onBack }) => {
                     onChange: (e) => setEstadoP(e.target.value),
                     opciones: [
                       { value: 1, title: "Activo" },
-                      { value: 2, title: "InActivo" },
+                      { value: 2, title: "Inactivo" },
                     ],
                   },
                   {
@@ -1458,7 +1458,7 @@ const GestionUsuarios = ({ onBack }) => {
               addButtonText="Añadir Profesor"
               check={[
                 {
-                  title: "filtro solo activos",
+                  title: "Filtro solo activos",
                   check: BTNfiltro,
                   onChange: (e) => setBTNfiltro(e.target.checked),
                 },
@@ -1472,11 +1472,11 @@ const GestionUsuarios = ({ onBack }) => {
                   },
                 },
                 {
-                  label: "Editar",
+                  label: "Editar ✏️",
                   onClick: (item) => AbrirModalParaEditarE(item),
                 },
                 {
-                  label: "Eliminar",
+                  label: "Inactivar 🗑️",
                   onClick: (item) => deshabilitarE(item),
                 },
               ]}

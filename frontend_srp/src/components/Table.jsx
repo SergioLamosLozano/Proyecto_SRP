@@ -210,7 +210,7 @@ const Table = ({
                   ))
                 ) : (
                   <h1 className="Alerta_busqueda">
-                    No se encontro ningun usuario por '{searchTerm}'
+                    No se encontró ningún usuario por '{searchTerm}'
                   </h1>
                 )}
               </div>

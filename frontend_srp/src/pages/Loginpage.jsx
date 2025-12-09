@@ -100,7 +100,7 @@ function LoginPage() {
               <a>¡Bienvenido!</a>
               <section>
                 <p>
-                  Pagina de administracion, institucion educativa Rafael Pombo
+                  Página de administración, institución educativa Rafael Pombo
                 </p>
               </section>
               <h1>Redes</h1>

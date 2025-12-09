@@ -79,7 +79,7 @@ const GestionAcademica = ({ onBack }) => {
         });
         Swal.fire({
           icon: "success",
-          text: "Curso creado con exito",
+          text: "Curso creado con éxito",
           timer: 3000,
         }).then(() => {
           cerrarModal();
@@ -113,7 +113,7 @@ const GestionAcademica = ({ onBack }) => {
         });
         Swal.fire({
           icon: "success",
-          text: "Materia creada con exito",
+          text: "Materia creada con éxito",
           timer: 3000,
         }).then(() => {
           cerrarModal();
@@ -149,7 +149,7 @@ const GestionAcademica = ({ onBack }) => {
         });
         Swal.fire({
           icon: "success",
-          text: "Asignadas creada con exito",
+          text: "Asignación creada con éxito",
           timer: 3000,
         }).then(() => {
           cerrarModal();
@@ -311,7 +311,7 @@ const GestionAcademica = ({ onBack }) => {
           const respons = await EliminarCurso(item.id_curso);
           Swal.fire({
             icon: "success",
-            text: "Curso eliminado con exito",
+            text: "Curso eliminado con éxito",
             timer: 3000,
           }).then(() => {
             fetchCursos();
@@ -338,7 +338,7 @@ const GestionAcademica = ({ onBack }) => {
         });
         Swal.fire({
           icon: "success",
-          text: "Curso modificado con exito",
+          text: "Curso modificado con éxito",
           timer: 3000,
         }).then(() => {
           cerrarModal();
@@ -364,8 +364,8 @@ const GestionAcademica = ({ onBack }) => {
   const EliminarMateriaA = async (item) => {
     if (item.id_materia_profesores) {
       const result = await Swal.fire({
-        title: "¿Eliminar Asignacion?",
-        text: "Esta acción eliminará la asignacion permanentemente.",
+        title: "¿Eliminar asignación?",
+        text: "Esta acción eliminará la asignación permanentemente.",
         icon: "warning",
         showCancelButton: true,
         confirmButtonColor: "#c41e3a",
@@ -381,7 +381,7 @@ const GestionAcademica = ({ onBack }) => {
           );
           Swal.fire({
             icon: "success",
-            text: "Asignacion eliminado con exito",
+            text: "Asignación eliminada con éxito",
             timer: 3000,
           }).then(() => {
             fetchMateriasAsignadas();
@@ -415,7 +415,7 @@ const GestionAcademica = ({ onBack }) => {
         });
         Swal.fire({
           icon: "success",
-          text: "Asignacion modificado con exito",
+          text: "Asignación modificada con éxito",
           timer: 3000,
         }).then(() => {
           cerrarModal();
@@ -510,7 +510,7 @@ const GestionAcademica = ({ onBack }) => {
           const respons = await EliminarMateria(item.id_materia);
           Swal.fire({
             icon: "success",
-            text: "Materia eliminado con exito",
+            text: "Materia eliminada con éxito",
             timer: 3000,
           }).then(() => {
             fetchMaterias();
@@ -543,7 +543,7 @@ const GestionAcademica = ({ onBack }) => {
         });
         Swal.fire({
           icon: "success",
-          text: "Materia modificado con exito",
+          text: "Materia modificada con éxito",
           timer: 3000,
         }).then(() => {
           cerrarModal();
@@ -588,7 +588,7 @@ const GestionAcademica = ({ onBack }) => {
             .then(() => {
               Swal.fire({
                 icon: "success",
-                text: "Se edito la asignacion del estudiante y la materia de forma exitosa",
+                text: "Se editó la asignación del estudiante y la materia de forma exitosa",
                 timer: 3000,
               });
               fetchEstudianteCursos();
@@ -635,7 +635,7 @@ const GestionAcademica = ({ onBack }) => {
             .then(() => {
               Swal.fire({
                 icon: "success",
-                text: "Se asigno el estudiante a la materia de forma exitosa",
+                text: "Se asignó el estudiante a la materia de forma exitosa",
                 timer: 3000,
               });
               fetchEstudianteCursos();
@@ -687,7 +687,7 @@ const GestionAcademica = ({ onBack }) => {
           );
           Swal.fire({
             icon: "success",
-            text: "asignacion de Estudiante y cuerso eliminado con exito",
+            text: "Asignación de estudiante y curso eliminada con éxito",
             timer: 3000,
           }).then(() => {
             fetchEstudianteCursos();
@@ -759,7 +759,7 @@ const GestionAcademica = ({ onBack }) => {
                     onChange: (e) => setEstado(e.target.value),
                     opciones: [
                       { value: "Activo", title: "Activo" },
-                      { value: "InActivo", title: "InActivo" },
+                      { value: "Inactivo", title: "Inactivo" },
                     ],
                   },
                 ]}
@@ -877,7 +877,7 @@ const GestionAcademica = ({ onBack }) => {
                     onChange: (e) => setEstadoMateria(e.target.value),
                     opciones: [
                       { value: "Activo", title: "Activo" },
-                      { value: "InActivo", title: "InActivo" },
+                      { value: "Inactivo", title: "Inactivo" },
                     ],
                   },
                 ]}
