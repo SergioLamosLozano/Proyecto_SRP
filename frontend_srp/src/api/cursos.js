@@ -10,6 +10,18 @@ const api = axios.create({
   },
 });
 
+// Agregar Authorization automáticamente desde sessionStorage
+api.interceptors.request.use(
+  (config) => {
+    const token = sessionStorage.getItem("token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
 export const Cursos = () => {
   return api.get(`/cursos/`);
 };
@@ -88,6 +100,14 @@ export const Año_electivo = () => {
   return api.get("/ano_electivo/");
 };
 
+export const Periodos = () => {
+  return api.get("/periodo/?page_size=100");
+};
+
+export const PeriodoById = (id) => {
+  return api.get(`/periodo/${id}/`);
+};
+
 export const CrearMateriaAsignada = (datos) => {
   const token = sessionStorage.getItem("token");
   return api.post(`/materias_asignadas/`, datos, {
@@ -162,6 +182,69 @@ export const Estudiantes_notas = (id) => {
   return api.get(`/notas/?fk_numero_documento_estudiante=${id}`);
 };
 
+export const Estudiantes_notas_por_periodo = (id, periodoId) => {
+  return api.get(
+    `/notas/?fk_numero_documento_estudiante=${id}&fk_id_actividad__fk_id_periodo_academico=${periodoId}`
+  );
+};
+
+export const Estudiantes_notasPost = (datos) => {
+  const token = sessionStorage.getItem("token");
+  return api.post(`/notas/`, datos, {
+    headers: {
+      Authorization: `Bearer: ${token}`,
+    },
+  });
+};
+
+export const Estudiantes_notasPatch = (id, datos) => {
+  const token = sessionStorage.getItem("token");
+  return api.patch(`/notas/${id}/`, datos, {
+    headers: {
+      Authorization: `Bearer: ${token}`,
+    },
+  });
+};
+
+export const ActividadesPost = (datos) => {
+  const token = sessionStorage.getItem("token");
+  return api.post(`/actividades/`, datos, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+};
+
+export const ActividadesPatch = (id, datos) => {
+  const token = sessionStorage.getItem("token");
+  return api.patch(`/actividades/${id}/`, datos, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+};
+
+export const ActividadesDelete = (id) => {
+  const token = sessionStorage.getItem("token");
+  return api.delete(`/actividades/${id}/`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+};
+
 export const BuscarMateriasAsignadas = (id) => {
   return api.get(`/materias_asignadas/?fk_numero_documento_profesor=${id}`);
+};
+
+export const BuscarCoincidenciaNotas = (id) => {
+  return api.get(`/notas/?fk_id_actividad=${id}`);
+};
+
+export const NotasGet = () => {
+  return api.get(`/notas/`);
+};
+
+export const BuscarNotas = (id) => {
+  return api.get(`/notas/?fk_numero_documento_estudiante=${id}`);
 };

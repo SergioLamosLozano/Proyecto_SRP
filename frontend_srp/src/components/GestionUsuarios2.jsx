@@ -377,7 +377,7 @@ const GestionUsuarios = ({ onBack }) => {
           .then(() => {
             Swal.fire({
               icon: "success",
-              text: "Esudiante Editado Con Exito",
+              text: "Estudiante editado con éxito",
               timer: 3000,
             });
             CargarEstudiante();
@@ -622,7 +622,7 @@ const GestionUsuarios = ({ onBack }) => {
           .then(() => {
             Swal.fire({
               icon: "success",
-              text: "Esudiante Creado Con Exito",
+              text: "Estudiante creado con éxito",
               timer: 3000,
             });
             CargarEstudiante();
@@ -748,7 +748,7 @@ const GestionUsuarios = ({ onBack }) => {
     try {
       if (item.numero_documento_acudiente) {
         const result = await Swal.fire({
-          title: "¿Eliminar curso?",
+          title: "¿Eliminar acudiente?",
           text: "Esta acción eliminará el acudiente permanentemente.",
           icon: "warning",
           showCancelButton: true,
@@ -765,7 +765,7 @@ const GestionUsuarios = ({ onBack }) => {
               .then(() => {
                 Swal.fire({
                   icon: "success",
-                  text: "El acudiente se elimino exitosamente",
+                  text: "El acudiente se eliminó exitosamente",
                   timer: 3000,
                 });
                 CargarPadres();
@@ -808,8 +808,8 @@ const GestionUsuarios = ({ onBack }) => {
         if (AsignacionD3 != 0) {
           try {
             const respons = await AsignacionDeAcudienteAEstudiante({
-              fk_numero_documento_acudiente: parseInt(AsignacionD),
-              fk_numero_documento_estudiante: parseInt(AsignacionD2),
+              fk_numero_documento_acudiente: parseInt(AsignacionD2),
+              fk_numero_documento_estudiante: parseInt(AsignacionD),
               fk_id_tipo_acudiente: AsignacionD3,
             })
               .then(() => {
@@ -979,11 +979,11 @@ const GestionUsuarios = ({ onBack }) => {
               addButtonText="Añadir Padre"
               actions={[
                 {
-                  label: "Editar",
+                  label: "Editar ✏️",
                   onClick: (item) => AbrirModalParaEditarE(item),
                 },
                 {
-                  label: "Eliminar",
+                  label: "Eliminar 🗑️",
                   onClick: (item) => eliminarPadres(item),
                 },
               ]}
@@ -1159,7 +1159,7 @@ const GestionUsuarios = ({ onBack }) => {
                     onChange: (e) => setEstadoE(e.target.value),
                     opciones: [
                       { value: 1, title: "Activo" },
-                      { value: 2, title: "InActivo" },
+                      { value: 2, title: "Inactivo" },
                     ],
                   },
                   {
@@ -1188,8 +1188,11 @@ const GestionUsuarios = ({ onBack }) => {
                     value: tipoDocumento ?? 0,
                     onChange: (e) => setTipoDocumento(e.target.value),
                     opciones: [
-                      { value: 1, title: "Cédula" },
+                      { value: 1, title: "Cédula de ciudadanía" },
                       { value: 2, title: "Tarjeta de Identidad" },
+                      { value: 1, title: "Cédula de extranjería" },
+                      { value: 2, title: "Pasaporte" },
+                      { value: 1, title: "DNI extrajero" },
                     ],
                   },
                   {
@@ -1240,15 +1243,16 @@ const GestionUsuarios = ({ onBack }) => {
                     onChange: (e) => setAlergia(e.target.value),
                     opciones: [
                       { value: 1, title: "Ninguna" },
-                      { value: 2, title: "Asma" },
-                      { value: 3, title: "Polen" },
-                      { value: 4, title: "Ácaros" },
-                      { value: 5, title: "Picaduras de insectos" },
-                      { value: 6, title: "Medicamentos" },
-                      { value: 7, title: "Lácteos" },
+                      { value: 2, title: "Polen" },
+                      { value: 3, title: "Maní" },
+                      { value: 4, title: "Lácteos" },
+                      { value: 5, title: "Mariscos" },
+                      { value: 6, title: "Huevo" },
+                      { value: 7, title: "Soya" },
                       { value: 8, title: "Gluten" },
-                      { value: 9, title: "Mariscos" },
-                      { value: 10, title: "Frutos secos" },
+                      { value: 9, title: "Medicamentos" },
+                      { value: 10, title: "Insectos" },
+                      { value: 11, title: "Frutos secos" },
                     ],
                   },
                 ]}
@@ -1291,7 +1295,7 @@ const GestionUsuarios = ({ onBack }) => {
               data={BTNfiltro ? filtro1 : Estudiantes}
               check={[
                 {
-                  title: "filtro solo activos",
+                  title: "Filtro solo activos",
                   check: BTNfiltro,
                   onChange: (e) => setBTNfiltro(e.target.checked),
                 },
@@ -1300,11 +1304,11 @@ const GestionUsuarios = ({ onBack }) => {
               addButtonText="Añadir estudiante"
               actions={[
                 {
-                  label: "Editar",
+                  label: "Editar ✏️",
                   onClick: (item) => AbrirModalParaEditarE(item),
                 },
                 {
-                  label: "Eliminar",
+                  label: "Inactivar 🗑️",
                   onClick: (item) => deshabilitarE(item),
                 },
               ]}
@@ -1398,7 +1402,7 @@ const GestionUsuarios = ({ onBack }) => {
                     onChange: (e) => setEstadoP(e.target.value),
                     opciones: [
                       { value: 1, title: "Activo" },
-                      { value: 2, title: "InActivo" },
+                      { value: 2, title: "Inactivo" },
                     ],
                   },
                   {
@@ -1406,8 +1410,11 @@ const GestionUsuarios = ({ onBack }) => {
                     value: tipoDocumentoP ?? 0,
                     onChange: (e) => setTipoDocumentoP(e.target.value),
                     opciones: [
-                      { value: 1, title: "Cédula" },
+                      { value: 1, title: "Cédula de ciudadanía" },
                       { value: 2, title: "Tarjeta de Identidad" },
+                      { value: 1, title: "Cédula de extranjería" },
+                      { value: 2, title: "Pasaporte" },
+                      { value: 1, title: "DNI extrajero" },
                     ],
                   },
                   {
@@ -1458,7 +1465,7 @@ const GestionUsuarios = ({ onBack }) => {
               addButtonText="Añadir Profesor"
               check={[
                 {
-                  title: "filtro solo activos",
+                  title: "Filtro solo activos",
                   check: BTNfiltro,
                   onChange: (e) => setBTNfiltro(e.target.checked),
                 },
@@ -1472,11 +1479,11 @@ const GestionUsuarios = ({ onBack }) => {
                   },
                 },
                 {
-                  label: "Editar",
+                  label: "Editar ✏️",
                   onClick: (item) => AbrirModalParaEditarE(item),
                 },
                 {
-                  label: "Eliminar",
+                  label: "Inactivar 🗑️",
                   onClick: (item) => deshabilitarE(item),
                 },
               ]}
@@ -1485,7 +1492,7 @@ const GestionUsuarios = ({ onBack }) => {
           </div>
         );
       case "carga-masiva":
-        return <CargaMasiva />;
+        return <CargaMasiva CargarEstudiante={CargarEstudiante} />;
       default:
         return null;
     }

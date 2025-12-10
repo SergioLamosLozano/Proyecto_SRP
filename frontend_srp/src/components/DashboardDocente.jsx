@@ -14,7 +14,7 @@ const DashboardDocentes = ({ onNavigate }) => {
       id: "materias-asignadas",
       title: "Materias Asignadas",
       description:
-        "En este apartado se mostraran las materias que se le an asignado como docente.",
+        "En este apartado se mostrarán las materias que se le han asignado como docente.",
       icon: "📓",
       buttonText: "Ingresar",
     },
@@ -22,7 +22,7 @@ const DashboardDocentes = ({ onNavigate }) => {
       id: "gestion-actividades",
       title: "Gestión de Actividades",
       description:
-        "Crea, edita y administra las actividades que se puesto en los diferentes cursos.",
+        "Crea, edita y administra las actividades que se han puesto en los diferentes cursos.",
       icon: "✍️",
       buttonText: "Gestionar",
     },

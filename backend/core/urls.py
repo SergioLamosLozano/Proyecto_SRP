@@ -20,6 +20,7 @@ router.register(r'area_conocimiento', AreaConocimientoViewSet, basename='Area_Co
 router.register(r'cursos', CursoViewSet, basename='Curso')
 router.register(r'departamento', DepartamentoViewSet, basename='Departamentos')
 router.register(r'ciudad', CiudadViewSet, basename='Ciudad')
+router.register(r'periodo', PeriodoViewSet, basename='Periodo')
 router.register(r'estudiantes', EstudianteViewSet, basename='Estudiantes')
 router.register(r'profesores', ProfesorViewSet, basename='Profesores')
 router.register(r'acudientes', AcudienteViewSet, basename='Acudientes')

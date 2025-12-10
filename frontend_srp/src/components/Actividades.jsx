@@ -1,13 +1,28 @@
 import { useEffect, useState } from "react";
 import "../styles/Actividades.css";
 import Breadcrumbs from "./Breadcrumbs";
-import { actividadesAnteriores } from "../api/usuarios";
+import { actividadesAnteriores, EstudiantesGET } from "../api/usuarios";
 import { jwtDecode } from "jwt-decode";
-import { BuscarMateriaAsignada, BuscarMateriasAsignadas } from "../api/cursos";
+import Select from "react-select";
+import Modal from "./modal";
+import {
+  ActividadesDelete,
+  ActividadesPatch,
+  ActividadesPost,
+  BuscarCoincidenciaNotas,
+  BuscarMateriasAsignadas,
+  BuscarNotas,
+  Estudiantes_notasPatch,
+  Estudiantes_notasPost,
+  NotasGet,
+} from "../api/cursos";
+import Swal from "sweetalert2";
+import Table from "./Table";
 
 function Actividades({ onBack }) {
   const [currentSubSection, setCurrentSubSection] = useState(null);
   const [ActividadesA, setActividadesA] = useState([]);
+  const [id, setId] = useState("");
   const [nombre, setNombre] = useState("");
   const [descripcion, setDescripcion] = useState("");
   const [porcentaje, setPorcentaje] = useState("");
@@ -16,7 +31,45 @@ function Actividades({ onBack }) {
   const [tipoA, setTipoA] = useState("");
   const [periodo, setPeriodo] = useState("");
   const [materiaP, setMateriaP] = useState("");
-  const [MaterProfesor, setMateriaProfesor] = useState([]);
+  const [MateriaProfesor, setMateriaProfesor] = useState([]);
+  const [materiaseleccionada, setMateriaseleccionada] = useState("");
+  const [cursoseleccionada, setCursoseleccionada] = useState("");
+  const [ModalEliminarOEditar, setModalEliminarOEditar] = useState(false);
+  const [itemSeleccionado, setItemSeleccionado] = useState([]);
+  const [modalA, setModalA] = useState(false);
+  //
+  const [estudiantes, setEstudiantes] = useState([]);
+  const [DocumentoE, setDocumentoE] = useState("");
+  const [CampoCalificar, setCampoCalificar] = useState("");
+  const [CalificarE, setCalificarE] = useState("");
+  const [MateriasAsignadaP, setMateriasAsignadaP] = useState([]);
+  const [CreaOeliminar, setCreaOeliminar] = useState(false);
+  const [Notasget, setNotasGet] = useState([]);
+  const filter = materiaseleccionada
+    ? MateriasAsignadaP.filter(
+        (mat) => mat.materia_nombre == materiaseleccionada
+      )
+    : [];
+  const filter2 = cursoseleccionada
+    ? estudiantes.filter(
+        (est) =>
+          est.estado == "Activo" &&
+          est.cursos?.some((cur) => cur.curso_nombre == cursoseleccionada)
+      )
+    : [];
+
+  const filtroparaselect = filter2
+    ? filter2.map((fil) => ({
+        value: fil.numero_documento_estudiante,
+        label: fil.nombre_completo,
+      }))
+    : [];
+
+  const filtroActividad = materiaseleccionada
+    ? ActividadesA.filter(
+        (act) => act.MateriaProfesores?.materia_nombre == materiaseleccionada
+      )
+    : [];
 
   useEffect(() => {
     const token = sessionStorage.getItem("token");
@@ -26,23 +79,269 @@ function Actividades({ onBack }) {
 
     const decoded = jwtDecode(token);
     CargarActividades(decoded.username);
+    CargarActividades2(decoded.username);
   }, []);
+
+  const cerrar = () => {
+    setNombre("");
+    setDescripcion("");
+    setPorcentaje("");
+    setFecha_inicio("");
+    setFecha_fin("");
+    setTipoA("");
+    setPeriodo("");
+    setMateriaP("");
+    setModalA(false);
+    setDocumentoE("");
+    setCalificarE("");
+    setCampoCalificar("");
+  };
+
+  const NotasPost = async (e) => {
+    e.preventDefault();
+    if (DocumentoE && CampoCalificar)
+      if (CalificarE > 0 && CalificarE < 5.1) {
+        try {
+          const response = await Estudiantes_notasPost({
+            calificacion: CalificarE,
+            fk_numero_documento_estudiante: DocumentoE,
+            fk_id_actividad: CampoCalificar,
+          });
+          Swal.fire({
+            icon: "success",
+            text: `nota de: ${CalificarE}, registrada a: ${DocumentoE}, fue Exitosa`,
+            timer: 2000,
+            showConfirmButton: false,
+          });
+          const token = sessionStorage.getItem("token");
+        const decoded = jwtDecode(token);
+        CargarActividades2(decoded.username);
+          Notascambio();
+        } catch (err) {
+          Swal.fire({
+            icon: "error",
+            text: "Error con el servidor",
+            timer: 2000,
+            showConfirmButton: false,
+          });
+          console.log(err);
+        }
+      } else {
+        Swal.fire({
+          icon: "info",
+          text: "La nota debe estar entre 0.1 y 5.0",
+          timer: 2000,
+          showCancelButton: false,
+        });
+      }
+    else {
+      Swal.fire({
+        icon: "info",
+        text: "Llene todos los campos",
+        timer: 2000,
+        showCancelButton: false,
+      });
+    }
+  };
+
+  const Notascambio = () => {
+    setDocumentoE("");
+    setCampoCalificar("");
+    setCalificarE("");
+    setMateriaseleccionada("");
+    setCursoseleccionada("");
+  };
+
+  const NotasPatch = async (e) => {
+    e.preventDefault();
+    if (DocumentoE && CalificarE) {
+      try {
+        const response = await BuscarNotas(DocumentoE);
+        const filterN = CampoCalificar
+          ? response.data.filter((not) => not.fk_id_actividad == CampoCalificar)
+          : [];
+
+        if (filterN) {
+          if (CalificarE > 0 && CalificarE < 5.1) {
+            const response2 = await Estudiantes_notasPatch(
+              filterN[0].id_estudiante_notas,
+              {
+                calificacion: CalificarE,
+              }
+            );
+            Swal.fire({
+              icon: "success",
+              text: `Se actualizo la nota de el estudiante`,
+              timer: 2000,
+              showConfirmButton: false,
+            });
+            const token = sessionStorage.getItem("token");
+            const decoded = jwtDecode(token);
+            CargarActividades2(decoded.username);
+            Notascambio();
+          } else {
+            Swal.fire({
+              icon: "info",
+              text: "La nota debe estar entre 0.1 y 5.0",
+              timer: 2000,
+              showCancelButton: false,
+            });
+          }
+        }
+      } catch (err) {
+        console.log(err);
+        Swal.fire({
+          icon: "error",
+          text: "Error con el servidor",
+          timer: 2000,
+          showConfirmButton: false,
+        });
+      }
+    } else {
+      Swal.fire({
+        icon: "info",
+        text: "Llene todos los campos",
+        timer: 2000,
+        showCancelButton: false,
+      });
+    }
+  };
 
   const CargarActividades = async (id) => {
     try {
       const response = await actividadesAnteriores(id);
       const response2 = await BuscarMateriasAsignadas(id);
+      const response3 = await EstudiantesGET();
+      setEstudiantes(response3.data);
       setActividadesA(response.data);
       setMateriaProfesor(response2.data);
-      console.log(response.data);
+      setMateriasAsignadaP(response2.data);
     } catch (err) {
       console.log(err);
     }
   };
 
+  const CargarActividades2 = async (id) => {
+    try {
+      const response = await actividadesAnteriores(id);
+      const response2 = await NotasGet();
+      setActividadesA(response.data);
+      setNotasGet(
+        response2.data.map((nota) => ({
+          documento: nota.estudiante.numero_documento_estudiante,
+          nombre: nota.estudiante.nombre_completo,
+          actividad: nota.actividad.nombre,
+          calificacion: nota.calificacion,
+        }))
+      );
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const eliminarActividad = async (item) => {
+    if (!item) return console.log("Error no se encuentra el item");
+
+    const result = await Swal.fire({
+      title: "¿Estás seguro?",
+      text: "Esta acción no se puede deshacer.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Sí",
+      cancelButtonText: "No",
+    });
+    if (!result.isConfirmed) return;
+
+    try {
+      const response = await BuscarCoincidenciaNotas(item);
+
+      if (response.data.length === 0) {
+        await ActividadesDelete(item);
+
+        Swal.fire({
+          icon: "success",
+          text: "Actividad eliminada con éxito",
+          timer: 2000,
+          showConfirmButton: false,
+        });
+        CargarActividades2();
+        setModalEliminarOEditar(false);
+      } else {
+        Swal.fire({
+          icon: "error",
+          text: "La actividad está asociada a una nota",
+          timer: 2000,
+          showConfirmButton: false,
+        });
+        setModalEliminarOEditar(false);
+      }
+    } catch (err) {
+      Swal.fire({
+        icon: "error",
+        text: "Error con el servidor",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+      console.log(err);
+    }
+  };
+
+  const PostActividades = async (e) => {
+    e.preventDefault();
+    if (
+      !nombre ||
+      !descripcion ||
+      !fecha_inicio ||
+      !fecha_fin ||
+      !porcentaje ||
+      !tipoA ||
+      !materiaP ||
+      !periodo
+    ) {
+      Swal.fire({
+        icon: "info",
+        text: "Llene todos los campos",
+        timer: 3000,
+      });
+      return; // detener la función si falta algún campo
+    }
+    try {
+      const response = await ActividadesPost({
+        nombre: nombre,
+        descripcion: descripcion,
+        porcentaje: porcentaje,
+        fecha_inicio: fecha_inicio,
+        fecha_fin: fecha_fin,
+        fk_id_materia_profesores: materiaP,
+        fk_id_periodo_academico: periodo,
+        fk_id_tipo_actividad: tipoA,
+      });
+      Swal.fire({
+        icon: "success",
+        text: "Actividad creada con exito",
+        timer: 3000,
+      });
+      const token = sessionStorage.getItem("token");
+      const decoded = jwtDecode(token);
+      cerrar();
+      CargarActividades2(decoded.username);
+    } catch (err) {
+      Swal.fire({
+        icon: "error",
+        text: "Error con el servidor",
+        timer: 3000,
+      });
+      console.log(err);
+    }
+  };
+
+  const EliminarOEditar = async (item) => {
+    setModalEliminarOEditar(true);
+    setItemSeleccionado(item);
+  };
   const Sections = [
     {
-      nombre: "actividades anteriores 🗒️",
+      nombre: "Actividades anteriores 🗒️",
       descripcion:
         "En este apartado se podran ver las actividades anteriormente asignadas",
     },
@@ -72,6 +371,74 @@ function Actividades({ onBack }) {
       : []),
   ];
 
+  const modal = async () => {
+    if (!itemSeleccionado) return console.log("no hay item");
+    setId(itemSeleccionado.id_actividades);
+    setNombre(itemSeleccionado.nombre || "");
+    setDescripcion(itemSeleccionado.descripcion || "");
+    setPorcentaje(itemSeleccionado.porcentaje || "");
+    setFecha_inicio(itemSeleccionado.fecha_inicio || "");
+    setFecha_fin(itemSeleccionado.fecha_fin || "");
+    setTipoA(itemSeleccionado.fk_id_tipo_actividad || "");
+    setPeriodo(itemSeleccionado.fk_id_periodo_academico || "");
+    setMateriaP(itemSeleccionado.fk_id_materia_profesores || "");
+    setModalA(true);
+    setModalEliminarOEditar(false);
+  };
+
+  const actualizarActividad = async () => {
+    if (!id)
+      return console.log(
+        "no se puede actualizar debido al que el id no se encontro"
+      );
+
+    if (
+      nombre &&
+      descripcion &&
+      porcentaje &&
+      fecha_fin &&
+      fecha_inicio &&
+      tipoA &&
+      periodo &&
+      materiaP
+    ) {
+      try {
+        const response = await ActividadesPatch(id, {
+          nombre: nombre,
+          descripcion: descripcion,
+          porcentaje: porcentaje,
+          fecha_inicio: fecha_inicio,
+          fecha_fin: fecha_fin,
+          fk_id_materia_profesores: materiaP,
+          fk_id_periodo_academico: periodo,
+          fk_id_tipo_actividad: tipoA,
+        });
+        Swal.fire({
+          icon: "success",
+          text: "Actividad editada con exito",
+          timer: 3000,
+        });
+        const token = sessionStorage.getItem("token");
+        const decoded = jwtDecode(token);
+        CargarActividades2(decoded.username);
+        cerrar();
+      } catch (err) {
+        Swal.fire({
+          icon: "error",
+          text: "Error con el servidor",
+          timer: 3000,
+        });
+        console.log(err);
+      }
+    } else {
+      Swal.fire({
+        icon: "info",
+        text: "Llene todos los campos",
+        timer: 3000,
+      });
+    }
+  };
+
   const handleNavigate = (path) => {
     if (path === "/docentes") {
       onBack();
@@ -81,13 +448,116 @@ function Actividades({ onBack }) {
   };
   const render = () => {
     switch (currentSubSection) {
-      case "actividades anteriores 🗒️":
+      case "Actividades anteriores 🗒️":
         return (
           <div className="ActividadesContenedor2">
             <h1 className="TituloActividades">Actividades anteriores</h1>
             <div className="ActividadesContenedor3">
+              {ModalEliminarOEditar && (
+                <div className="fonNegroA">
+                  <div className="SeleccionA">
+                    <h1>{itemSeleccionado?.nombre}</h1>
+                    <span
+                      onClick={() => {
+                        setModalEliminarOEditar(false);
+                        setItemSeleccionado([]);
+                      }}
+                    >
+                      x
+                    </span>
+                    <div>
+                      <button onClick={() => modal()}>Editar</button>
+                      <button
+                        onClick={() =>
+                          eliminarActividad(itemSeleccionado.id_actividades)
+                        }
+                      >
+                        Eliminar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+              {modalA && (
+                <Modal
+                  titulo={"Editar Actividad"}
+                  inputs={[
+                    {
+                      nombre: "Nombre Actividad",
+                      type: "text",
+                      value: nombre ?? "",
+                      onChange: (e) => setNombre(e.target.value),
+                    },
+                    {
+                      nombre: "Descripcion",
+                      type: "text",
+                      value: descripcion ?? "",
+                      onChange: (e) => setDescripcion(e.target.value),
+                    },
+                    {
+                      nombre: "Porcentaje",
+                      type: "text",
+                      value: porcentaje ?? "",
+                      onChange: (e) => setPorcentaje(e.target.value),
+                    },
+                    {
+                      nombre: "Fecha inicio",
+                      type: "date",
+                      value: fecha_inicio ?? "",
+                      onChange: (e) => setFecha_inicio(e.target.value),
+                    },
+                    {
+                      nombre: "Fecha fin",
+                      type: "date",
+                      value: fecha_fin ?? "",
+                      onChange: (e) => setFecha_fin(e.target.value),
+                    },
+                  ]}
+                  acciones={[
+                    { nombre: "Guardar", click: () => actualizarActividad() },
+                    { nombre: "cerrar", click: () => cerrar() },
+                  ]}
+                  select={[
+                    {
+                      nombre: "Materia",
+                      value: materiaP ?? 0,
+                      onChange: (e) => setMateriaP(e.target.value),
+                      opciones: MateriaProfesor.map((item) => ({
+                        value: item.id_materia_profesores,
+                        title: item.materia_nombre,
+                      })),
+                    },
+                    {
+                      nombre: "Periodo",
+                      value: periodo ?? 0,
+                      onChange: (e) => setPeriodo(e.target.value),
+                      opciones: [
+                        { value: 1, title: "periodo 1" },
+                        { value: 2, title: "periodo 2" },
+                        { value: 3, title: "periodo 3" },
+                        { value: 4, title: "periodo 4" },
+                      ],
+                    },
+                    {
+                      nombre: "Tipo actividad",
+                      value: tipoA ?? 0,
+                      onChange: (e) => setTipoA(e.target.value),
+                      opciones: [
+                        { value: 1, title: "Examen" },
+                        { value: 2, title: "Taller" },
+                        { value: 3, title: "Tarea" },
+                      ],
+                    },
+                  ]}
+                  SalirM={() => cerrar()}
+                />
+              )}
               {ActividadesA.map((item, index) => (
-                <div className="actividadCard" key={index}>
+                <div
+                  className="actividadCard"
+                  key={index}
+                  onClick={() => EliminarOEditar(item)}
+                >
                   <h3 className="actividadTitulo">{item.nombre}</h3>
 
                   <p>
@@ -123,107 +593,351 @@ function Actividades({ onBack }) {
       case "Crear actividades 📒":
         return (
           <div className="crearActividadContenedorFull">
-            <h1 className="TituloCrearActividad">Crear nueva actividad</h1>
-
-            <div className="formCrearActividad">
-              <div className="campoActividad">
-                <label>Nombre</label>
-                <input type="text" placeholder="Nombre de la actividad" />
-              </div>
-
-              <div className="campoActividad">
-                <label>Descripción</label>
-                <textarea placeholder="Descripción..." />
-              </div>
-
-              <div className="campoActividad">
-                <label>Porcentaje</label>
-                <input type="number" step="0.01" placeholder="Ej: 4.5" />
-              </div>
-
-              <div className="filaActividad">
+            <form
+              className="formCrearActividad"
+              onSubmit={(e) => PostActividades(e)}
+            >
+              <div className="formCrearActividad">
                 <div className="campoActividad">
-                  <label>Fecha inicio</label>
-                  <input type="date" />
+                  <label>Nombre</label>
+                  <input
+                    type="text"
+                    placeholder="Nombre de la actividad"
+                    value={nombre}
+                    onChange={(e) => setNombre(e.target.value)}
+                  />
                 </div>
 
                 <div className="campoActividad">
-                  <label>Fecha fin</label>
-                  <input type="date" />
+                  <label>Descripción</label>
+                  <textarea
+                    placeholder="Descripción..."
+                    value={descripcion}
+                    onChange={(e) => setDescripcion(e.target.value)}
+                  />
+                </div>
+
+                <div className="campoActividad">
+                  <label>Porcentaje</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    placeholder="Ej: 4.5"
+                    value={porcentaje}
+                    onChange={(e) => setPorcentaje(e.target.value)}
+                  />
+                </div>
+
+                <div className="filaActividad">
+                  <div className="campoActividad">
+                    <label>Fecha inicio</label>
+                    <input
+                      type="date"
+                      value={fecha_inicio}
+                      onChange={(e) => setFecha_inicio(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="campoActividad">
+                    <label>Fecha fin</label>
+                    <input
+                      type="date"
+                      value={fecha_fin}
+                      onChange={(e) => setFecha_fin(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className="campoActividad">
+                  <label>Tipo actividad</label>
+                  <select
+                    value={tipoA}
+                    onChange={(e) => setTipoA(e.target.value)}
+                  >
+                    <option hidden>Seleccione...</option>
+                    <option value={1}>Examen</option>
+                    <option value={2}>Taller</option>
+                    <option value={3}>Tarea</option>
+                    <option value={4}>Proyecto</option>
+                    <option value={5}>Quiz</option>
+                    <option value={6}>Actividad en clase</option>
+                    <option value={7}>Práctica de laboratorio</option>
+                    <option value={8}>Foro</option>
+                    <option value={9}>Lectura guiada</option>
+                  </select>
+                </div>
+
+                <div className="campoActividad">
+                  <label>Periodo académico</label>
+                  <select
+                    value={periodo}
+                    onChange={(e) => setPeriodo(e.target.value)}
+                  >
+                    <option hidden>Seleccione...</option>
+                    <option value={1}>1 periodo</option>
+                    <option value={2}>2 periodo</option>
+                    <option value={3}>3 periodo</option>
+                    <option value={4}>4 periodo</option>
+                  </select>
+                </div>
+
+                <div className="campoActividad">
+                  <label>Materia / Profesor</label>
+                  <select
+                    value={materiaP}
+                    onChange={(e) => setMateriaP(e.target.value)}
+                  >
+                    <option hidden>Seleccione...</option>
+                    {MateriaProfesor.map((item, index) => (
+                      <option key={index} value={item.id_materia_profesores}>
+                        {item.materia_nombre} / {item.curso_nombre}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
-              <div className="campoActividad">
-                <label>Tipo actividad</label>
-                <select>
-                  <option>Seleccione...</option>
-                </select>
-              </div>
-
-              <div className="campoActividad">
-                <label>Periodo académico</label>
-                <select>
-                  <option hidden>Seleccione...</option>
-                </select>
-              </div>
-
-              <div className="campoActividad">
-                <label>Materia / Profesor</label>
-                <select
-                  value={materiaP}
-                  onChange={(e) => setMateriaP(e.target.value)}
-                >
-                  <option hidden>Seleccione...</option>
-                  {MaterProfesor.map((item, index) => (
-                    <option key={index} value={item.id_materia_profesores}>
-                      {item.materia_nombre} / {item.curso_nombre}
-                    </option>
-                  ))}
-                  <option>Seleccione...</option>
-                </select>
-              </div>
-
-              <button className="btnCrearActividad">Guardar actividad</button>
-            </div>
+              <button className="btnCrearActividad" type="submit">
+                Guardar actividad
+              </button>
+            </form>
           </div>
         );
 
       case "Calificar ✏️":
         return (
           <div className="calificarContenedorFull">
-            <h1 className="TituloCalificar">Calificar actividad</h1>
+            {CreaOeliminar ? (
+              <>
+                <h1 className="TituloCalificar">Calificar actividad</h1>
 
-            <div className="formCalificar">
-              <div className="campoCalificar">
-                <label>Documento del estudiante</label>
-                <input
-                  type="text"
-                  placeholder="Ingrese documento del estudiante"
-                />
-              </div>
+                <form className="formCalificar" onSubmit={(e) => NotasPatch(e)}>
+                  <div className="CrearOEditar">
+                    <div
+                      className={`divA ${CreaOeliminar ? "" : "activate"}`}
+                      onClick={() => {
+                        setCreaOeliminar(false);
+                        Notascambio();
+                      }}
+                    >
+                      <p>Crear</p>
+                    </div>
+                    <div
+                      className={`divA ${CreaOeliminar ? "activate" : ""}`}
+                      onClick={() => {
+                        setCreaOeliminar(true);
+                        Notascambio();
+                      }}
+                    >
+                      <p>Editar</p>
+                    </div>
+                  </div>
+                  <div className="campoCalificar">
+                    <div className="SeleccionarMaterias">
+                      <div>
+                        <label>Materia</label>
+                        <select
+                          value={materiaseleccionada}
+                          onChange={(e) =>
+                            setMateriaseleccionada(e.target.value)
+                          }
+                        >
+                          <option hidden>seleciona...</option>
+                          {MateriasAsignadaP.map((item, index) => (
+                            <option key={index} value={item.materia_nombre}>
+                              {item.materia_nombre}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
 
-              <div className="campoCalificar">
-                <label>Documento del profesor</label>
-                <input
-                  type="text"
-                  placeholder="Ingrese documento del profesor"
-                />
-              </div>
+                      <div>
+                        <label>Curso</label>
+                        <select
+                          value={cursoseleccionada}
+                          onChange={(e) => setCursoseleccionada(e.target.value)}
+                        >
+                          <option hidden>seleciona...</option>
+                          {filter.map((item, index) => (
+                            <option key={index} value={item.curso_nombre}>
+                              {item.curso_nombre}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                    <label>Documento del estudiante</label>
+                    <Select
+                      className="SelectA"
+                      classNamePrefix="selectA"
+                      isDisabled={!cursoseleccionada}
+                      value={
+                        filtroparaselect.find((e) => e.value === DocumentoE) ||
+                        null
+                      }
+                      options={filtroparaselect}
+                      onChange={(option) => setDocumentoE(option?.value || "")}
+                      placeholder="Seleccione un estudiante..."
+                      isClearable
+                    />
+                  </div>
+                  <div className="campoCalificar">
+                    <label>Seleccione actividad</label>
+                    <select
+                      value={CampoCalificar}
+                      onChange={(e) => setCampoCalificar(e.target.value)}
+                      disabled={!cursoseleccionada}
+                    >
+                      <option hidden>Seleccione...</option>
+                      {filtroActividad.map((item, index) => (
+                        <option key={index} value={item.id_actividades}>
+                          {item.nombre}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
-              <div className="campoCalificar">
-                <label>Seleccione actividad</label>
-                <select>
-                  <option>Seleccione...</option>
-                </select>
-              </div>
+                  <div className="campoCalificar">
+                    <label>Calificacion</label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      placeholder="Ej: 4.5"
+                      value={CalificarE}
+                      onChange={(e) => setCalificarE(e.target.value)}
+                      className="inputsA"
+                      disabled={!DocumentoE}
+                    />
+                  </div>
+                  <button className="btnCalificar" type="submit">
+                    Editar calificacion
+                  </button>
+                </form>
+              </>
+            ) : (
+              <>
+                <h1 className="TituloCalificar">Calificar actividad</h1>
 
-              <div className="campoCalificar">
-                <label>Calificación</label>
-                <input type="number" step="0.01" placeholder="Ej: 4.5" />
-              </div>
+                <form className="formCalificar" onSubmit={(e) => NotasPost(e)}>
+                  <div className={`CrearOEditar`}>
+                    <div
+                      className={`divA ${CreaOeliminar ? "" : "activate"}`}
+                      onClick={() => {
+                        setCreaOeliminar(false);
+                        Notascambio();
+                      }}
+                    >
+                      <p>Crear</p>
+                    </div>
+                    <div
+                      className={`divA ${CreaOeliminar ? "activate" : ""}`}
+                      onClick={() => {
+                        setCreaOeliminar(true);
+                        Notascambio();
+                      }}
+                    >
+                      <p>Editar</p>
+                    </div>
+                  </div>
+                  <div className="campoCalificar">
+                    <div className="SeleccionarMaterias">
+                      <div>
+                        <label>Materia</label>
+                        <select
+                          value={materiaseleccionada}
+                          onChange={(e) =>
+                            setMateriaseleccionada(e.target.value)
+                          }
+                        >
+                          <option hidden>seleciona...</option>
+                          {MateriasAsignadaP.map((item, index) => (
+                            <option key={index} value={item.materia_nombre}>
+                              {item.materia_nombre}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label>Curso</label>
+                        <select
+                          value={cursoseleccionada}
+                          onChange={(e) => setCursoseleccionada(e.target.value)}
+                        >
+                          <option hidden>seleciona...</option>
+                          {filter.map((item, index) => (
+                            <option key={index} value={item.curso_nombre}>
+                              {item.curso_nombre}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                    <label>Documento del estudiante</label>
+                    <Select
+                      className="SelectA"
+                      classNamePrefix="selectA"
+                      isDisabled={!cursoseleccionada}
+                      value={
+                        filtroparaselect.find((e) => e.value === DocumentoE) ||
+                        null
+                      }
+                      options={filtroparaselect}
+                      onChange={(option) => setDocumentoE(option?.value || "")}
+                      placeholder="Seleccione un estudiante..."
+                      isClearable
+                    />
+                  </div>
 
-              <button className="btnCalificar">Guardar calificación</button>
-            </div>
+                  <div className="campoCalificar">
+                    <label>Seleccione actividad</label>
+                    <select
+                      value={CampoCalificar}
+                      onChange={(e) => setCampoCalificar(e.target.value)}
+                      disabled={!cursoseleccionada}
+                    >
+                      <option hidden>Seleccione...</option>
+                      {filtroActividad.map((item, index) => (
+                        <option key={index} value={item.id_actividades}>
+                          {item.nombre}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="campoCalificar">
+                    <label>Calificación</label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      placeholder="Ej: 4,5"
+                      value={CalificarE}
+                      onChange={(e) => setCalificarE(e.target.value)}
+                      className="inputsA"
+                      disabled={!cursoseleccionada}
+                    />
+                  </div>
+
+                  <button className="btnCalificar" type="submit">
+                    Guardar calificación
+                  </button>
+                </form>
+              </>
+            )}
+            <Table
+              title="Notas Estudiantes"
+              description="Aqui se podran visualizar las notas de los estudiantes"
+              columns={[
+                {
+                  key: "documento",
+                  label: "DOCUMENTO",
+                },
+                { key: "nombre", label: "NOMBRE" },
+                { key: "actividad", label: "ACTIVIDAD" },
+                { key: "calificacion", label: "CALIFICACION" },
+              ]}
+              data={Notasget}
+              type_search="number"
+            />
           </div>
         );
     }

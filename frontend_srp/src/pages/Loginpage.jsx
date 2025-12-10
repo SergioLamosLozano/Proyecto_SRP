@@ -100,12 +100,18 @@ function LoginPage() {
               <a>¡Bienvenido!</a>
               <section>
                 <p>
-                  Pagina de administracion, institucion educativa Rafael Pombo
+                  Página de administración, institución educativa Rafael Pombo
                 </p>
               </section>
-              <h1>Redes</h1>
               <div className="Login-container-4">
-                <div className="whatsapp">
+                <div
+                  onClick={() =>
+                    window.open(
+                      "https://api.whatsapp.com/message/E3XV7S5IKPXJD1?autoload=1&app_absent=0"
+                    )
+                  }
+                  className="whatsapp"
+                >
                   <svg viewBox="0 0 24 24">
                     <path
                       fill="currentColor"
@@ -114,7 +120,14 @@ function LoginPage() {
                   </svg>
                   <h2>Whatsapp</h2>
                 </div>
-                <div className="instagram">
+                <div
+                  onClick={() =>
+                    window.open(
+                      "https://www.instagram.com/institutorafaelpombotulua/"
+                    )
+                  }
+                  className="instagram"
+                >
                   <svg viewBox="0 0 24 24">
                     <path
                       fill="currentColor"
@@ -123,7 +136,12 @@ function LoginPage() {
                   </svg>
                   <h2>Instagram</h2>
                 </div>
-                <div className="facebook">
+                <div
+                  className="facebook"
+                  onClick={() =>
+                    window.open("https://www.facebook.com/irafaelpombo")
+                  }
+                >
                   <svg viewBox="0 0 24 24">
                     <path
                       fill="currentColor"
@@ -132,7 +150,14 @@ function LoginPage() {
                   </svg>
                   <h2>Facebook</h2>
                 </div>
-                <div className="network">
+                <div
+                  className="network"
+                  onClick={() =>
+                    window.open(
+                      "https://contableyfinancier7.wixsite.com/rafaelpombotulua"
+                    )
+                  }
+                >
                   <svg viewBox="0 0 24 24">
                     <path
                       fill="currentColor"

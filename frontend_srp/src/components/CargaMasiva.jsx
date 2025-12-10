@@ -2,12 +2,16 @@ import React, { useState } from "react";
 import Swal from "sweetalert2";
 import { estudiantesAPI, profesoresAPI } from "../api/usuarios";
 import * as XLSX from "xlsx";
-import "../styles/GestionUsuarios.css";
+import "../styles/CargaMasiva.css";
 
-const CargaMasiva = ({ onBack }) => {
+const CargaMasiva = ({ CargarEstudiante }) => {
   const [tipo, setTipo] = useState("estudiantes");
   const [file, setFile] = useState(null);
-  const [preview, setPreview] = useState({ estudiantes: [], acudientes: [], profesores: [] });
+  const [preview, setPreview] = useState({
+    estudiantes: [],
+    acudientes: [],
+    profesores: [],
+  });
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -29,15 +33,33 @@ const CargaMasiva = ({ onBack }) => {
       const data = await f.arrayBuffer();
       const wb = XLSX.read(data, { type: "array" });
       if (tipo === "estudiantes") {
-        const wsEst = wb.Sheets[wb.SheetNames.find((n) => n.toLowerCase().includes("estudiante")) || wb.SheetNames[0]];
+        const wsEst =
+          wb.Sheets[
+            wb.SheetNames.find((n) => n.toLowerCase().includes("estudiante")) ||
+              wb.SheetNames[0]
+          ];
         const rowsEst = XLSX.utils.sheet_to_json(wsEst, { defval: "" });
-        const wsAcu = wb.Sheets[wb.SheetNames.find((n) => n.toLowerCase().includes("acudiente")) || ""];
-        const rowsAcu = wsAcu ? XLSX.utils.sheet_to_json(wsAcu, { defval: "" }) : [];
-        setPreview({ estudiantes: rowsEst.slice(0, 25), acudientes: rowsAcu.slice(0, 25), profesores: [] });
+        const wsAcu =
+          wb.Sheets[
+            wb.SheetNames.find((n) => n.toLowerCase().includes("acudiente")) ||
+              ""
+          ];
+        const rowsAcu = wsAcu
+          ? XLSX.utils.sheet_to_json(wsAcu, { defval: "" })
+          : [];
+        setPreview({
+          estudiantes: rowsEst.slice(0, 25),
+          acudientes: rowsAcu.slice(0, 25),
+          profesores: [],
+        });
       } else {
         const wsProf = wb.Sheets[wb.SheetNames[0]];
         const rowsProf = XLSX.utils.sheet_to_json(wsProf, { defval: "" });
-        setPreview({ estudiantes: [], acudientes: [], profesores: rowsProf.slice(0, 25) });
+        setPreview({
+          estudiantes: [],
+          acudientes: [],
+          profesores: rowsProf.slice(0, 25),
+        });
       }
     } catch (err) {
       console.error(err);
@@ -94,6 +116,7 @@ const CargaMasiva = ({ onBack }) => {
       const resp = await api.bulkUpload(file);
       setResult(resp.data);
       Swal.fire({ icon: "success", text: "Archivo procesado" });
+      CargarEstudiante();
     } catch (err) {
       console.error(err);
       const msg = err?.response?.data?.error || "Error procesando archivo";
@@ -134,54 +157,97 @@ const CargaMasiva = ({ onBack }) => {
             ))}
           </tbody>
         </table>
-        <p style={{ fontSize: 12, color: "#666", marginTop: 6 }}>Desplázate horizontalmente para ver todas las columnas.</p>
+        <p style={{ fontSize: 12, color: "#666", marginTop: 6 }}>
+          Desplázate horizontalmente para ver todas las columnas.
+        </p>
       </div>
     );
   };
 
   return (
-    <div className="gestion-usuarios-content">
-      <div className="gestion-usuarios-header">
-        <h2 className="gestion-usuarios-title">Carga Masiva</h2>
-        <p className="gestion-usuarios-subtitle">Sube tu plantilla de {tipo} para registrar datos masivos.</p>
+    <div className="cm-container">
+      <div className="cm-header">
+        <h2 className="cm-title">Carga Masiva</h2>
+        <p className="cm-subtitle">
+          Sube tu plantilla de {tipo} para registrar datos masivos.
+        </p>
       </div>
 
-      <div className="gestion-academica-filters carga-masiva-controls">
-        
-        <input className="upload-input" type="file" accept=".xlsx,.xls" onChange={handleFileChange} />
-        <button className="gestion-academica-button" onClick={uploadFile} disabled={loading}>{loading ? "Procesando..." : "Subir"}</button>
-        <button className="gestion-academica-button" onClick={downloadTemplate}>Descargar plantilla</button>
-        <button className="gestion-academica-back-button" onClick={onBack}>Volver</button>
+      <div className="cm-controls">
+        <input
+          className="cm-input"
+          type="file"
+          accept=".xlsx,.xls"
+          onChange={handleFileChange}
+        />
+        <button className="cm-btn" onClick={uploadFile} disabled={loading}>
+          {loading ? "Procesando..." : "Subir"}
+        </button>
+
+        <button className="cm-btn" onClick={downloadTemplate}>
+          Descargar plantilla
+        </button>
       </div>
 
       {tipo === "estudiantes" && (
         <>
-          {renderTable("Previsualización Estudiantes (primeros 25)", preview.estudiantes)}
-          {renderTable("Previsualización Acudientes (primeros 25)", preview.acudientes)}
+          {renderTable(
+            "Previsualización Estudiantes (primeros 25)",
+            preview.estudiantes
+          )}
+
+          {renderTable(
+            "Previsualización Acudientes (primeros 25)",
+            preview.acudientes
+          )}
         </>
       )}
-      {tipo === "profesores" && renderTable("Previsualización Profesores (primeros 25)", preview.profesores)}
+
+      {tipo === "profesores" &&
+        renderTable(
+          "Previsualización Profesores (primeros 25)",
+          preview.profesores
+        )}
 
       {result && (
-        <div className="preview-table-wrapper" style={{ marginTop: 16 }}>
+        <div className="cm-table-wrapper" style={{ marginTop: 16 }}>
           <h4>Resultado</h4>
+
           {tipo === "estudiantes" ? (
             <>
-              <p>Estudiantes: creados {result.created} | actualizados {result.updated}</p>
-              {Array.isArray(result.errors) && result.errors.length > 0 && renderTable("Errores estudiantes", result.errors)}
+              <p className="cm-result-text">
+                Estudiantes: creados {result.created} | actualizados{" "}
+                {result.updated}
+              </p>
+
+              {Array.isArray(result.errors) &&
+                result.errors.length > 0 &&
+                renderTable("Errores estudiantes", result.errors)}
+
               {result.acudientes && (
                 <>
-                  <p>
-                    Acudientes: creados {result.acudientes.created} | actualizados {result.acudientes.updated} | relaciones {result.acudientes.relaciones_creadas}
+                  <p className="cm-result-text">
+                    Acudientes: creados {result.acudientes.created} |
+                    actualizados {result.acudientes.updated} | relaciones{" "}
+                    {result.acudientes.relaciones_creadas}
                   </p>
-                  {Array.isArray(result.acudientes.errors) && result.acudientes.errors.length > 0 && renderTable("Errores acudientes", result.acudientes.errors)}
+
+                  {Array.isArray(result.acudientes.errors) &&
+                    result.acudientes.errors.length > 0 &&
+                    renderTable("Errores acudientes", result.acudientes.errors)}
                 </>
               )}
             </>
           ) : (
             <>
-              <p>Profesores: creados {result.created} | actualizados {result.updated}</p>
-              {Array.isArray(result.errors) && result.errors.length > 0 && renderTable("Errores", result.errors)}
+              <p className="cm-result-text">
+                Profesores: creados {result.created} | actualizados{" "}
+                {result.updated}
+              </p>
+
+              {Array.isArray(result.errors) &&
+                result.errors.length > 0 &&
+                renderTable("Errores", result.errors)}
             </>
           )}
         </div>
