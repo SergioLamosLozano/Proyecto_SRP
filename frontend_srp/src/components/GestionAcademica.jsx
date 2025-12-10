@@ -11,7 +11,6 @@ import {
   EditarEstudiantesCursos,
   EditarMateria,
   EditarMateriaAsignada,
-  EliminarCurso,
   EliminarEstudiantes_cursos,
   EliminarMateria,
   EliminarMateriaAsignada,
@@ -53,6 +52,7 @@ const GestionAcademica = ({ onBack }) => {
   const [usuario_creacion, setUsuario_creacion] = useState("");
   // id usuario creacion
   const [usuarioid, setUsuarioid] = useState(0);
+  const [cursosFiltrados, setCursosFiltrados] = useState(true);
   // Estudiante cursos
   const [estudianteCursos, setEstudianteCursos] = useState([]);
   const [estudiantesExistentes, setEstudiantesExistentes] = useState([]);
@@ -217,6 +217,8 @@ const GestionAcademica = ({ onBack }) => {
 
   // Datos de ejemplo basados en la estructura de la BD
   const [cursos, setCursos] = useState([]);
+  
+  const filtro = cursos.filter((item) => item.estado === "Activo");
 
   const fetchCursos = async () => {
     try {
@@ -273,6 +275,8 @@ const GestionAcademica = ({ onBack }) => {
   }, []);
 
   const [materias, setMaterias] = useState([]);
+  const [materiasFiltrados, setMateriasFiltrados] = useState(true);
+  const filtroMaterias = materias.filter((item) => item.estado === "Activo");
 
   const [materiaProfesores, setMateriaProfesores] = useState([]);
 
@@ -308,7 +312,9 @@ const GestionAcademica = ({ onBack }) => {
 
       if (result.isConfirmed) {
         try {
-          const respons = await EliminarCurso(item.id_curso);
+          const respons = await EditarCurso(item.id_curso, {
+            estado: "Inactivo",
+          });
           Swal.fire({
             icon: "success",
             text: "Curso eliminado con éxito",
@@ -507,7 +513,9 @@ const GestionAcademica = ({ onBack }) => {
 
       if (result.isConfirmed) {
         try {
-          const respons = await EliminarMateria(item.id_materia);
+          const respons = await EditarMateria(item.id_materia, {
+            estado: "Inactivo",
+          });
           Swal.fire({
             icon: "success",
             text: "Materia eliminada con éxito",
@@ -768,8 +776,15 @@ const GestionAcademica = ({ onBack }) => {
 
             <Table
               id="Cursos"
-              data={cursos}
+              data={cursosFiltrados ? filtro : cursos}
               busqueda={["fecha_inicio", "fecha_fin", "nombre"]}
+              check={[
+                {
+                  title: "Filtro solo activos",
+                  check: cursosFiltrados,
+                  onChange: (e) => setCursosFiltrados(e.target.checked),
+                },
+              ]}
               columns={[
                 { key: "id_curso", label: "ID", sortable: true },
                 {
@@ -798,7 +813,7 @@ const GestionAcademica = ({ onBack }) => {
                   onClick: (item) => AbrirModalConDatos(item),
                 },
                 {
-                  label: "Eliminar 🗑️",
+                  label: "Inactivar 🗑️",
                   onClick: (item) => Eliminarcurso(item),
                 },
               ]}
@@ -886,8 +901,15 @@ const GestionAcademica = ({ onBack }) => {
 
             <Table
               id="Materias"
-              data={materias}
+              data={materiasFiltrados ? filtroMaterias : materias}
               busqueda={["nombre_area_conocimiento", "nombre", "estado"]}
+              check={[
+                {
+                  title: "Filtro solo activos",
+                  check: materiasFiltrados,
+                  onChange: (e) => setMateriasFiltrados(e.target.checked),
+                },
+              ]}
               columns={[
                 { key: "id_materia", label: "ID", sortable: true },
                 {
@@ -915,7 +937,7 @@ const GestionAcademica = ({ onBack }) => {
                   onClick: (item) => AbrirModalConDatosMateria(item),
                 },
                 {
-                  label: "Eliminar 🗑️",
+                  label: "Inactivar 🗑️",
                   icon: "🗑️",
                   variant: "delete",
                   onClick: (item) => Eliminarmateria(item),
@@ -1106,7 +1128,7 @@ const GestionAcademica = ({ onBack }) => {
                     onClick: (item) => AbrirModalConDatosMateriaAsignada(item),
                   },
                   {
-                    label: "Eliminar 🗑️",
+                    label: "Inactivar 🗑️",
                     icon: "🗑️",
                     variant: "delete",
                     onClick: (item) => EliminarMateriaA(item),
@@ -1161,7 +1183,7 @@ const GestionAcademica = ({ onBack }) => {
                     onClick: (item) => AbrirModalConDatosEstudianteCurso(item),
                   },
                   {
-                    label: "Eliminar 🗑️",
+                    label: "Inactivar🗑️",
                     icon: "🗑️",
                     variant: "delete",
                     onClick: (item) => EliminarEstudianteCurso(item),

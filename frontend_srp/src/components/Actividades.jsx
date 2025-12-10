@@ -113,6 +113,9 @@ function Actividades({ onBack }) {
             timer: 2000,
             showConfirmButton: false,
           });
+          const token = sessionStorage.getItem("token");
+        const decoded = jwtDecode(token);
+        CargarActividades2(decoded.username);
           Notascambio();
         } catch (err) {
           Swal.fire({
@@ -172,6 +175,9 @@ function Actividades({ onBack }) {
               timer: 2000,
               showConfirmButton: false,
             });
+            const token = sessionStorage.getItem("token");
+            const decoded = jwtDecode(token);
+            CargarActividades2(decoded.username);
             Notascambio();
           } else {
             Swal.fire({
@@ -335,7 +341,7 @@ function Actividades({ onBack }) {
   };
   const Sections = [
     {
-      nombre: "actividades anteriores 🗒️",
+      nombre: "Actividades anteriores 🗒️",
       descripcion:
         "En este apartado se podran ver las actividades anteriormente asignadas",
     },
@@ -442,7 +448,7 @@ function Actividades({ onBack }) {
   };
   const render = () => {
     switch (currentSubSection) {
-      case "actividades anteriores 🗒️":
+      case "Actividades anteriores 🗒️":
         return (
           <div className="ActividadesContenedor2">
             <h1 className="TituloActividades">Actividades anteriores</h1>
