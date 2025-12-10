@@ -300,13 +300,13 @@ const GestionAcademica = ({ onBack }) => {
   const Eliminarcurso = async (item) => {
     if (item.id_curso) {
       const result = await Swal.fire({
-        title: "¿Eliminar curso?",
-        text: "Esta acción eliminará el curso permanentemente.",
+        title: "¿Inactivar curso?",
+        text: "Esta acción cambiará el estado del curso a inactivo.",
         icon: "warning",
         showCancelButton: true,
         confirmButtonColor: "#c41e3a",
         cancelButtonColor: "#c41e3a",
-        confirmButtonText: "Sí, eliminar",
+        confirmButtonText: "Sí, inactivar",
         cancelButtonText: "No, cancelar",
       });
 
@@ -317,7 +317,7 @@ const GestionAcademica = ({ onBack }) => {
           });
           Swal.fire({
             icon: "success",
-            text: "Curso eliminado con éxito",
+            text: "Curso inactivado con éxito",
             timer: 3000,
           }).then(() => {
             fetchCursos();
@@ -501,13 +501,13 @@ const GestionAcademica = ({ onBack }) => {
   const Eliminarmateria = async (item) => {
     if (item.id_materia) {
       const result = await Swal.fire({
-        title: "¿Eliminar curso?",
-        text: "Esta acción eliminará el curso permanentemente.",
+        title: "¿Inactivar materia?",
+        text: "Esta acción cambiará el estado de la materia a inactivo.",
         icon: "warning",
         showCancelButton: true,
         confirmButtonColor: "#c41e3a",
         cancelButtonColor: "#c41e3a",
-        confirmButtonText: "Sí, eliminar",
+        confirmButtonText: "Sí, inactivar",
         cancelButtonText: "No, cancelar",
       });
 
@@ -518,7 +518,7 @@ const GestionAcademica = ({ onBack }) => {
           });
           Swal.fire({
             icon: "success",
-            text: "Materia eliminada con éxito",
+            text: "Materia inactivada con éxito",
             timer: 3000,
           }).then(() => {
             fetchMaterias();
@@ -678,8 +678,8 @@ const GestionAcademica = ({ onBack }) => {
   const EliminarEstudianteCurso = async (item) => {
     if (item.id_estudiantes_cursos) {
       const result = await Swal.fire({
-        title: "¿Eliminar curso?",
-        text: "Esta acción eliminará el curso permanentemente.",
+        title: "¿Eliminar asignación?",
+        text: "Esta acción eliminará la asignación de estudiante y curso permanentemente.",
         icon: "warning",
         showCancelButton: true,
         confirmButtonColor: "#c41e3a",
@@ -1128,7 +1128,7 @@ const GestionAcademica = ({ onBack }) => {
                     onClick: (item) => AbrirModalConDatosMateriaAsignada(item),
                   },
                   {
-                    label: "Inactivar 🗑️",
+                    label: "Eliminar  🗑️",
                     icon: "🗑️",
                     variant: "delete",
                     onClick: (item) => EliminarMateriaA(item),
@@ -1183,7 +1183,7 @@ const GestionAcademica = ({ onBack }) => {
                     onClick: (item) => AbrirModalConDatosEstudianteCurso(item),
                   },
                   {
-                    label: "Inactivar🗑️",
+                    label: "Eliminar🗑️",
                     icon: "🗑️",
                     variant: "delete",
                     onClick: (item) => EliminarEstudianteCurso(item),
