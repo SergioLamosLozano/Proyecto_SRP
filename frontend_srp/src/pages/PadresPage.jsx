@@ -27,7 +27,7 @@ function PadresPage() {
   const [notas, setNotas] = useState([]);
   const [loadingNotas, setLoadingNotas] = useState(false);
   const [actividadesPorMateria, setActividadesPorMateria] = useState({});
-  const [actividadSelPorMateria, setActividadSelPorMateria] = useState({});
+  const [materiaSeleccionada, setMateriaSeleccionada] = useState(null);
 
   useEffect(() => {
     const cargarEstudiantesVinculados = async () => {
@@ -126,15 +126,11 @@ function PadresPage() {
         porMateria[mat].totalPorc += porc;
       }
       setActividadesPorMateria(porMateriaActs);
-      setActividadSelPorMateria((prev) => {
-        const next = { ...prev };
-        Object.keys(porMateriaActs).forEach((m) => {
-          if (!next[m] && porMateriaActs[m].length) {
-            next[m] = porMateriaActs[m][0].id;
-          }
-        });
-        return next;
-      });
+      // Set first subject as selected by default
+      const materias = Object.keys(porMateriaActs);
+      if (materias.length > 0) {
+        setMateriaSeleccionada(materias[0]);
+      }
       const resumen = Object.entries(porMateria).map(([materia, v]) => ({
         materia,
         definitiva: Number(v.suma.toFixed(2)),
@@ -265,14 +261,7 @@ function PadresPage() {
                   Estudiante: {estudianteSeleccionado?.nombre_completo} (
                   {estudianteSeleccionado?.numero_documento_estudiante})
                 </p>
-                <div
-                  style={{
-                    display: "flex",
-                    gap: 12,
-                    alignItems: "center",
-                    margin: "12px 0",
-                  }}
-                >
+                <div className="periodo-selector-container">
                   <select
                     className="gestion-academica-select"
                     value={periodoSel || ""}
@@ -324,7 +313,7 @@ function PadresPage() {
                   </div>
                 )}
                 <button
-                  className="btn-secondary"
+                  className="btn-volver"
                   onClick={() => setVista("inicio")}
                 >
                   Volver
@@ -341,14 +330,7 @@ function PadresPage() {
                   Estudiante: {estudianteSeleccionado?.nombre_completo} (
                   {estudianteSeleccionado?.numero_documento_estudiante})
                 </p>
-                <div
-                  style={{
-                    display: "flex",
-                    gap: 12,
-                    alignItems: "center",
-                    margin: "12px 0",
-                  }}
-                >
+                <div className="periodo-selector-container">
                   <select
                     className="gestion-academica-select"
                     value={periodoSel || ""}
@@ -379,65 +361,59 @@ function PadresPage() {
                 </div>
                 {loadingNotas ? (
                   <p>Cargando...</p>
+                ) : Object.keys(actividadesPorMateria).length === 0 ? (
+                  <p>No hay actividades registradas para este periodo.</p>
                 ) : (
-                  <div
-                    className="preview-table-wrapper"
-                    style={{ overflowX: "auto" }}
-                  >
-                    <table className="preview-table">
-                      <thead>
-                        <tr>
-                          <th>Materia</th>
-                          <th>Actividad</th>
-                          <th>Porcentaje</th>
-                          <th>Calificación</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {Object.keys(actividadesPorMateria).map((materia) => {
-                          const acts = actividadesPorMateria[materia] || [];
-                          const selId =
-                            actividadSelPorMateria[materia] || acts[0]?.id;
-                          const seleccionada =
-                            acts.find((a) => String(a.id) === String(selId)) ||
-                            acts[0];
-                          return (
-                            <tr key={materia}>
-                              <td>{materia}</td>
-                              <td>
-                                <select
-                                  className="gestion-academica-select"
-                                  value={selId || ""}
-                                  onChange={(e) => {
-                                    const v = e.target.value;
-                                    setActividadSelPorMateria((prev) => ({
-                                      ...prev,
-                                      [materia]: v,
-                                    }));
-                                  }}
-                                >
-                                  {acts.map((a) => (
-                                    <option key={a.id} value={a.id}>
-                                      {a.nombre}
-                                    </option>
-                                  ))}
-                                </select>
-                              </td>
-                              <td>
-                                {seleccionada ? seleccionada.porcentaje : ""}
-                              </td>
-                              <td>
-                                {seleccionada ? seleccionada.calificacion : ""}
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
+                  <div className="notas-panel-container">
+                    {/* Lista de materias */}
+                    <div className="materias-list">
+                      {Object.keys(actividadesPorMateria).map((materia) => (
+                        <button
+                          key={materia}
+                          className={
+                            materiaSeleccionada === materia
+                              ? "materia-btn active"
+                              : "materia-btn"
+                          }
+                          onClick={() => setMateriaSeleccionada(materia)}
+                        >
+                          {materia}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Actividades de la materia seleccionada */}
+                    {materiaSeleccionada && (
+                      <div className="actividades-detail">
+                        <h4>{materiaSeleccionada}</h4>
+                        <div className="preview-table-wrapper">
+                          <table className="preview-table">
+                            <thead>
+                              <tr>
+                                <th>Actividad</th>
+                                <th>Porcentaje</th>
+                                <th>Calificación</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {actividadesPorMateria[materiaSeleccionada].map(
+                                (actividad) => (
+                                  <tr key={actividad.id}>
+                                    <td>{actividad.nombre}</td>
+                                    <td>{actividad.porcentaje}%</td>
+                                    <td>{actividad.calificacion}</td>
+                                  </tr>
+                                )
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
                 <button
-                  className="btn-secondary"
+                  className="btn-volver btn-with-top-spacing"
                   onClick={() => setVista("inicio")}
                 >
                   Volver
