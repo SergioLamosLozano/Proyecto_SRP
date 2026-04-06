@@ -177,3 +177,18 @@ SIMPLE_JWT = {
     'SIGNING_KEY': SECRET_KEY,
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
+# ---------------------------------------------------------------------------
+# Configuracion de Email (Console Backend para desarrollo/testing)
+# Para produccion: cambiar EMAIL_BACKEND a smtp y configurar variables en .env
+# ---------------------------------------------------------------------------
+EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
+EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@rafaelpombo.edu.co')
+
+# Parametros del flujo de recuperacion de contrasena
+RECUPERACION_CODIGO_EXPIRACION_MIN = 15
+RECUPERACION_MAX_SOLICITUDES_HORA = 3
