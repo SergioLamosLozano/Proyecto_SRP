@@ -40,7 +40,7 @@ const Calificaciones = ({ onBack }) => {
     if (item) {
       try {
         const respons = await Estudiantes_notas(
-          item.numero_documento_estudiante
+          item.numero_documento_estudiante,
         );
         const ListaC = respons.data.map((nota) => ({
           documento: nota.estudiante.numero_documento_estudiante,
@@ -125,7 +125,7 @@ const Calificaciones = ({ onBack }) => {
       setGrado(true);
       const filtro = await Estudiantes_cursosBucar(item);
       const filtro2 = filtro.data.filter(
-        (curs) => curs.estado_curso == "Activo"
+        (curs) => curs.estado_curso == "Activo",
       );
       setEstudianteN(filtro2);
     } catch (err) {

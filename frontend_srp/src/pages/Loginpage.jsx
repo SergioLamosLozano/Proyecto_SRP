@@ -12,7 +12,7 @@ function LoginPage() {
   const RP = () =>
     window.open(
       "https://contableyfinancier7.wixsite.com/rafaelpombotulua",
-      "_blank"
+      "_blank",
     );
   const [form, setForm] = useState({ username: "", password: "" });
   const [error, setError] = useState(null);
@@ -107,7 +107,7 @@ function LoginPage() {
                 <div
                   onClick={() =>
                     window.open(
-                      "https://api.whatsapp.com/message/E3XV7S5IKPXJD1?autoload=1&app_absent=0"
+                      "https://api.whatsapp.com/message/E3XV7S5IKPXJD1?autoload=1&app_absent=0",
                     )
                   }
                   className="whatsapp"
@@ -123,7 +123,7 @@ function LoginPage() {
                 <div
                   onClick={() =>
                     window.open(
-                      "https://www.instagram.com/institutorafaelpombotulua/"
+                      "https://www.instagram.com/institutorafaelpombotulua/",
                     )
                   }
                   className="instagram"
@@ -154,7 +154,7 @@ function LoginPage() {
                   className="network"
                   onClick={() =>
                     window.open(
-                      "https://contableyfinancier7.wixsite.com/rafaelpombotulua"
+                      "https://contableyfinancier7.wixsite.com/rafaelpombotulua",
                     )
                   }
                 >

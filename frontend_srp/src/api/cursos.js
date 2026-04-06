@@ -19,7 +19,7 @@ api.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 export const Cursos = () => {
@@ -184,7 +184,7 @@ export const Estudiantes_notas = (id) => {
 
 export const Estudiantes_notas_por_periodo = (id, periodoId) => {
   return api.get(
-    `/notas/?fk_numero_documento_estudiante=${id}&fk_id_actividad__fk_id_periodo_academico=${periodoId}`
+    `/notas/?fk_numero_documento_estudiante=${id}&fk_id_actividad__fk_id_periodo_academico=${periodoId}`,
   );
 };
 
@@ -234,7 +234,9 @@ export const ActividadesDelete = (id) => {
 };
 
 export const BuscarMateriasAsignadas = (id) => {
-  return api.get(`/materias_asignadas/?fk_numero_documento_profesor=${id}`);
+  return api.get(`/obtener_materias/?numero_cedula=${id}`).catch(() => {
+    alert("error al obtener las materias");
+  });
 };
 
 export const BuscarCoincidenciaNotas = (id) => {
@@ -247,4 +249,10 @@ export const NotasGet = () => {
 
 export const BuscarNotas = (id) => {
   return api.get(`/notas/?fk_numero_documento_estudiante=${id}`);
+};
+
+export const Estudiante_curso = (grado) => {
+  return api.get(`estudiantes_cursos/?curso=${grado}`).catch((err) => {
+    alert(err);
+  });
 };

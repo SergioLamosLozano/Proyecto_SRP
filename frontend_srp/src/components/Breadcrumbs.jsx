@@ -6,7 +6,7 @@ import "../styles/Coordinacion.css";
 import "../styles/Breadcrumbs.css";
 import Coordinacion from "../pages/CoordinacionPage";
 
-const Breadcrumbs = ({ items = [], onNavigate }) => {
+const Breadcrumbs = ({ items = [], onNavigate, sets }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [rol, setRol] = useState(null);
@@ -61,7 +61,9 @@ const Breadcrumbs = ({ items = [], onNavigate }) => {
                 <span className="current-page">{item.label}</span>
               ) : (
                 <button
-                  onClick={() => handleNavigation(item.path)}
+                  onClick={() =>
+                    item.path ? handleNavigation(item.path) : sets(0)
+                  }
                   className="breadcrumb-button"
                 >
                   {item.label}

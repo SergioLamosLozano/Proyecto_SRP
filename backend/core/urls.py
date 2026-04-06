@@ -27,7 +27,6 @@ router.register(r'acudientes', AcudienteViewSet, basename='Acudientes')
 router.register(r'notas', EstudianteNotasViewSet, basename='Notas')
 router.register(r'match-acudientes', AcudienteUserMatchViewSet, basename='match-acudientes')
 router.register(r'estudiantes-acudientes', EstudianteAcudienteViewSet, basename='Estudiante_Acudiente')
-router.register(r'materias_asignadas', MateriasAsignadasViewSet, basename='Materias_Asignadas')
 router.register(r'estudiantes_cursos', EstudiantesCursosViewSet, basename='Estudiantes_Cursos')
 
 urlpatterns = [
@@ -38,6 +37,8 @@ urlpatterns = [
     path('profesores/template/', ProfesoresTemplateView.as_view(), name='plantilla_profesores'),
     path('estudiantes/bulk-upload/', EstudiantesBulkUploadView.as_view(), name='bulk_estudiantes'),
     path('profesores/bulk-upload/', ProfesoresBulkUploadView.as_view(), name='bulk_profesores'),
+    path('obtener_materias/', ObtenerMaterias.as_view(), name='obtener_materias'),
+    path('estudiantes_cursos/', TraerEstudiantesPorGrado.as_view(), name='estudiantes_cursos')
 ]
 
 urlpatterns += router.urls

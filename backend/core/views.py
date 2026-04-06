@@ -870,3 +870,41 @@ class RegisterView(generics.CreateAPIView):
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
+
+
+class ObtenerMaterias(APIView):
+    def get(self, request):
+        cedula = request.query_params.get("numero_cedula")
+
+        if not cedula:
+            return Response({'error': 'se necesita la cedula'}, status=400)
+        
+        profesor_exist = Profesores.objects.filter(numero_documento_profesor = cedula).exists()
+
+        if not profesor_exist:
+            return Response({'error': 'el profesor no existe'}, status=400)
+        
+        user = MateriasAsignadas.objects.filter(fk_numero_documento_profesor = cedula).all()
+
+        if not user.exists():
+            return Response({'inf': 'el profesor no teien materias'}, status=200)
+        
+        serializer = MateriasAsignadasSerializer(user, many=True)
+        
+        return Response(serializer.data, status=200)
+
+class TraerEstudiantesPorGrado(APIView):
+    def get(self, request):
+        curso = request.query_params.get("curso")
+
+        if not curso:
+            return Response({'error': 'es necesario el curso para buscar'}, status=400)
+        
+        user = Estudiantes_cursos.objects.filter(id_curso__nombre = curso, numero_documento_estudiante__fk_tipo_estado = 1)
+
+        if not user.exists():
+            return Response(None, status=200)
+        
+        serializer = EstudiantesCursosSerializer(user, many=True)
+
+        return Response(serializer.data, status=200)

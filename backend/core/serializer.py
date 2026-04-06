@@ -161,26 +161,22 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         return token
 
 class MateriasAsignadasSerializer(serializers.ModelSerializer):
-    profesor_nombre = serializers.SerializerMethodField()
-    materia_nombre = serializers.CharField(source='fk_id_materia.nombre', read_only=True)
-    curso_nombre = serializers.CharField(source='fk_id_curso.nombre', read_only=True)
-    año_electivo_valor = serializers.CharField(source='fk_id_año_electivo.id_año_electivo', read_only=True)
-    usuario_creacion_nombre = serializers.CharField(source='fk_usuario_creacion.username', read_only=True)
 
-    def get_profesor_nombre(self, obj):
-        prof = obj.fk_numero_documento_profesor
-        return f"{prof.nombre1 or ''} {prof.nombre2 or ''}".strip()
+    profe_nombre = serializers.SerializerMethodField()
+    materia = serializers.CharField(source='fk_id_materia.nombre', read_only=True)
+    curso = serializers.CharField(source='fk_id_curso.nombre', read_only=True)
 
     class Meta:
         model = MateriasAsignadas
         fields = '__all__'
-        read_only_fields = [
-            'profesor_nombre',
-            'materia_nombre',
-            'curso_nombre',
-            'año_electivo_valor',
-            'usuario_creacion_nombre'
-        ]
+    
+    def get_profe_nombre(self, obj):
+        profesor = obj.fk_numero_documento_profesor
+
+        nombre_completo = f'{profesor.nombre1} {profesor.nombre2} {profesor.apellido1} {profesor.apellido2}'
+
+        return nombre_completo.strip()
+    
 
 class ActividadesSerializer(serializers.ModelSerializer):
     MateriaProfesores = MateriasAsignadasSerializer(read_only=True, source='fk_id_materia_profesores')
@@ -194,24 +190,24 @@ class ActividadesSerializer(serializers.ModelSerializer):
 
 
 class EstudiantesCursosSerializer(serializers.ModelSerializer):
-    nombre_estudiante = serializers.SerializerMethodField()
-    curso_nombre = serializers.CharField(source='id_curso.nombre', read_only=True)
-    año_electivo = serializers.CharField(source='id_curso.fk_id_año_electivo.id_año_electivo', read_only=True)
-    estado_curso = serializers.CharField(source='id_curso.estado', read_only=True)
+    estudiante = serializers.SerializerMethodField()
 
     class Meta:
         model = Estudiantes_cursos
         fields = '__all__'
-        read_only_fields = [
-            'nombre_estudiante',
-            'curso_nombre',
-            'año_electivo',
-            'estado_curso'
-        ]
-
-    def get_nombre_estudiante(self, obj):
+    
+    def get_estudiante(self, obj):
         est = obj.numero_documento_estudiante
-        return f"{est.nombre1} {est.nombre2 or ''} {est.apellido1} {est.apellido2 or ''}".strip()
+
+        estudiante = {
+            "numero_documento": est.numero_documento_estudiante,
+            "nombre": f"{est.nombre1} {est.nombre2 or ""} {est.apellido1} {est.apellido2 or ""}",
+            "correo": est.correo,
+            "telefono": est.telefono,
+            "estado": est.fk_tipo_estado.descripcion
+        }
+
+        return estudiante
 
 class EstudiantesSerializer(serializers.ModelSerializer):
     nombre_completo = serializers.SerializerMethodField()

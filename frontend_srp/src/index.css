@@ -13,6 +13,7 @@ html {
 body {
   margin: 0;
   padding: 0;
+  overflow-x: hidden;
   min-height: 100vh;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
     "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
@@ -29,4 +30,19 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+}
+
+:root {
+  --rojo-institucional: #c41e3a;
+  --rojo-hover: #a01729;
+  --gris-principal: #2c3e50;
+  --gris-secundario: #7f8c8d;
+  --gris-claro-fondo: #f8f9fa;
+  --blanco: #ffffff;
+  --blanco-puro: #ffffff;
+  --borde-color: #dee2e6;
+  --verde-exito: #28a745;
+  --amarillo-advertencia: #ffc107;
+  --azul-info: #17a2b8;
+  --rojo-error: #dc3545;
 }
