@@ -1,0 +1,235 @@
+.modificar-nota-contenedor {
+  width: 100%;
+  height: auto;
+  padding-bottom: 30px;
+  background-color: white;
+  box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.26);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.modificar-nota-contenedor-titulo {
+  width: 100%;
+  padding: 20px;
+  box-sizing: border-box;
+  justify-content: center;
+  align-items: center;
+  gap: 3px;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--rojo-institucional);
+}
+
+.modificar-nota-contenedor-titulo h1 {
+  font-size: 28px;
+  color: white;
+}
+
+.modificar-nota-contenedor-titulo p {
+  color: rgba(255, 255, 255, 0.677);
+  font-size: 13px;
+}
+
+.modificar-nota-campos-requeridos {
+  width: 60%;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.modificar-nota-descripciones {
+  width: 40%;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  background-color: white;
+  border: 2px solid rgb(195, 195, 195);
+  border-radius: 10px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.208);
+}
+
+.modificar-nota-contenedor-campos-requeridos {
+  width: 100%;
+  display: flex;
+  padding: 20px;
+}
+
+.modificar-nota-campos-requeridos-sections {
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.modificar-nota-campos-requeridos-sections label {
+  font-weight: bold;
+}
+
+.modificar-nota-campos-requeridos-sections input {
+  width: 90%;
+  padding: 5px;
+  border-radius: 5px;
+  transition: all 0.2s ease;
+  border: 1px solid rgb(95, 95, 95);
+}
+
+.modificar-nota-campos-requeridos-sections input:focus {
+  box-shadow: 0px 0px 10px var(--rojo-institucional);
+  outline: none;
+}
+
+.modificar-nota-campos-requeridos-sections input:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.modificar-nota-campos-requeridos-sections select:disabled {
+  cursor: not-allowed;
+}
+
+.modificar-nota-campos-requeridos-sections textarea:disabled {
+  cursor: not-allowed;
+}
+
+.modificar-nota-campos-requeridos-sections select {
+  padding: 5px;
+  border-radius: 5px;
+  transition: all 0.2s ease;
+}
+
+.modificar-nota-campos-requeridos-sections select:focus {
+  box-shadow: 0px 0px 10px var(--rojo-institucional);
+  outline: none;
+}
+
+.modificar-nota-campos-requeridos-sections textarea {
+  width: 100%;
+  resize: none;
+  height: 80px;
+  border-radius: 5px;
+  transition: all 0.2s ease;
+}
+
+.modificar-nota-campos-requeridos-sections textarea:focus {
+  box-shadow: 0px 0px 10px var(--rojo-institucional);
+  outline: none;
+}
+
+.modificar-nota-campos-requeridos-informacion {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+  box-sizing: border-box;
+  text-align: center;
+  margin-bottom: 20px;
+  gap: 10px;
+  border-bottom: 2px solid rgb(184, 184, 184);
+}
+
+.modificar-nota-campos-requeridos-sections-lupa {
+  position: absolute;
+  top: 27%;
+  left: 92%;
+  width: 60px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: auto;
+  border-radius: 10px;
+  padding: 8px;
+  background-color: var(--rojo-institucional);
+}
+
+.modificar-nota-campos-requeridos-sections-lupa svg {
+  width: 30px;
+  height: 30px;
+  fill: white;
+}
+
+.modificar-nota-campos-requeridos-sections-lupa.disabled {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.modificar-nota-descripciones-contenedor-1 {
+  margin-top: 20px;
+  width: 100%;
+  height: 50%;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.modificar-nota-descripciones-contenedor-1 span {
+  font-weight: bold;
+  font-size: 18px;
+  color: var(--rojo-institucional);
+}
+
+.modificar-nota-descripciones-contenedor-1 span {
+  font-weight: bold;
+  font-size: 18px;
+  color: var(--rojo-institucional);
+}
+
+.modificar-nota-descripciones-contenedor-1 label {
+  font-weight: 400;
+  font-size: 16px;
+  color: black;
+}
+
+.modificar-nota-descripciones-titulo-estudiantes {
+  font-size: 25px;
+  text-decoration: underline;
+}
+
+.modificar-nota-descripciones-contenedor-1-sin-estudiantes {
+  width: 100%;
+  padding: 20px;
+  margin-top: 20px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modificar-nota-descripciones-contenedor-1-sin-estudiantes h1 {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.modificar-nota-descripciones-contenedor-2 {
+  width: 100%;
+  margin-top: 60px;
+}
+
+.modificar-nota-contenedor-campos-requeridos-boton {
+  width: 100%;
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.modificar-nota-contenedor-campos-requeridos-boton button {
+  width: 100%;
+  background-color: var(--rojo-institucional);
+  padding: 10px;
+  color: white;
+  font-weight: bold;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.modificar-nota-contenedor-campos-requeridos-boton button:hover {
+  transform: translateY(-5px);
+}

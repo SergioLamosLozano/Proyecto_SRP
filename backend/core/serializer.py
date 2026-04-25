@@ -179,22 +179,38 @@ class MateriasAsignadasSerializer(serializers.ModelSerializer):
     
 
 class ActividadesSerializer(serializers.ModelSerializer):
-    MateriaProfesores = MateriasAsignadasSerializer(read_only=True, source='fk_id_materia_profesores')
     Tipo_Actividad = serializers.CharField(read_only=True, source='fk_id_tipo_actividad.descripcion')
+    curso = serializers.CharField(read_only=True, source='fk_id_ra.fk_id_materia_profesores.fk_id_curso.nombre')
+    materia = serializers.CharField(read_only=True, source='fk_id_ra.fk_id_materia_profesores.fk_id_materia.nombre')
+    id_curso = serializers.CharField(read_only=True, source='fk_id_ra.fk_id_materia_profesores.fk_id_curso')
+
+    def validate_porcentaje(self, value):
+        if value < 1 or value > 100:
+            raise serializers.ValidationError("el porcentaje debe estar entre 1 y 100")
+        return value
+
     class Meta:
         model = Actividades
         fields = '__all__'
         read_only_fields = [
-            'Tipo_Actividad'
+            'Tipo_Actividad',
+            'curso',
+            'materia',
+            'id_curso'
         ]
+
 
 
 class EstudiantesCursosSerializer(serializers.ModelSerializer):
     estudiante = serializers.SerializerMethodField()
+    nombre_curso = serializers.CharField(read_only=True, source="id_curso.nombre")
 
     class Meta:
         model = Estudiantes_cursos
         fields = '__all__'
+        read_only_fields = [
+            "nombre_curso"
+        ]
     
     def get_estudiante(self, obj):
         est = obj.numero_documento_estudiante
@@ -250,9 +266,35 @@ class ProfesoresSerializer(serializers.ModelSerializer):
         return f"{obj.nombre1} {obj.nombre2 or ''} {obj.apellido1} {obj.apellido2 or ''}".strip()
     
 class EstudianteNotasSerializer(serializers.ModelSerializer):
-    estudiante = EstudiantesSerializer(read_only=True, source='fk_numero_documento_estudiante')
-    actividad = ActividadesSerializer(read_only=True, source='fk_id_actividad')
+    nombre_actividad = serializers.CharField(read_only=True, source="fk_id_actividad.nombre") 
+    descripcion_actividad = serializers.CharField(read_only=True, source="fk_id_actividad.descripcion") 
+    nombre_materia = serializers.CharField(read_only=True, source="fk_id_actividad.fk_id_ra.fk_id_materia_profesores.fk_id_materia.nombre") 
+    nombre_grado = serializers.CharField(read_only=True, source="fk_id_actividad.fk_id_ra.fk_id_materia_profesores.fk_id_curso.nombre") 
+    nombre_completo_estudiante = serializers.CharField(read_only=True, source="fk_numero_documento_estudiante.nombre_completo")
+    
+
+    def validate_calificacion(self, value):
+        if value < 0 or value > 5.0:
+            return serializers.ValidationError("La calificacion debe estar entre 0 y 5")
+        return value
 
     class Meta:
         model = EstudianteNotas
+        fields = '__all__'
+        read_only_fields = [
+            'nombre_completo_estudiante',
+        ]
+
+class RASerializer(serializers.ModelSerializer):
+    materia = serializers.CharField(read_only=True, source="fk_id_materia_profesores.fk_id_materia.nombre")
+    class Meta:
+        model = RA
+        fields = '__all__'
+        read_only_fileds = [
+            "materia"
+        ]
+
+class NotaHistorialSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NotaHistorial
         fields = '__all__'

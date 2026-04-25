@@ -9,6 +9,65 @@
   box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.177);
 }
 
+.calendario-lista-mes {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--blanco);
+  padding: 15px;
+  border-radius: 10px;
+}
+
+.calendario-lista-mes-actividad-mes {
+  margin-bottom: 12px;
+}
+
+.calendario-item-mes-calificar {
+  position: absolute;
+  top: 25%;
+  left: 85%;
+  width: 150px;
+  padding: 8px;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  background-color: var(--verde-exito);
+  color: white;
+  cursor: pointer;
+}
+
+.calendario-item-mes {
+  position: relative;
+  background-color: #28a7461b;
+  box-sizing: border-box;
+  border-radius: 8px;
+  border: 2px solid var(--verde-exito);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 60px;
+  padding: 10px;
+}
+
+.calendario-item-mes-fechas {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.calendario-item-mes-fechas-inicio {
+  font-size: 15px;
+  font-weight: bold;
+  color: var(--verde-exito);
+}
+
+.calendario-item-mes-fechas-fin {
+  font-size: 15px;
+  font-weight: bold;
+  color: var(--rojo-error);
+}
+
 .actividades-tarjetas-modulos {
   width: 35%;
   height: auto;

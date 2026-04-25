@@ -1,4 +1,5 @@
 import axios from "axios";
+import { Alert } from "../utils/alert";
 
 const baseURL = "http://127.0.0.1:8000/api";
 
@@ -253,6 +254,88 @@ export const BuscarNotas = (id) => {
 
 export const Estudiante_curso = (grado) => {
   return api.get(`estudiantes_cursos/?curso=${grado}`).catch((err) => {
-    alert(err);
+    Alert("error", err.response?.data?.error);
   });
+};
+
+export const Estudiante_id_curso = (grado) => {
+  return api.get(`estudiantes_cursos/?id_curso=${grado}`).catch((err) => {
+    Alert("error", err.response?.data?.error);
+  });
+};
+
+export const TraerActividades = (id_profesor) => {
+  return api
+    .get(`/actividades_profesor/?id_profesor=${id_profesor}`)
+    .catch((err) => {
+      alert(err);
+    });
+};
+
+export const CrearActividad = (datos) => {
+  return api
+    .post("/actividades_profesor/", datos)
+    .then((res) => {
+      Alert("success", "actividad creada con exito");
+      return res;
+    })
+    .catch((err) => {
+      Alert("error", err.response?.data?.error);
+      throw err;
+    });
+};
+
+export const TraerRAProfesor = (id_profesor) => {
+  return api
+    .get(`/resultados_aprendizaje/?id_profesor=${id_profesor}`)
+    .catch((err) => {
+      Alert("error", err.response?.data?.error);
+      throw err;
+    });
+};
+
+export const TraerActividadesPorRA = (id_ra) => {
+  return api.get(`/actividades_ra/?id_ra=${id_ra}`).catch((err) => {
+    Alert("error", err.respose?.data?.error);
+  });
+};
+
+export const Calificar_Estudiante = (datos) => {
+  return api
+    .post("/calificar_estudiante/", datos)
+    .then((res) => {
+      Alert("success", "calificacion asiganada con exito");
+      return res;
+    })
+    .catch((err) => {
+      Alert("error", err.response?.data?.error);
+      throw err;
+    });
+};
+
+export const Calificar_Estudiante_buscar_estudiante = (estudiante, datos) => {
+  return api
+    .get("/calificar_estudiante/", {
+      params: {
+        estudiante: estudiante,
+        id_ra: datos,
+      },
+    })
+    .catch((err) => {
+      Alert("error", err.response?.data);
+      throw err;
+    });
+};
+
+export const Modificar_Nota_estudiante = (estudiante, datos) => {
+  return api
+    .patch(`/calificar_estudiante/?id_nota_estudiante=${estudiante}`, datos)
+    .then((res) => {
+      Alert("success", "Nota actualizada con exito");
+      return res;
+    })
+    .catch((err) => {
+      Alert("error", err.response?.data?.error);
+      throw err;
+    });
 };

@@ -896,6 +896,17 @@ class ObtenerMaterias(APIView):
 class TraerEstudiantesPorGrado(APIView):
     def get(self, request):
         curso = request.query_params.get("curso")
+        id_curso = request.query_params.get("id_curso")
+
+        if id_curso:
+            user = Estudiantes_cursos.objects.filter(id_curso = id_curso, numero_documento_estudiante__fk_tipo_estado = 1)
+
+            if not user.exists():
+                return Response("sin resultados", status=200)
+            
+            serializer = EstudiantesCursosSerializer(user, many=True)
+
+            return Response(serializer.data, status=200)
 
         if not curso:
             return Response({'error': 'es necesario el curso para buscar'}, status=400)
@@ -903,8 +914,171 @@ class TraerEstudiantesPorGrado(APIView):
         user = Estudiantes_cursos.objects.filter(id_curso__nombre = curso, numero_documento_estudiante__fk_tipo_estado = 1)
 
         if not user.exists():
-            return Response(None, status=200)
+            return Response("sin resultados", status=200)
         
         serializer = EstudiantesCursosSerializer(user, many=True)
 
         return Response(serializer.data, status=200)
+
+class TraerActividadesProfesor(APIView):
+    def get(self, request):
+        id_profesor = request.query_params.get("id_profesor")
+
+        if not id_profesor:
+            return Response(
+                {"error": "id_profesor es requerido"},
+                status=400
+            )
+
+        actividades = Actividades.objects.filter(
+            fk_id_ra__fk_id_materia_profesores__fk_numero_documento_profesor=id_profesor
+        )
+
+        serializer = ActividadesSerializer(actividades, many=True)
+
+        return Response(serializer.data, status=200)
+
+    def post(self, request):
+        User = request.data.get("user_id")
+        id_ra = request.data.get("fk_id_ra")
+        porcentaje = request.data.get("porcentaje")
+
+        if not User:
+            return Response({'error': 'para crear la actividad es necesario el id del usuario'}, status=400)
+
+        ra = RA.objects.filter(
+            id_ra = id_ra,
+            fk_id_materia_profesores__fk_numero_documento_profesor = User
+        ).exists()
+
+        if not ra:
+            return Response({'error': 'el RA no existe o no tiene acceso a el'}, status=400)
+
+        buscarporcentaje = Actividades.objects.filter(
+            fk_id_ra = id_ra
+        )
+
+        totalporcentaje = 0
+        for por in buscarporcentaje:
+            totalporcentaje += por.porcentaje
+        
+        if totalporcentaje == 100:
+            return Response({'error': 'no se pueden crear mas actividades ya que esta ocupado el 100% para este RA'}, status=400)
+        
+        totalporcentaje2 = float(totalporcentaje) + float(porcentaje)
+
+        if totalporcentaje2 > 100:
+            return Response({'error': f'el porcentaje que se restante debe ser menor o igual a {100 - totalporcentaje}'}, status=400)
+        
+        serializer = ActividadesSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+
+            return Response({
+            'success': 'actividad creada con exito',
+            'data': serializer.data
+            }, status=201)
+        
+        return Response({'error': serializer.errors}, status=400)
+
+class TraerRAprofesor(APIView):
+    def get(self, request):
+        id_profesor = request.query_params.get("id_profesor")
+
+        ra = RA.objects.filter(
+            fk_id_materia_profesores__fk_numero_documento_profesor = id_profesor
+        )
+
+        if not ra.exists():
+            return Response({'error': 'no existen RA a su nombre, porfavor cree uno para poder acceder a actividades'}, status=400)
+        
+        serializer = RASerializer(ra, many=True)
+
+        return Response(serializer.data, status=200)
+    
+class TraerActividadesPorRA(APIView):
+    def get(self, request):
+        ra = request.query_params.get("id_ra")
+
+        actividades = Actividades.objects.filter(
+            fk_id_ra = ra
+        )
+
+        serializer = ActividadesSerializer(actividades, many=True)
+        return Response(serializer.data, status=200)
+
+class Calificar(APIView):
+
+    def get(self, request):
+        id_estudiante = request.query_params.get("estudiante")
+        id_ra = request.query_params.get("id_ra")
+
+        if not id_ra:
+            return Response({'error': 'es necesario el id del R.A'}, status=400)
+
+        est = EstudianteNotas.objects.filter(
+            fk_numero_documento_estudiante = id_estudiante,
+            fk_id_actividad__fk_id_ra = id_ra
+        )
+
+        if not est:
+            return Response("error al consultar las notas del estudiantes, revise bien los datos enviados", status=400)
+
+        serializer = EstudianteNotasSerializer(est, many=True)
+        return Response(serializer.data, status=200)
+
+
+
+    def post(self, request):
+        estudiante = request.data.get("fk_numero_documento_estudiante")
+        actividad = request.data.get("fk_id_actividad")
+
+        act = EstudianteNotas.objects.filter(
+            fk_numero_documento_estudiante = estudiante,
+            fk_id_actividad = actividad
+        ).exists()
+
+        if act:
+            return Response({'error': 'el estudiante ya tiene asignada una nota en esta atividad'}, status=400)
+        serializer = EstudianteNotasSerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response({
+                'success': 'calificacion asiganada con exito',
+                'data': serializer.data
+            }, status=201)
+        
+        return Response(serializer.error, status=400)
+    
+    def patch(self, request):
+        id_nota = request.query_params.get("id_nota_estudiante")
+        nota = request.data.get("nota_nueva")
+
+        nota_estudiante = EstudianteNotas.objects.filter(
+            id_estudiante_notas = id_nota
+        ).first()
+
+        if not nota_estudiante:
+            return Response({'error': 'no se encontro la nota a cambiar'}, status=400)
+
+        if nota_estudiante.calificacion != nota:
+            nota_estudiante.calificacion = nota
+        
+        serializer = NotaHistorialSerializer(data = request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+
+            nota_estudiante.save()
+            return Response('nota actualizada con exito', status=200)
+
+        return Response(serializer.errors, status=400)
+        
+
+
+
+
+
+
+        

@@ -38,7 +38,11 @@ urlpatterns = [
     path('estudiantes/bulk-upload/', EstudiantesBulkUploadView.as_view(), name='bulk_estudiantes'),
     path('profesores/bulk-upload/', ProfesoresBulkUploadView.as_view(), name='bulk_profesores'),
     path('obtener_materias/', ObtenerMaterias.as_view(), name='obtener_materias'),
-    path('estudiantes_cursos/', TraerEstudiantesPorGrado.as_view(), name='estudiantes_cursos')
+    path('estudiantes_cursos/', TraerEstudiantesPorGrado.as_view(), name='estudiantes_cursos'),
+    path('actividades_profesor/', TraerActividadesProfesor.as_view(), name='actividades_profesor'),
+    path('resultados_aprendizaje/', TraerRAprofesor.as_view(), name='resultados_aprendizaje'),
+    path('actividades_ra/', TraerActividadesPorRA.as_view(), name='actividades_ra'),
+    path('calificar_estudiante/', Calificar.as_view(), name='calificar_estudiante')
 ]
 
 urlpatterns += router.urls

@@ -9,11 +9,6 @@ function Actividades({ onBack }) {
 
   const submodulos = [
     {
-      id: 1,
-      titulo: "Actividades Anteriores",
-      des: "En este apartado se podran visualizar las actividades anteriores creadas por el docente",
-    },
-    {
       id: 2,
       titulo: "Crear Actividad",
       des: "En este apartado el docente podra crear una actividad para un grupo en concreto",
@@ -22,6 +17,11 @@ function Actividades({ onBack }) {
       id: 3,
       titulo: "Calificar",
       des: "En este apartado el docente podra calificar las actividades impuestas por el mismo",
+    },
+    {
+      id: 1,
+      titulo: "Modificar Nota",
+      des: "En este apartado se podran modificar la nota de un estudiante",
     },
   ];
 
@@ -62,7 +62,7 @@ function Actividades({ onBack }) {
         </div>
       );
     case 1:
-      return <CrudActividades id={crudid} />;
+      return <CrudActividades id={crudid} setid={setid} />;
   }
 }
 
