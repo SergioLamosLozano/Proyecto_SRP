@@ -42,7 +42,10 @@ urlpatterns = [
     path('actividades_profesor/', TraerActividadesProfesor.as_view(), name='actividades_profesor'),
     path('resultados_aprendizaje/', TraerRAprofesor.as_view(), name='resultados_aprendizaje'),
     path('actividades_ra/', TraerActividadesPorRA.as_view(), name='actividades_ra'),
-    path('calificar_estudiante/', Calificar.as_view(), name='calificar_estudiante')
+    path('calificar_estudiante/', Calificar.as_view(), name='calificar_estudiante'),
+    path('traer_materias_profesor/', TraerMateriaDeProfesor.as_view(), name='traer_materias_profesor'),
+    path('definitivas/', DefinitivasView.as_view(), name='definitivas'),
+    path('promedio/', Promedios.as_view(), name='promedio'),
 ]
 
 urlpatterns += router.urls

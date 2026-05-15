@@ -496,6 +496,7 @@ class Estudiantes_cursos(models.Model) :
     numero_documento_estudiante = models.ForeignKey(Estudiantes, on_delete=models.CASCADE, db_column="numero_documento_estudiante")
     id_curso = models.ForeignKey(Cursos, on_delete=models.CASCADE, db_column="id_curso")
     fecha_asignacion = models.DateField(auto_now_add=True, blank=True, null=True)
+    estado = models.CharField(max_length=50, default="activo")
 
     class Meta:
         db_table = "estudiantes_cursos"
@@ -594,7 +595,7 @@ class NotaHistorial(models.Model):
     nota_anterior = models.DecimalField(max_digits=3, decimal_places=2)
     nota_nueva = models.DecimalField(max_digits=3, decimal_places=2)
     motivo_cambio = models.CharField(max_length=200)
-    fecha_cambio = models.DateTimeField(auto_now_add=True)
+    fecha_cambio = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     fk_nota_estudiante = models.ForeignKey(EstudianteNotas, on_delete=models.CASCADE, db_column="fk_nota_estudiante")
 
     class Meta:
@@ -604,3 +605,18 @@ class NotaHistorial(models.Model):
     
     def __str__(self):
         return f"historial nota {self.id_nota_historial}"
+    
+class Definitivas(models.Model):
+    id_definitiva = models.AutoField(primary_key=True)
+    valor_definitiva = models.DecimalField(max_digits=3, decimal_places=2)
+    fk_id_estudiantes_cursos = models.ForeignKey(Estudiantes_cursos, on_delete=models.CASCADE, db_column="fk_id_estudiantes_cursos", null=True)
+    fk_id_materia = models.ForeignKey(Materias, on_delete=models.CASCADE, db_column="fk_id_materia")
+    estado = models.CharField(max_length=50)
+    fk_id_periodo = models.ForeignKey(Periodo, on_delete=models.CASCADE, db_column="fk_id_periodo", null=True)
+
+    class Meta:
+        db_table = "definitiva"
+    
+    def __str__(self):
+        return f'la definitiva es de definitiva {self.valor_definitiva}'
+

@@ -339,3 +339,25 @@ export const Modificar_Nota_estudiante = (estudiante, datos) => {
       throw err;
     });
 };
+
+export const TraerMateriasProfesor = (id_profesor) => {
+  return api
+    .get(`/traer_materias_profesor/?id_profesor=${id_profesor}`)
+    .catch((err) => {
+      Alert("error", err.respose?.data?.error);
+      throw err;
+    });
+};
+
+export const CrearRAs = (datos) => {
+  return api
+    .post("/resultados_aprendizaje/", datos)
+    .then((res) => {
+      Alert("success", "R.A creado con exito");
+      return res;
+    })
+    .catch((err) => {
+      Alert("error", err.response?.data);
+      throw err;
+    });
+};

@@ -10,6 +10,8 @@ import { jwtDecode } from "jwt-decode";
 import { Alert } from "../utils/alert";
 import Calificar from "./Calificar";
 import ModificarNota from "./ModificarNota";
+import CrearOModificarRAs from "./CrearYModificarRA";
+import DefinitivasModal from "./Definitivas";
 
 function CrudActividades({ id, setid }) {
   const [año, setAño] = useState(2026);
@@ -20,6 +22,7 @@ function CrudActividades({ id, setid }) {
   const [actividadbuscar, setActividadBuscar] = useState({});
   const [actividadSeleccionada, setActividadSeleccionada] = useState(null);
   const [usuario, setUsuario] = useState(null);
+  const [id_profe, setid_profe] = useState("");
   //estados
   const [nombre, setNombre] = useState("");
   const [descripcion, setDescripcion] = useState("");
@@ -76,6 +79,7 @@ function CrudActividades({ id, setid }) {
     setUsuario(decoded.username);
     res(decoded.username);
     ResultadosAprendizaje(decoded.username);
+    setid_profe(decoded.username);
   }, []);
   const meses = [
     { id: 0, mes: "Enero" },
@@ -424,6 +428,16 @@ function CrudActividades({ id, setid }) {
       );
     case 3:
       return <Calificar listaRAs={RAs} />;
+
+    case 4:
+      return (
+        <CrearOModificarRAs
+          listaRAs={RAs}
+          funcion={() => ResultadosAprendizaje(parseInt(id_profe))}
+        />
+      );
+    case 5:
+      return <DefinitivasModal />;
   }
 }
 

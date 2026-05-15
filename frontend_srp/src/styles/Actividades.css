@@ -1,5 +1,6 @@
 .actividades-container1 {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
   width: 100%;
   height: auto;
   padding: 20px;
@@ -69,7 +70,7 @@
 }
 
 .actividades-tarjetas-modulos {
-  width: 35%;
+  width: 100%;
   height: auto;
   padding: 15px;
   background-color: white;

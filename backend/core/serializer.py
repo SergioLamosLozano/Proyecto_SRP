@@ -267,11 +267,14 @@ class ProfesoresSerializer(serializers.ModelSerializer):
     
 class EstudianteNotasSerializer(serializers.ModelSerializer):
     nombre_actividad = serializers.CharField(read_only=True, source="fk_id_actividad.nombre") 
-    descripcion_actividad = serializers.CharField(read_only=True, source="fk_id_actividad.descripcion") 
+    descripcion_actividad = serializers.CharField(read_only=True, source="fk_id_actividad.descripcion")
+    periodo = serializers.IntegerField(read_only=True, source="fk_id_actividad.fk_id_ra.fk_id_periodo_academico.id_periodo") 
     nombre_materia = serializers.CharField(read_only=True, source="fk_id_actividad.fk_id_ra.fk_id_materia_profesores.fk_id_materia.nombre") 
+    id_materia = serializers.CharField(read_only=True, source="fk_id_actividad.fk_id_ra.fk_id_materia_profesores.fk_id_materia.id_materia") 
     nombre_grado = serializers.CharField(read_only=True, source="fk_id_actividad.fk_id_ra.fk_id_materia_profesores.fk_id_curso.nombre") 
     nombre_completo_estudiante = serializers.CharField(read_only=True, source="fk_numero_documento_estudiante.nombre_completo")
-    
+    porcentaje_ra = serializers.DecimalField(max_digits=5, decimal_places=2, read_only=True, source="fk_id_actividad.fk_id_ra.porcentaje")
+    porcentaje_actividad = serializers.DecimalField(max_digits=5, decimal_places=2, read_only=True, source="fk_id_actividad.porcentaje")
 
     def validate_calificacion(self, value):
         if value < 0 or value > 5.0:
@@ -287,6 +290,7 @@ class EstudianteNotasSerializer(serializers.ModelSerializer):
 
 class RASerializer(serializers.ModelSerializer):
     materia = serializers.CharField(read_only=True, source="fk_id_materia_profesores.fk_id_materia.nombre")
+    curso = serializers.CharField(read_only=True, source="fk_id_materia_profesores.fk_id_curso.nombre")
     class Meta:
         model = RA
         fields = '__all__'
@@ -298,3 +302,15 @@ class NotaHistorialSerializer(serializers.ModelSerializer):
     class Meta:
         model = NotaHistorial
         fields = '__all__'
+
+class DefinitivaSerializer(serializers.ModelSerializer):
+    nombre_estudiante = serializers.CharField(read_only=True, source="fk_id_estudiantes_cursos.numero_documento_estudiante.nombre_completo")
+    nombre_materia = serializers.CharField(read_only=True, source="fk_id_materia.nombre")
+
+    class Meta:
+        model = Definitivas
+        fields = "__all__"
+        read_only_fields = [
+            'nombre_estudiante',
+            'nombre_materia'
+        ]
