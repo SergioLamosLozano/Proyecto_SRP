@@ -1,23 +1,6 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import "../styles/Actividades.css";
-import Breadcrumbs from "./Breadcrumbs";
-import { actividadesAnteriores, EstudiantesGET } from "../api/usuarios";
-import { jwtDecode } from "jwt-decode";
-import Select from "react-select";
-import Modal from "./modal";
-import {
-  ActividadesDelete,
-  ActividadesPatch,
-  ActividadesPost,
-  BuscarCoincidenciaNotas,
-  BuscarMateriasAsignadas,
-  BuscarNotas,
-  Estudiantes_notasPatch,
-  Estudiantes_notasPost,
-  NotasGet,
-} from "../api/cursos";
-import Swal from "sweetalert2";
-import Table from "./Table";
+import CrudActividades from "./CrudsActividades";
 
 function Actividades({ onBack }) {
   const [currentSubSection, setCurrentSubSection] = useState(null);
@@ -113,9 +96,6 @@ function Actividades({ onBack }) {
             timer: 2000,
             showConfirmButton: false,
           });
-          const token = sessionStorage.getItem("token");
-        const decoded = jwtDecode(token);
-        CargarActividades2(decoded.username);
           Notascambio();
         } catch (err) {
           Swal.fire({
@@ -175,9 +155,6 @@ function Actividades({ onBack }) {
               timer: 2000,
               showConfirmButton: false,
             });
-            const token = sessionStorage.getItem("token");
-            const decoded = jwtDecode(token);
-            CargarActividades2(decoded.username);
             Notascambio();
           } else {
             Swal.fire({
@@ -341,7 +318,7 @@ function Actividades({ onBack }) {
   };
   const Sections = [
     {
-      nombre: "Actividades anteriores 🗒️",
+      nombre: "actividades anteriores 🗒️",
       descripcion:
         "En este apartado se podran ver las actividades anteriormente asignadas",
     },
@@ -448,7 +425,7 @@ function Actividades({ onBack }) {
   };
   const render = () => {
     switch (currentSubSection) {
-      case "Actividades anteriores 🗒️":
+      case "actividades anteriores 🗒️":
         return (
           <div className="ActividadesContenedor2">
             <h1 className="TituloActividades">Actividades anteriores</h1>

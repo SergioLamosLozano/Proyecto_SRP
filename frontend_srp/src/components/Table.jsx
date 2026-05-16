@@ -23,12 +23,13 @@ const Table = ({
   salir,
   onClickParaSalir,
   filterOptions = [],
+  parametrobuscar = "",
   onSearch,
   onFilter,
   onAdd,
   addButtonText = "Añadir",
   actions = [], // Array de objetos con estructura: { key: 'accion', label: 'Texto del Botón', onClick: function }
-  filtroParaEstudiantePadres = [],
+  users = [],
   busqueda = [],
   check = [],
 }) => {
@@ -37,68 +38,13 @@ const Table = ({
   const [usuarios, setUsuarios] = useState([]);
 
   const buscar = async (letras) => {
-    if (id == "Estudiantes") {
-      try {
-        const response = await BusquedaPorNombre(letras);
-        setUsuarios(response.data);
-      } catch (error) {
-        console.error("Error al buscar estudiante:", error);
-      }
-    } else if (id == "Profesores") {
-      try {
-        const response = await BusquedaPorNombreP(letras);
-        setUsuarios(response.data);
-      } catch (error) {
-        console.error("Error al buscar Profesores:", error);
-      }
-    } else if (id == "Padres") {
-      try {
-        const response = await BusquedaPorNombreA(letras);
-        setUsuarios(response.data);
-      } catch (error) {
-        console.error("Error al buscar Padres:", error);
-      }
-    } else if (id === "EstudiantesAcudientes") {
-      const resultado = filtroParaEstudiantePadres.filter((item) =>
-        item.numero_documento.toString().includes(letras)
-      );
-      setUsuarios(resultado);
-    } else if (id === "Cursos") {
-      try {
-        const response = await BuscarCurso(letras);
-        setUsuarios(response.data);
-      } catch (error) {
-        console.log(error);
-      }
-    } else if (id === "Materias") {
-      try {
-        const response = await BuscarMaterias(letras);
-        setUsuarios(response.data);
-      } catch (error) {
-        console.log(error);
-      }
-    } else if (id === "MateriaA") {
-      try {
-        const response = await BuscarMateriaAsignada(letras);
-        setUsuarios(response.data);
-      } catch (error) {
-        console.log(error);
-      }
-    } else if (id === "EstudianteC") {
-      try {
-        const term = letras.trim();
-        if (term === "") {
-          setUsuarios([]);
-          return;
-        }
-        const response = data.filter((est) =>
-          est.numero_documento_estudiante.toString().includes(term)
-        );
-        setUsuarios(response);
-      } catch (error) {
-        console.log(error);
-      }
+    if (!users) {
+      alert("no se enviaron los usuarios requeridos");
     }
+    const filtrados = users.filter((u) =>
+      String(u[parametrobuscar]).toLowerCase().includes(letras.toLowerCase()),
+    );
+    setUsuarios(filtrados);
   };
 
   const handleSearch = (e) => {
@@ -193,7 +139,7 @@ const Table = ({
             )}
           </div>
           <div className="contenedor_busqueda2">
-            {searchTerm.length > 0 && (
+            {searchTerm.length > 2 && (
               <div className="busqueda_por_nombre">
                 {usuarios.length > 0 ? (
                   usuarios.map((item, index) => (
@@ -257,7 +203,11 @@ const Table = ({
               <tr key={index}>
                 {columns.map((column, colIndex) => (
                   <td key={colIndex} className={column.className || ""}>
-                    {renderCellContent(item, column)}
+                    {column.key == "estado" ? (
+                      <span>{item.estado}</span>
+                    ) : (
+                      renderCellContent(item, column)
+                    )}
                   </td>
                 ))}
                 {actions.length > 0 && (

@@ -1,4 +1,5 @@
 import axios from "axios";
+import { Alert } from "../utils/alert";
 
 const baseURL = "http://127.0.0.1:8000/api";
 
@@ -19,7 +20,7 @@ api.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 export const Cursos = () => {
@@ -184,7 +185,7 @@ export const Estudiantes_notas = (id) => {
 
 export const Estudiantes_notas_por_periodo = (id, periodoId) => {
   return api.get(
-    `/notas/?fk_numero_documento_estudiante=${id}&fk_id_actividad__fk_id_periodo_academico=${periodoId}`
+    `/notas/?fk_numero_documento_estudiante=${id}&fk_id_actividad__fk_id_periodo_academico=${periodoId}`,
   );
 };
 
@@ -234,7 +235,9 @@ export const ActividadesDelete = (id) => {
 };
 
 export const BuscarMateriasAsignadas = (id) => {
-  return api.get(`/materias_asignadas/?fk_numero_documento_profesor=${id}`);
+  return api.get(`/obtener_materias/?numero_cedula=${id}`).catch(() => {
+    alert("error al obtener las materias");
+  });
 };
 
 export const BuscarCoincidenciaNotas = (id) => {
@@ -247,4 +250,114 @@ export const NotasGet = () => {
 
 export const BuscarNotas = (id) => {
   return api.get(`/notas/?fk_numero_documento_estudiante=${id}`);
+};
+
+export const Estudiante_curso = (grado) => {
+  return api.get(`estudiantes_cursos/?curso=${grado}`).catch((err) => {
+    Alert("error", err.response?.data?.error);
+  });
+};
+
+export const Estudiante_id_curso = (grado) => {
+  return api.get(`estudiantes_cursos/?id_curso=${grado}`).catch((err) => {
+    Alert("error", err.response?.data?.error);
+  });
+};
+
+export const TraerActividades = (id_profesor) => {
+  return api
+    .get(`/actividades_profesor/?id_profesor=${id_profesor}`)
+    .catch((err) => {
+      alert(err);
+    });
+};
+
+export const CrearActividad = (datos) => {
+  return api
+    .post("/actividades_profesor/", datos)
+    .then((res) => {
+      Alert("success", "actividad creada con exito");
+      return res;
+    })
+    .catch((err) => {
+      Alert("error", err.response?.data?.error);
+      throw err;
+    });
+};
+
+export const TraerRAProfesor = (id_profesor) => {
+  return api
+    .get(`/resultados_aprendizaje/?id_profesor=${id_profesor}`)
+    .catch((err) => {
+      Alert("error", err.response?.data?.error);
+      throw err;
+    });
+};
+
+export const TraerActividadesPorRA = (id_ra) => {
+  return api.get(`/actividades_ra/?id_ra=${id_ra}`).catch((err) => {
+    Alert("error", err.respose?.data?.error);
+  });
+};
+
+export const Calificar_Estudiante = (datos) => {
+  return api
+    .post("/calificar_estudiante/", datos)
+    .then((res) => {
+      Alert("success", "calificacion asiganada con exito");
+      return res;
+    })
+    .catch((err) => {
+      Alert("error", err.response?.data?.error);
+      throw err;
+    });
+};
+
+export const Calificar_Estudiante_buscar_estudiante = (estudiante, datos) => {
+  return api
+    .get("/calificar_estudiante/", {
+      params: {
+        estudiante: estudiante,
+        id_ra: datos,
+      },
+    })
+    .catch((err) => {
+      Alert("error", err.response?.data);
+      throw err;
+    });
+};
+
+export const Modificar_Nota_estudiante = (estudiante, datos) => {
+  return api
+    .patch(`/calificar_estudiante/?id_nota_estudiante=${estudiante}`, datos)
+    .then((res) => {
+      Alert("success", "Nota actualizada con exito");
+      return res;
+    })
+    .catch((err) => {
+      Alert("error", err.response?.data?.error);
+      throw err;
+    });
+};
+
+export const TraerMateriasProfesor = (id_profesor) => {
+  return api
+    .get(`/traer_materias_profesor/?id_profesor=${id_profesor}`)
+    .catch((err) => {
+      Alert("error", err.respose?.data?.error);
+      throw err;
+    });
+};
+
+export const CrearRAs = (datos) => {
+  return api
+    .post("/resultados_aprendizaje/", datos)
+    .then((res) => {
+      Alert("success", "R.A creado con exito");
+      return res;
+    })
+    .catch((err) => {
+      Alert("error", err.response?.data);
+      throw err;
+    });
 };

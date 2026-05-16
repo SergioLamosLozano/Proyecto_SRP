@@ -23,6 +23,7 @@
 
 .coordinacion-main-content {
   flex: 1;
+  height: auto;
 }
 
 .Container-Principal-Docentes {

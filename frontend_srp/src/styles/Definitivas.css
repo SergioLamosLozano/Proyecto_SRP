@@ -1,0 +1,77 @@
+.contenedor-definitivas {
+  width: 100%;
+  max-width: 1400px;
+  margin: auto;
+
+  background: var(--blanco);
+
+  padding: 2rem;
+
+  border-radius: 24px;
+
+  border: 1px solid var(--borde-color);
+
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+.header-definitivas {
+  margin-bottom: 2rem;
+}
+
+.titulo-definitivas {
+  font-size: 2rem;
+  font-weight: bold;
+
+  color: var(--rojo-institucional);
+
+  margin-bottom: 0.5rem;
+}
+
+.descripcion-definitivas {
+  color: var(--gris-secundario);
+
+  font-size: 1rem;
+}
+
+.tabla-definitivas {
+  overflow: hidden;
+  width: 100%;
+  border-radius: 18px;
+
+  border: 1px solid var(--borde-color);
+}
+
+/* ========================= */
+/* HANDSONTABLE */
+/* ========================= */
+
+.custom-handsontable .htCore th {
+  background: var(--rojo-institucional);
+
+  color: var(--blanco-puro);
+
+  font-weight: 600;
+
+  border-color: var(--borde-color);
+}
+
+.custom-handsontable .htCore td {
+  border-color: var(--borde-color);
+
+  color: var(--gris-principal);
+
+  font-size: 14px;
+}
+
+.custom-handsontable .wtHolder {
+  background: var(--blanco);
+}
+
+.custom-handsontable .currentRow,
+.custom-handsontable .currentCol {
+  background: var(--gris-claro-fondo);
+}
+
+.custom-handsontable .handsontable tbody tr:hover td {
+  background: #fafafa;
+}

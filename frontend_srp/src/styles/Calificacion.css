@@ -1,0 +1,250 @@
+.libreta-calificar-contenedor-padre {
+  width: 100%;
+  height: auto;
+  padding-top: 60px;
+}
+
+.libreta-calificar-contenedor {
+  width: 100%;
+  margin: auto;
+  border-radius: 10px;
+  height: auto;
+  box-sizing: border-box;
+  background-color: white;
+  box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.26);
+  padding-bottom: 40px;
+  overflow: hidden;
+}
+
+.libreta-calificar-contenedor-estudiantes-lista-sin-estudiantes {
+  font-size: 25px;
+}
+
+.libreta-calificar-titulo {
+  width: 100%;
+  height: auto;
+  padding: 15px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--rojo-institucional);
+}
+
+.libreta-calificar-titulo h1 {
+  color: white;
+  font-size: 29px;
+}
+
+.libreta-calificar-titulo p {
+  color: rgba(197, 197, 197, 0.859);
+  font-size: 14px;
+}
+
+.libreta-calificar-titulo-adorno {
+  width: 420px;
+  height: 70px;
+  margin: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--rojo-institucional);
+  border-top-right-radius: 15px;
+  border-top-left-radius: 15px;
+}
+
+.libreta-calificar-titulo-adorno-2 {
+  width: 300px;
+  height: 35px;
+  background-color: white;
+  box-shadow: inset 0px 0px 15px rgba(0, 0, 0, 0.334);
+  border-radius: 10px;
+}
+
+.libreta-calificar-contenedor-seleccion {
+  width: 95%;
+  height: auto;
+  padding: 10px;
+  box-sizing: border-box;
+  border-bottom: 3px solid rgb(181, 181, 181);
+  margin: auto;
+}
+
+.libreta-calificar-contenedor-seleccion-titulo {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+}
+
+.libreta-calificar-contenedor-seleccion-titulo h1 {
+  font-size: 24px;
+  margin-top: 10px;
+}
+
+.libreta-calificar-contenedor-seleccion-titulo p {
+  font-size: 14px;
+  color: rgba(102, 102, 102, 0.859);
+}
+
+.libreta-calificar-contenedor-seleccion-inputs {
+  width: 100%;
+  display: flex;
+  gap: 300px;
+  padding-top: 50px;
+  margin: auto;
+  justify-content: center;
+  align-items: center;
+}
+
+.libreta-calificar-contenedor-seleccion-inputs section {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.libreta-calificar-contenedor-seleccion-descripcion-tarea-sin-tarea {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.libreta-calificar-contenedor-seleccion-descripcion-tarea-sin-tarea h1 {
+  font-size: 25px;
+}
+
+.libreta-calificar-contenedor-seleccion-inputs select {
+  width: 220px;
+  height: 30px;
+  border-radius: 5px;
+  transition: all 0.2s ease;
+}
+
+.libreta-calificar-contenedor-seleccion-inputs select:focus {
+  box-shadow: 0px 0px 10px var(--rojo-institucional);
+}
+
+.libreta-calificar-contenedor-seleccion-inputs label {
+  font-weight: bold;
+}
+
+.libreta-calificar-contenedor-seleccion-descripcion {
+  max-width: 100%;
+  width: 600px;
+  border: 2px solid rgb(158, 158, 158);
+  border-radius: 10px;
+  padding: 10px;
+  margin: 30px auto;
+}
+
+.libreta-calificar-contenedor-seleccion-descripcion-titulo {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 30px;
+  align-items: center;
+}
+
+.libreta-calificar-contenedor-seleccion-descripcion-titulo h1 {
+  font-size: 23px;
+  color: var(--rojo-institucional);
+  text-decoration: underline;
+}
+
+.libreta-calificar-contenedor-seleccion-descripcion-tarea {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.libreta-calificar-contenedor-seleccion-descripcion-tarea span {
+  font-weight: bold;
+  color: var(--rojo-institucional);
+}
+
+.libreta-calificar-contenedor-seleccion-descripcion-tarea label {
+  font-weight: 400;
+  color: black;
+}
+
+.libreta-calificar-contenedor-estudiantes {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 5px;
+  box-sizing: border-box;
+  margin-top: 20px;
+}
+
+.libreta-calificar-contenedor-estudiantes h1 {
+  margin-left: 40px;
+}
+
+.libreta-calificar-contenedor-estudiantes-lista {
+  width: 98%;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  border: 3px solid var(--rojo-institucional);
+  border-radius: 10px;
+  padding: 15px;
+}
+
+.libreta-calificar-contenedor-estudiantes-lista-calificar {
+  width: 100%;
+  height: auto;
+  padding: 15px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  border-radius: 5px;
+  border-bottom: 2px solid rgb(165, 165, 165);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.libreta-calificar-contenedor-estudiantes-lista-calificar:hover {
+  background-color: #c41e3a0f;
+}
+
+.libreta-calificar-contenedor-estudiantes-lista-calificar span {
+  font-size: 20px;
+  color: var(--rojo-institucional);
+  font-weight: bold;
+}
+
+.libreta-calificar-contenedor-estudiantes-lista-calificar label {
+  font-size: 17px;
+  color: black;
+  font-weight: 450;
+}
+
+.libreta-calificar-contenedor-estudiantes-lista-calificar input {
+  width: 180px;
+  padding: 5px;
+  font-weight: bold;
+  border-radius: 4px;
+  border: 2px solid rgb(165, 165, 165);
+}
+
+.libreta-calificar-contenedor-estudiantes-lista-calificar input:focus {
+  box-shadow: 0px 0px 10px var(--rojo-institucional);
+}
+
+.libreta-calificar-contenedor-estudiantes-lista-calificar-boton {
+  padding: 10px 30px;
+  font-size: 15px;
+  cursor: pointer;
+  color: white;
+  font-weight: bold;
+  background-color: var(--rojo-institucional);
+  border-radius: 10px;
+  border: none;
+}

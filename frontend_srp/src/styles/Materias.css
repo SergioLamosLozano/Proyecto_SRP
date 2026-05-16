@@ -1,0 +1,46 @@
+.contenedor-materia {
+  display: flex;
+  background-color: white;
+  box-shadow: 0px 5px 20px rgba(0, 0, 0, 0.127);
+  border-radius: 10px;
+  padding: 20px;
+  width: 100%;
+  gap: 20px;
+}
+
+.contenedor-materia2 {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: white;
+  box-shadow: 0px 5px 20px rgba(0, 0, 0, 0.127);
+  border-radius: 10px;
+  padding: 20px;
+  width: 100%;
+  gap: 20px;
+}
+
+.matematicas-descripcion {
+  display: flex;
+  text-align: center;
+  height: 100px;
+  width: 30%;
+  padding: 10px;
+  border-radius: 5px;
+  background-color: var(--rojo-institucional);
+  box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.145);
+  flex-direction: column;
+  gap: 10px;
+  color: white;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.matematicas-descripcion:hover {
+  background-color: var(--rojo-hover);
+  transform: translateY(-3px);
+}
+
+.matematicas-descripcion span {
+  font-weight: bold;
+}

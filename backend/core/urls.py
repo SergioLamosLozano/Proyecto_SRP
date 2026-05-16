@@ -27,7 +27,6 @@ router.register(r'acudientes', AcudienteViewSet, basename='Acudientes')
 router.register(r'notas', EstudianteNotasViewSet, basename='Notas')
 router.register(r'match-acudientes', AcudienteUserMatchViewSet, basename='match-acudientes')
 router.register(r'estudiantes-acudientes', EstudianteAcudienteViewSet, basename='Estudiante_Acudiente')
-router.register(r'materias_asignadas', MateriasAsignadasViewSet, basename='Materias_Asignadas')
 router.register(r'estudiantes_cursos', EstudiantesCursosViewSet, basename='Estudiantes_Cursos')
 
 urlpatterns = [
@@ -38,6 +37,15 @@ urlpatterns = [
     path('profesores/template/', ProfesoresTemplateView.as_view(), name='plantilla_profesores'),
     path('estudiantes/bulk-upload/', EstudiantesBulkUploadView.as_view(), name='bulk_estudiantes'),
     path('profesores/bulk-upload/', ProfesoresBulkUploadView.as_view(), name='bulk_profesores'),
+    path('obtener_materias/', ObtenerMaterias.as_view(), name='obtener_materias'),
+    path('estudiantes_cursos/', TraerEstudiantesPorGrado.as_view(), name='estudiantes_cursos'),
+    path('actividades_profesor/', TraerActividadesProfesor.as_view(), name='actividades_profesor'),
+    path('resultados_aprendizaje/', TraerRAprofesor.as_view(), name='resultados_aprendizaje'),
+    path('actividades_ra/', TraerActividadesPorRA.as_view(), name='actividades_ra'),
+    path('calificar_estudiante/', Calificar.as_view(), name='calificar_estudiante'),
+    path('traer_materias_profesor/', TraerMateriaDeProfesor.as_view(), name='traer_materias_profesor'),
+    path('definitivas/', DefinitivasView.as_view(), name='definitivas'),
+    path('promedio/', Promedios.as_view(), name='promedio'),
 ]
 
 urlpatterns += router.urls
