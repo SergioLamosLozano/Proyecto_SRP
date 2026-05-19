@@ -1436,4 +1436,26 @@ class TraerTodasLasMateriasAgrupadas(APIView):
         return Response(list(agrupadas.values()), status=200)
 
 
-        
+class ConsultarNotasCursoAPIView(APIView):
+    def get(self, request):
+        id_curso = request.query_params.get("id_curso")
+        materia = request.query_params.get("fk_id_materia")
+        periodo = request.query_params.get("fk_id_periodo")
+
+        # Filtro directo a la base de datos usando tu lógica exacta
+        notas_curso = EstudianteNotas.objects.filter(
+            fk_id_actividad__fk_id_ra__fk_id_materia_profesores__fk_id_curso__id_curso=id_curso,
+            fk_id_actividad__fk_id_ra__fk_id_materia_profesores__fk_id_materia=materia,
+            fk_id_actividad__fk_id_ra__fk_id_periodo_academico__id_periodo=periodo
+        ).exclude(
+            fk_numero_documento_estudiante__fk_tipo_estado__id_tipo_estado=2
+        )
+
+        if not notas_curso.exists():
+            return Response([], status=status.HTTP_200_OK)
+
+        # Serializamos y pasamos por tu función de ponderación
+        serializernota = EstudianteNotasSerializer(notas_curso, many=True)
+
+        # Retornamos los valores limpios calculados
+        return Response(serializernota.data, status=status.HTTP_200_OK)
