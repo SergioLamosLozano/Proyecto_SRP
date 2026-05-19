@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import '../styles/Coordinacion.css';
 import Breadcrumbs from './Breadcrumbs';
-import GraficaCircular from './GraficaCircular';
-import GraficaLinea from './GraficaLinea';
+import EstadisticasCompletas from './EstadisticasCompletas';
 
 const ReportesEstadisticas = ({ onBack }) => {
   const [currentSubSection, setCurrentSubSection] = useState(null);
@@ -16,8 +15,8 @@ const ReportesEstadisticas = ({ onBack }) => {
              currentSubSection === 'estadistica' ? 'Estadísticas Académicas' : 'Estadísticas Académicas',
       path: `/coordinacion/reportes/${currentSubSection}` 
     }] : [])
-    
   ];
+  
   const handleNavigate = (path) => {
     if (path === '/coordinacion') {
       onBack();
@@ -30,39 +29,6 @@ const ReportesEstadisticas = ({ onBack }) => {
       }
     }
   };
-  // Datos de ejemplo para las gráficas
-  const datosGraficaCircular = [
-    { label: 'Aprobados', value: 75, color: '#28a745' },
-    { label: 'Reprobados', value: 15, color: '#dc3545' },
-    { label: 'Pendientes', value: 10, color: '#ffc107' }
-  ];
-
-  const datosGraficaLinea = [
-    {
-      name: 'Rendimiento 2023',
-      color: '#007bff',
-      data: [
-        { label: 'Ene', value: 85 },
-        { label: 'Feb', value: 78 },
-        { label: 'Mar', value: 92 },
-        { label: 'Abr', value: 88 },
-        { label: 'May', value: 95 },
-        { label: 'Jun', value: 90 }
-      ]
-    },
-    {
-      name: 'Rendimiento 2024',
-      color: '#28a745',
-      data: [
-        { label: 'Ene', value: 82 },
-        { label: 'Feb', value: 85 },
-        { label: 'Mar', value: 89 },
-        { label: 'Abr', value: 93 },
-        { label: 'May', value: 91 },
-        { label: 'Jun', value: 96 }
-      ]
-    }
-  ];
 
   const reportSections = [
     {
@@ -210,74 +176,7 @@ const ReportesEstadisticas = ({ onBack }) => {
           </div>
         );
       case 'estadisticas':
-        return (
-          <div>
-            <div className="dashboard-header">
-              <h2 className="dashboard-title">Estadísticas Académicas</h2>
-              <p className="dashboard-subtitle">Consulta estadísticas y análisis comparativos</p>
-            </div>
-            <div className="dashboard-content">
-              {/* Gráficas de estadísticas */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '30px', marginBottom: '30px' }}>
-                <GraficaCircular 
-                  data={datosGraficaCircular} 
-                  title="Distribución de Calificaciones"
-                  width={350}
-                  height={350}
-                />
-                <GraficaLinea 
-                  data={datosGraficaLinea} 
-                  title="Tendencia de Rendimiento Académico"
-                  width={450}
-                  height={300}
-                />
-              </div>
-              
-              {/* Estadísticas adicionales */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
-                <div className="dashboard-card">
-                  <div className="card-header">
-                    <span className="card-icon">👥</span>
-                    <h3 className="card-title">Total Estudiantes</h3>
-                  </div>
-                  <div style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--rojo-institucional)', textAlign: 'center', margin: '20px 0' }}>
-                    1,247
-                  </div>
-                </div>
-                
-                <div className="dashboard-card">
-                  <div className="card-header">
-                    <span className="card-icon">📚</span>
-                    <h3 className="card-title">Materias Activas</h3>
-                  </div>
-                  <div style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--rojo-institucional)', textAlign: 'center', margin: '20px 0' }}>
-                    45
-                  </div>
-                </div>
-                
-                <div className="dashboard-card">
-                  <div className="card-header">
-                    <span className="card-icon">🎓</span>
-                    <h3 className="card-title">Promedio General</h3>
-                  </div>
-                  <div style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--rojo-institucional)', textAlign: 'center', margin: '20px 0' }}>
-                    87.5
-                  </div>
-                </div>
-                
-                <div className="dashboard-card">
-                  <div className="card-header">
-                    <span className="card-icon">📊</span>
-                    <h3 className="card-title">Tasa de Aprobación</h3>
-                  </div>
-                  <div style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--rojo-institucional)', textAlign: 'center', margin: '20px 0' }}>
-                    92%
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
+        return <EstadisticasCompletas onBack={handleBackToSections} />;
       default:
         return null;
     }

@@ -1,6 +1,14 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import *
+from .estadisticas_views import (
+    EstadisticasGeneralesView,
+    EstadisticasDemograficasView,
+    EstadisticasAcademicasView,
+    EstadisticasInstitucionalesView,
+    EstadisticasComparativasView,
+    FiltrosDisponiblesView
+)
 from rest_framework_simplejwt.views import TokenRefreshView
 
 
@@ -48,6 +56,14 @@ urlpatterns = [
     path('definitivas/', DefinitivasView.as_view(), name='definitivas'),
     path('promedio/', Promedios.as_view(), name='promedio'),
     path('traer_todas_las_materias_agrupadas/', TraerTodasLasMateriasAgrupadas.as_view(), name='traer_todas_las_materias_agrupadas'),
+    
+    # Endpoints de estadísticas
+    path('estadisticas/generales/', EstadisticasGeneralesView.as_view(), name='estadisticas_generales'),
+    path('estadisticas/demograficas/', EstadisticasDemograficasView.as_view(), name='estadisticas_demograficas'),
+    path('estadisticas/academicas/', EstadisticasAcademicasView.as_view(), name='estadisticas_academicas'),
+    path('estadisticas/institucionales/', EstadisticasInstitucionalesView.as_view(), name='estadisticas_institucionales'),
+    path('estadisticas/comparativas/', EstadisticasComparativasView.as_view(), name='estadisticas_comparativas'),
+    path('estadisticas/filtros/', FiltrosDisponiblesView.as_view(), name='estadisticas_filtros'),
 ]
 
 urlpatterns += router.urls

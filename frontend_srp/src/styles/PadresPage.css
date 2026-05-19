@@ -10,6 +10,8 @@
   flex: 1;
   display: flex;
   flex-direction: column;
+  width: 100%;
+  margin-top: 120px; /* Espacio para navbar fijo + separación */
 }
 
 /* Contenedor scrollable para el contenido principal */
@@ -17,13 +19,15 @@
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  padding: 20px;
 }
 
 /* Limitar ancho y centrar para evitar espacios sobrantes */
 .padres-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding-top: 100px;
+  width: 100%;
+  padding: 0 20px;
 }
 
 /* Encabezado tipo hero para Padres */
@@ -59,12 +63,30 @@
 /* Módulos anchos internos */
 .padres-container .card.wide {
   max-width: 100%;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  padding: 24px;
+}
+
+.padres-container .card.wide h3 {
+  color: var(--rojo-institucional, #dc3545);
+  margin: 0 0 20px 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.padres-container .card.wide p {
+  color: var(--gris-secundario, #6c757d);
+  margin: 0 0 16px 0;
+  font-size: 14px;
 }
 
 /* Footer específico para Padres: sin margen lateral, altura proporcional */
 .padres-page .footer {
   margin-left: 0; /* No hay sidebar en Padres */
-  padding: 20px 0; /* Reducir altura por defecto */
+  padding: 20px 0;
+  margin-top: auto;
 }
 
 .padres-page .footer-content {
@@ -73,30 +95,12 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 24px;
+  margin: 0 auto;
 }
 
 .padres-page .footer-logo {
   width: 100px;
   height: 100px;
-}
-
-/* Responsividad */
-@media (max-width: 992px) {
-  .padres-container { padding: 16px; padding-top: 100px;}
-  .padres-page .footer-content { grid-template-columns: 1fr 1fr; }
-}
-
-@media (max-width: 768px) {
-  .padres-container { padding: 12px; padding-top: 100px; }
-  .padres-page .footer { padding: 16px 0; }
-  .padres-page .footer-content { grid-template-columns: 1fr; gap: 16px; }
-  .padres-page .footer-logo { width: 80px; height: 80px; }
-}
-
-@media (max-width: 480px) {
-  .padres-container { padding: 10px; padding-top: 100px; }
-  .padres-page .footer { padding: 14px 0; }
-  .padres-page .footer-logo { width: 64px; height: 64px; }
 }
 
 /* Estilos para la nueva vista de notas con dos paneles */
@@ -146,7 +150,7 @@
 }
 
 .actividades-detail h4 {
-  margin-bottom: 16px;
+  margin: 0 0 16px 0;
   color: #333;
   font-size: 18px;
   font-weight: 600;
@@ -159,25 +163,31 @@
   display: flex;
   gap: 12px;
   align-items: center;
-  margin: 12px 0;
+  margin: 16px 0;
+}
+
+.periodo-selector-container select {
+  flex: 1;
+  max-width: 400px;
 }
 
 /* Botón con espaciado superior */
 .btn-with-top-spacing {
-  margin-top: 20px;
+  margin-top: 24px;
 }
 
 /* Botón volver con color institucional */
 .btn-volver {
-  padding: 10px 20px;
+  padding: 12px 24px;
   background-color: var(--rojo-institucional, #c41e3a);
   color: white;
   border: none;
   border-radius: 6px;
   cursor: pointer;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   transition: all 0.3s ease;
+  display: inline-block;
 }
 
 .btn-volver:hover {
@@ -191,8 +201,54 @@
   box-shadow: 0 2px 4px rgba(196, 30, 58, 0.2);
 }
 
-/* Responsive */
+/* Responsividad */
+@media (max-width: 992px) {
+  .padres-content {
+    margin-top: 120px;
+  }
+  
+  .padres-scroll {
+    padding: 16px;
+  }
+  
+  .padres-container {
+    padding: 0 16px;
+  }
+  
+  .padres-page .footer-content {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 @media (max-width: 768px) {
+  .padres-content {
+    margin-top: 120px;
+  }
+  
+  .padres-scroll {
+    padding: 12px;
+  }
+  
+  .padres-container {
+    padding: 0 12px;
+  }
+  
+  .padres-hero {
+    padding: 20px;
+  }
+  
+  .padres-hero h1 {
+    font-size: 24px;
+  }
+  
+  .padres-hero p {
+    font-size: 14px;
+  }
+  
+  .padres-container .card.wide {
+    padding: 20px;
+  }
+  
   .notas-panel-container {
     flex-direction: column;
   }
@@ -208,5 +264,73 @@
   .materia-btn {
     white-space: nowrap;
     min-width: fit-content;
+  }
+  
+  .padres-page .footer {
+    padding: 16px 0;
+  }
+  
+  .padres-page .footer-content {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .padres-page .footer-logo {
+    width: 80px;
+    height: 80px;
+  }
+}
+
+@media (max-width: 640px) {
+  .padres-content {
+    margin-top: 140px; /* Navbar más alto en mobile + separación */
+  }
+}
+
+@media (max-width: 480px) {
+  .padres-content {
+    margin-top: 140px;
+  }
+  
+  .padres-scroll {
+    padding: 10px;
+  }
+  
+  .padres-container {
+    padding: 0 10px;
+  }
+  
+  .padres-hero {
+    padding: 16px;
+  }
+  
+  .padres-hero h1 {
+    font-size: 20px;
+  }
+  
+  .padres-hero p {
+    font-size: 13px;
+  }
+  
+  .padres-container .card.wide {
+    padding: 16px;
+  }
+  
+  .padres-container .card.wide h3 {
+    font-size: 18px;
+  }
+  
+  .btn-volver {
+    width: 100%;
+    padding: 10px 20px;
+  }
+  
+  .padres-page .footer {
+    padding: 14px 0;
+  }
+  
+  .padres-page .footer-logo {
+    width: 64px;
+    height: 64px;
   }
 }

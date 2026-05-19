@@ -180,7 +180,6 @@ function PadresPage() {
   return (
     <div className="dashboard padres-page">
       <Logout />
-      <Breadcrumbs />
 
       <div className="dashboard-content-1 padres-content">
         <main className="content padres-scroll">
