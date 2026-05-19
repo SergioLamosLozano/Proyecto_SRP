@@ -411,7 +411,7 @@ const GestionUsuarios = ({ onBack }) => {
             item.numero_documento_estudiante,
             {
               fk_tipo_estado: 2,
-            }
+            },
           )
             .then(() => {
               Swal.fire({
@@ -434,7 +434,7 @@ const GestionUsuarios = ({ onBack }) => {
             item.numero_documento_profesor,
             {
               fk_id_estado: 2,
-            }
+            },
           )
             .then(() => {
               Swal.fire({
@@ -760,7 +760,7 @@ const GestionUsuarios = ({ onBack }) => {
         if (result.isConfirmed) {
           try {
             const respons = await EliminarPadres(
-              item.numero_documento_acudiente
+              item.numero_documento_acudiente,
             )
               .then(() => {
                 Swal.fire({
@@ -797,10 +797,10 @@ const GestionUsuarios = ({ onBack }) => {
     e.preventDefault();
 
     const estudiante = Estudiantes.find(
-      (est) => est.numero_documento_estudiante == AsignacionD
+      (est) => est.numero_documento_estudiante == AsignacionD,
     );
     const padre = padres.find(
-      (pdr) => pdr.numero_documento_acudiente == AsignacionD2
+      (pdr) => pdr.numero_documento_acudiente == AsignacionD2,
     );
 
     if (estudiante) {
@@ -1285,7 +1285,7 @@ const GestionUsuarios = ({ onBack }) => {
                   label: "CURSO",
                   render: (row) => {
                     const curso = row.cursos.find(
-                      (c) => c.estado_curso === "Activo"
+                      (c) => c.estado_curso === "Activo",
                     );
                     return curso ? curso.curso_nombre : "Sin curso";
                   },

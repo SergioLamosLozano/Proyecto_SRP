@@ -27,7 +27,8 @@ router.register(r'acudientes', AcudienteViewSet, basename='Acudientes')
 router.register(r'notas', EstudianteNotasViewSet, basename='Notas')
 router.register(r'match-acudientes', AcudienteUserMatchViewSet, basename='match-acudientes')
 router.register(r'estudiantes-acudientes', EstudianteAcudienteViewSet, basename='Estudiante_Acudiente')
-router.register(r'estudiantes_cursos', EstudiantesCursosViewSet, basename='Estudiantes_Cursos')
+router.register(r'estudiante_cursos', EstudiantesCursosViewSet, basename='Estudiantes_Cursos')
+router.register(r'materias_asignadas', MateriasAsignadasViewSet, basename='Materias_Asignadas')
 
 urlpatterns = [
     path('token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
@@ -46,6 +47,7 @@ urlpatterns = [
     path('traer_materias_profesor/', TraerMateriaDeProfesor.as_view(), name='traer_materias_profesor'),
     path('definitivas/', DefinitivasView.as_view(), name='definitivas'),
     path('promedio/', Promedios.as_view(), name='promedio'),
+    path('traer_todas_las_materias_agrupadas/', TraerTodasLasMateriasAgrupadas.as_view(), name='traer_todas_las_materias_agrupadas'),
 ]
 
 urlpatterns += router.urls

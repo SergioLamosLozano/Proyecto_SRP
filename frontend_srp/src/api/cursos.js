@@ -137,7 +137,7 @@ export const EliminarMateriaAsignada = (id) => {
 };
 
 export const Estudiantes_cursos = () => {
-  return api.get(`/estudiantes_cursos/`);
+  return api.get(`/estudiante_cursos/`);
 };
 
 export const Estudiantes_cursosBucar = (id) => {
@@ -360,4 +360,16 @@ export const CrearRAs = (datos) => {
       Alert("error", err.response?.data);
       throw err;
     });
+};
+
+export const ObtenerDefinitivas = (datos) => {
+  return api.post("/definitivas/", datos);
+};
+
+export const ObtenerPromedioGeneral = (datos) => {
+  return api.post("/promedio/", datos);
+};
+
+export const TraerMateriasAgrupadas = (datos) => {
+  return api.get("/traer_todas_las_materias_agrupadas/");
 };

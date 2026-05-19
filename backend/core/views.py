@@ -1227,49 +1227,68 @@ class TraerMateriaDeProfesor(APIView):
 
 class DefinitivasView(APIView):
     def buscardefinitiva(self, request):
-        documento = request.data.get("fk_numero_documento_estudiante")
         materia = request.data.get("fk_id_materia")
         id_curso = request.data.get("id_curso")
         periodo = request.data.get("fk_id_periodo")
 
-        if not documento or not materia or not id_curso or not periodo:
-            return Response('error, faltan datos para la consulta', status=400)
-
+        # Buscamos todas las definitivas ya existentes para ese curso, materia y periodo
         buscardefinitivas = Definitivas.objects.filter(
-            fk_id_materia = materia,
-            fk_id_estudiantes_cursos__numero_documento_estudiante = documento,
-            fk_id_estudiantes_cursos__id_curso = id_curso,
-            fk_id_periodo = periodo
+            fk_id_materia=materia,
+            fk_id_estudiantes_cursos__id_curso=id_curso,
+            fk_id_periodo=periodo
         ).all()
-        if not buscardefinitivas:
-            return False
-        return list(buscardefinitivas.values())
         
+        if not buscardefinitivas.exists():
+            return None
+            
+        serializer = DefinitivaSerializer(buscardefinitivas, many=True)
+        return serializer.data
 
-
-
-    def ponderar(self, lista, curso, estudiante):
+    def ponderar(self, lista, curso):
         resultado = {}
+        
         for l in lista:
-            clave = l["nombre_materia"]
-            if clave not in resultado:
-                resultado[clave] = {
-                    "valor_definitiva": 0,
+            # Obtenemos el documento del estudiante de la nota actual
+            # (Asegúrate de que tu EstudianteNotasSerializer devuelva este campo como un string/int directo)
+            estudiante_doc = l.get("fk_numero_documento_estudiante")
+            if not estudiante_doc:
+                continue
+                
+            # La clave interna será el documento del estudiante
+            if estudiante_doc not in resultado:
+                resultado[estudiante_doc] = {
+                    "valor_definitiva": 0.0,
                     "fk_id_materia": l["id_materia"],
                     "fk_id_periodo": l["periodo"],
-                    "fk_id_estudiantes_cursos": 0,
-                    "estado": ''
+                    "fk_id_estudiantes_cursos": 0, # Lo llenamos abajo con la matrícula real
+                    "estado": '',
+                    "documento_estudiante": estudiante_doc
                 }
 
-            resultado[clave]["valor_definitiva"] += float(l["calificacion"]) * (float(l["porcentaje_actividad"]) / 100) * (float(l["porcentaje_ra"]) / 100)
+            # Acumulamos la ponderación: Nota * % Actividad * % RA
+            nota = float(l["calificacion"])
+            porcentaje_actividad = float(l["porcentaje_actividad"]) / 100
+            porcentaje_ra = float(l["porcentaje_ra"]) / 100
+            
+            resultado[estudiante_doc]["valor_definitiva"] += nota * porcentaje_actividad * porcentaje_ra
         
-        buscarestudiante = Estudiantes_cursos.objects.filter(
-            id_curso = curso,
-            numero_documento_estudiante = estudiante
-        ).first()
-
-        for r in resultado.values():
-            r["fk_id_estudiantes_cursos"] = buscarestudiante.id_estudiantes_cursos
+        # Cruzamos con Estudiantes_cursos para obtener el id relacional y definir si aprobó o no
+        for doc, r in list(resultado.items()):
+            buscarestudiante = Estudiantes_cursos.objects.filter(
+                id_curso=curso,
+                numero_documento_estudiante=doc
+            ).first()
+            
+            if buscarestudiante:
+                r["fk_id_estudiantes_cursos"] = buscarestudiante.id_estudiantes_cursos
+            else:
+                # Si el estudiante no está matriculado formalmente en el curso, lo removemos del lote
+                resultado.pop(doc)
+                continue
+                
+            # Redondeamos a dos decimales
+            r["valor_definitiva"] = round(r["valor_definitiva"], 2)
+            
             if r["valor_definitiva"] < 3.0:
                 r["estado"] = "reprobado"
             else:
@@ -1277,37 +1296,45 @@ class DefinitivasView(APIView):
         
         return resultado
 
-    def get(self, request):
-        
+    def post(self, request):
         id_curso = request.data.get("id_curso")
-        fk_numero_documento_estudiante = request.data.get("fk_numero_documento_estudiante")
-        consulta = request.data.get("consulta")
+        materia = request.data.get("fk_id_materia")
         periodo = request.data.get("fk_id_periodo")
+        consulta = request.data.get("consulta") # 'consulta' o 'crear'
+
+        if not id_curso or not materia or not periodo:
+            return Response('Faltan datos obligatorios: id_curso, fk_id_materia y fk_id_periodo', status=400)
 
         if not consulta:
-            return Response('se necesita saber si quiere crear una definitiva o solo consultarla: consulta o crear', status=400)
+            return Response('Se necesita el parámetro "consulta": "consulta" o "crear"', status=400)
 
+        # 1. Si ya se procesaron y guardaron antes, las traemos directamente de la DB
         buscar = self.buscardefinitiva(request)
-        if buscar:
+        if buscar is not None:
             return Response(buscar, status=200)
         
-        notasestudiante = EstudianteNotas.objects.filter(
-            fk_numero_documento_estudiante = fk_numero_documento_estudiante,
-            fk_id_actividad__fk_id_ra__fk_id_materia_profesores__fk_id_curso__id_curso = id_curso,
-             fk_id_actividad__fk_id_ra__fk_id_periodo_academico__id_periodo = periodo
+        # 2. Si no existen en la tabla 'Definitivas', vamos a calcularlas desde las notas de todo el salón
+        notas_curso = EstudianteNotas.objects.filter(
+            fk_id_actividad__fk_id_ra__fk_id_materia_profesores__fk_id_curso__id_curso=id_curso,
+            fk_id_actividad__fk_id_ra__fk_id_materia_profesores__fk_id_materia=materia,
+            fk_id_actividad__fk_id_ra__fk_id_periodo_academico__id_periodo=periodo
         ).exclude(
-            fk_numero_documento_estudiante__fk_tipo_estado__id_tipo_estado = 2
+            fk_numero_documento_estudiante__fk_tipo_estado__id_tipo_estado=2
         )
-        if not notasestudiante:
-            return Response('error el estudiante no tiene notas', status=400)
-        serializernota = EstudianteNotasSerializer(notasestudiante, many=True)
-        res = self.ponderar(serializernota.data, id_curso, fk_numero_documento_estudiante)
+        
+        if not notas_curso.exists():
+            return Response([], status=200) # Devolvemos lista vacía amigable si no hay notas registradas todavía
+            
+        # Asumiendo que tu EstudianteNotasSerializer procesa la relación de porcentajes adecuadamente
+        serializernota = EstudianteNotasSerializer(notas_curso, many=True)
+        res = self.ponderar(serializernota.data, id_curso)
+        
         if consulta == "consulta":
             return Response(res.values(), status=200)
         
-        definitivascreadas = 0
+        # 3. Guardar el lote calculado en la tabla Definitivas (Modo: 'crear')
         for r in res.values():
-
+            # Verificación de duplicados redundante de seguridad
             existe = Definitivas.objects.filter(
                 fk_id_materia=r["fk_id_materia"],
                 fk_id_estudiantes_cursos=r["fk_id_estudiantes_cursos"],
@@ -1320,15 +1347,16 @@ class DefinitivasView(APIView):
             serializer = DefinitivaSerializer(data=r)
             if serializer.is_valid():
                 serializer.save()
-                definitivascreadas += 1
             else:
                 return Response(serializer.errors, status=400)
         
-        return Response(f"ser crearon con exito {definitivascreadas} definitivas", status=201)
+        # Retornamos el lote completo recién guardado con los nombres resueltos por el Serializer
+        definitivas_finales = self.buscardefinitiva(request)
+        return Response(definitivas_finales if definitivas_finales else list(res.values()), status=201)
 
 class Promedios(APIView):
 
-    def get(self, request):
+    def post(self, request):
 
         documento = request.data.get("fk_numero_documento_estudiante")
         id_curso = request.data.get("id_curso")
@@ -1371,6 +1399,41 @@ class Promedios(APIView):
             "periodo": periodo
         }, status=200)
         
+class TraerTodasLasMateriasAgrupadas(APIView):
+    def get(self, request):
+        # 1. Traemos absolutamente todas las asignaciones sin filtrar por profesor
+        materias = MateriasAsignadas.objects.all()
+
+        if not materias.exists():
+            return Response([], status=200)
+
+        agrupadas = {}
+
+        # 2. Iteramos y agrupamos los cursos bajo su respectiva asignatura
+        for m in materias:
+            id_materia = m.fk_id_materia.id_materia
+
+            # Si la materia no ha sido registrada en el diccionario, la inicializamos
+            if id_materia not in agrupadas:
+                agrupadas[id_materia] = {
+                    "fk_id_materia": id_materia,
+                    "nombre_materia": m.fk_id_materia.nombre,
+                    "fk_id_año_electivo": m.fk_id_año_electivo.id_año_electivo if m.fk_id_año_electivo else None,
+                    "cursos": []
+                }
+
+            # Validamos que el curso no se repita dentro de la misma materia (por si tiene múltiples docentes)
+            curso_ya_agregado = any(c["id_curso"] == m.fk_id_curso.id_curso for c in agrupadas[id_materia]["cursos"])
+
+            if not curso_ya_agregado:
+                agrupadas[id_materia]["cursos"].append({
+                    "id_materia_profesores": m.id_materia_profesores,
+                    "id_curso": m.fk_id_curso.id_curso,
+                    "nombre_curso": m.fk_id_curso.nombre
+                })
+
+        # 3. Retornamos la colección formateada en una lista idéntica a la que usas en el perfil docente
+        return Response(list(agrupadas.values()), status=200)
 
 
         

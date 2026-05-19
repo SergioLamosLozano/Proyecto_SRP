@@ -4,62 +4,61 @@ import "../styles/Calificaciones.css";
 import Breadcrumbs from "./Breadcrumbs";
 import Table from "./Table";
 import { EstudiantesGET } from "../api/usuarios";
-import {
-  Cursos,
-  Estudiantes_cursos,
-  Estudiantes_cursosBucar,
-  Estudiantes_notas,
-} from "../api/cursos";
+import { TraerMateriasAgrupadas } from "../api/cursos";
 import VerNotas from "./VerNotas";
-import VerCursos from "./VerCursos";
 
 const Calificaciones = ({ onBack }) => {
   const [currentSubSection, setCurrentSubSection] = useState(null);
-  //estudiantes y notas
+
+  // Estados para el flujo en cascada estricto
+  const [materias, setMaterias] = useState([]);
+  const [materiaSeleccionada, setMateriaSeleccionada] = useState(null);
+  const [cursosVisibles, setCursosVisibles] = useState([]);
+  const [cursoSeleccionado, setCursoSeleccionado] = useState(null);
+
+  // Estudiantes y notas
   const [EstudianteN, setEstudianteN] = useState([]);
   const [listaNueva, setListaNueva] = useState([]);
   const [VerCalificacion, setVerCalificacion] = useState(false);
   const [nombre, setNombre] = useState("");
   const [Grado, setGrado] = useState(false);
-  const [cursos, setCursos] = useState([]);
-  //cargar Estudiantes y notas
-  const CargarEN = async () => {
-    try {
-      const response2 = await Cursos();
-      setCursos(response2.data);
-    } catch (err) {
-      console.log(err);
-    }
+
+  const MateriasAgrupadas = async () => {
+    const res = await TraerMateriasAgrupadas();
+    setMaterias(res.data || []);
   };
-  //useEffect para cargar todo
+
   useEffect(() => {
-    CargarEN();
+    MateriasAgrupadas();
   }, []);
-  //buscar notas
-  const Notas = async (item) => {
-    if (item) {
-      try {
-        const respons = await Estudiantes_notas(
-          item.numero_documento_estudiante,
-        );
-        const ListaC = respons.data.map((nota) => ({
-          documento: nota.estudiante.numero_documento_estudiante,
-          nombre: nota.estudiante.nombre_completo,
-          calificacion: nota.calificacion,
-          actividad: nota.actividad.Tipo_Actividad,
-          porcentaje: nota.actividad.porcentaje,
-          materia: nota.actividad.MateriaProfesores.materia_nombre,
-          curso: nota.actividad.MateriaProfesores.curso_nombre,
-        }));
-        setNombre(item.nombre1);
-        setListaNueva(ListaC);
-        setVerCalificacion(true);
-      } catch (err) {
-        console.log(err);
-      }
+
+  // Controladores para la navegación limpia Materia -> Cursos
+  const handleMateriaClick = (materia) => {
+    if (materia) {
+      setMateriaSeleccionada(materia);
+      setCursosVisibles(materia.cursos || []);
+      setCursoSeleccionado(null); // Resetear curso por si acaso
     }
   };
-  //breadcrums
+
+  const handleCursoClick = (curso) => {
+    if (curso) {
+      setCursoSeleccionado(curso);
+      // Aquí puedes disparar la carga de estudiantes o la tabla en el futuro
+    }
+  };
+
+  const RegresarAMaterias = () => {
+    setMateriaSeleccionada(null);
+    setCursosVisibles([]);
+    setCursoSeleccionado(null);
+  };
+
+  const RegresarACursos = () => {
+    setCursoSeleccionado(null);
+  };
+
+  // Construcción de Breadcrumbs Dinámicas y Atómicas
   const breadcrumbItems = [
     { label: "Inicio", path: "/coordinacion" },
     { label: "Coordinación Administrativa", path: "/coordinacion" },
@@ -67,28 +66,44 @@ const Calificaciones = ({ onBack }) => {
     ...(currentSubSection
       ? [
           {
-            label:
-              currentSubSection === "cno"
-                ? "CNO"
-                : currentSubSection === "carga masiva"
-                ? "Carga Masiva"
-                : "Carga Masiva",
+            label: currentSubSection === "cno" ? "CNO" : "Carga Masiva",
             path: `/coordinacion/calificaciones/${currentSubSection}`,
+          },
+        ]
+      : []),
+    ...(materiaSeleccionada
+      ? [
+          {
+            label: materiaSeleccionada.nombre_materia,
+            path: `/coordinacion/calificaciones/${currentSubSection}/materia`,
+          },
+        ]
+      : []),
+    ...(cursoSeleccionado
+      ? [
+          {
+            label: cursoSeleccionado.nombre_curso,
+            path: `/coordinacion/calificaciones/${currentSubSection}/materia/curso`,
           },
         ]
       : []),
   ];
 
+  // Interceptador de clicks en las Breadcrumbs para desmontar vistas ordenadamente
   const handleNavigate = (path) => {
     if (path === "/coordinacion") {
       onBack();
     } else if (path === "/coordinacion/calificaciones") {
       setCurrentSubSection(null);
-    } else {
-      const subsection = path.split("/").pop();
-      if (["cno", "carga masiva"].includes(subsection)) {
-        setCurrentSubSection(subsection);
-      }
+      RegresarAMaterias();
+    } else if (path === `/coordinacion/calificaciones/${currentSubSection}`) {
+      // Clic en 'CNO' -> Regresa a ver el listado de materias
+      RegresarAMaterias();
+    } else if (
+      path === `/coordinacion/calificaciones/${currentSubSection}/materia`
+    ) {
+      // Clic en la Materia actual -> Desmota la tabla/vista de estudiantes y vuelve a cursos
+      RegresarACursos();
     }
   };
 
@@ -115,74 +130,99 @@ const Calificaciones = ({ onBack }) => {
     setCurrentSubSection(sectionId);
   };
 
-  const Regresar = () => {
-    setGrado(false);
-    setEstudianteN([]);
-  };
-
-  const Vercalificacion = async (item) => {
-    try {
-      setGrado(true);
-      const filtro = await Estudiantes_cursosBucar(item);
-      const filtro2 = filtro.data.filter(
-        (curs) => curs.estado_curso == "Activo",
-      );
-      setEstudianteN(filtro2);
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
   const renderSubSection = () => {
     switch (currentSubSection) {
       case "cno":
         return (
           <div>
-            {!Grado && (
-              <VerCursos
-                cursosC={cursos}
-                onClick={(item) => Vercalificacion(item)}
-              />
-            )}
-            {Grado && (
+            {/* VISTA 1: Listar Materias (Si no hay ninguna seleccionada) */}
+            {!materiaSeleccionada && (
               <div>
-                <p className="RegresarG" onClick={Regresar}>
-                  Regresar a los Grados
+                <h2
+                  className="dashboard-title"
+                  style={{ fontSize: "1.5rem", marginBottom: "1rem" }}
+                >
+                  Seleccione una Materia
+                </h2>
+                <div className="dashboard-grid">
+                  {materias.map((mat, index) => (
+                    <div
+                      key={`materia-${mat.fk_id_materia}-${index}`}
+                      className="dashboard-card"
+                      onClick={() => handleMateriaClick(mat)}
+                      style={{ cursor: "pointer" }}
+                    >
+                      <div className="card-header">
+                        <span className="card-icon">📖</span>
+                        <h3
+                          className="card-title"
+                          style={{ textTransform: "capitalize" }}
+                        >
+                          {mat.nombre_materia}
+                        </h3>
+                      </div>
+                      <p className="card-description">
+                        {mat.cursos?.length || 0} cursos asignados.
+                      </p>
+                      <button className="card-button">Ver Cursos</button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* VISTA 2: Listar Cursos de la Materia Seleccionada (Y no se ha entrado a un curso específico) */}
+            {materiaSeleccionada && !cursoSeleccionado && (
+              <div>
+                <h2
+                  className="dashboard-title"
+                  style={{ fontSize: "1.5rem", marginBottom: "1rem" }}
+                >
+                  Cursos para:{" "}
+                  <span
+                    style={{
+                      color: "var(--primary-color, #4a90e2)",
+                      textTransform: "capitalize",
+                    }}
+                  >
+                    {materiaSeleccionada.nombre_materia}
+                  </span>
+                </h2>
+                <div className="dashboard-grid">
+                  {cursosVisibles.map((cur, index) => (
+                    <div
+                      key={`curso-${cur.id_curso}-${index}`}
+                      className="dashboard-card"
+                      onClick={() => handleCursoClick(cur)}
+                      style={{ cursor: "pointer" }}
+                    >
+                      <div className="card-header">
+                        <span className="card-icon">🏫</span>
+                        <h3 className="card-title">{cur.nombre_curso}</h3>
+                      </div>
+                      <p className="card-description">
+                        Planilla académica disponible.
+                      </p>
+                      <button className="card-button">Gestionar</button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* VISTA 3: Espacio reservado para cuando se selecciona el Curso */}
+            {materiaSeleccionada && cursoSeleccionado && (
+              <div>
+                <h2
+                  className="dashboard-title"
+                  style={{ fontSize: "1.5rem", marginBottom: "1rem" }}
+                >
+                  Planilla de Estudiantes: {cursoSeleccionado.nombre_curso}
+                </h2>
+                <p className="card-description">
+                  Aquí puedes inyectar tu componente o {"<Table />"} de alumnos
+                  sin flujos cruzados rudimentarios.
                 </p>
-                {VerCalificacion && (
-                  <VerNotas
-                    notas={listaNueva}
-                    estudiante={nombre}
-                    onClickSalir={() => setVerCalificacion(false)}
-                  />
-                )}
-                <Table
-                  id="EstudianteC"
-                  busqueda={[
-                    "numero_documento_estudiante",
-                    "nombre_estudiante",
-                  ]}
-                  title="Notas Estudiantes"
-                  description="Aqui se podran visualizar las notas de los estudiantes"
-                  columns={[
-                    {
-                      key: "numero_documento_estudiante",
-                      label: "DOCUMENTO",
-                    },
-                    { key: "nombre_estudiante", label: "NOMBRE" },
-                  ]}
-                  data={EstudianteN}
-                  searchPlaceholder="Buscar por documento..."
-                  actions={[
-                    {
-                      label: "Ver Notas",
-                      onClick: (item) => {
-                        Notas(item);
-                      },
-                    },
-                  ]}
-                  type_search="number"
-                />
               </div>
             )}
           </div>
@@ -190,13 +230,8 @@ const Calificaciones = ({ onBack }) => {
       case "carga-masiva":
         return (
           <div>
-            <div>
-              <h2>Carga Masiva de Calificaciones</h2>
-              <p>Carga masiva mediante archivos Excel o CSV</p>
-            </div>
-            <div>
-              <p>Funcionalidad de carga masiva en desarrollo...</p>
-            </div>
+            <h2>Carga Masiva de Calificaciones</h2>
+            <p>Funcionalidad de carga masiva en desarrollo...</p>
           </div>
         );
       default:
@@ -207,7 +242,6 @@ const Calificaciones = ({ onBack }) => {
   return (
     <div className="dashboard-container">
       <Breadcrumbs items={breadcrumbItems} onNavigate={handleNavigate} />
-
       <div className="dashboard-content">
         {currentSubSection ? (
           renderSubSection()
@@ -219,7 +253,6 @@ const Calificaciones = ({ onBack }) => {
                 Gestión de calificaciones y certificaciones académicas
               </p>
             </div>
-
             <div className="dashboard-grid">
               {calificationSections.map((section) => (
                 <div

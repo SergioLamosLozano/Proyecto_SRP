@@ -22,7 +22,7 @@ api.interceptors.request.use(
   },
   (error) => {
     return Promise.reject(error);
-  }
+  },
 );
 
 // Interceptor de respuesta: si recibimos 401 intentamos renovar el access token usando refreshToken
@@ -84,7 +84,7 @@ api.interceptors.response.use(
       }
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 // Servicios para Estudiantes
@@ -220,11 +220,11 @@ export const estudiantesAcudientesAPI = {
   delete: (id) => api.delete(`/estudiantes-acudientes/${id}/`),
   por_estudiante: (estudiante_id) =>
     api.get(
-      `/estudiantes-acudientes/por_estudiante/?estudiante_id=${estudiante_id}`
+      `/estudiantes-acudientes/por_estudiante/?estudiante_id=${estudiante_id}`,
     ),
   por_acudiente: (acudiente_id) =>
     api.get(
-      `/estudiantes-acudientes/por_acudiente/?acudiente_id=${acudiente_id}`
+      `/estudiantes-acudientes/por_acudiente/?acudiente_id=${acudiente_id}`,
     ),
 };
 
@@ -242,7 +242,7 @@ export const BusquedaPorNombreA = (documento) => {
 
 export const padresAPI = (acudienteid) => {
   return api.get(
-    `/match-acudientes/verificar_coincidencias/?numero_documento_acudiente=${acudienteid}`
+    `/match-acudientes/verificar_coincidencias/?numero_documento_acudiente=${acudienteid}`,
   );
 };
 
