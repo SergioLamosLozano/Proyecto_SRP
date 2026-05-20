@@ -1,6 +1,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import *
+from .reportes_views import GenerarReporteNotasExcelView, GenerarBoletinPDFView
 from .estadisticas_views import (
     EstadisticasGeneralesView,
     EstadisticasDemograficasView,
@@ -58,6 +59,10 @@ urlpatterns = [
     path('promedio/', Promedios.as_view(), name='promedio'),
     path('traer_todas_las_materias_agrupadas/', TraerTodasLasMateriasAgrupadas.as_view(), name='traer_todas_las_materias_agrupadas'),
     path('consultar_notas_curso/', ConsultarNotasCursoAPIView.as_view(), name='consultar_notas_curso'),
+    
+    # Endpoints de reportes
+    path('reportes/notas-excel/', GenerarReporteNotasExcelView.as_view(), name='reporte_notas_excel'),
+    path('reportes/boletines-pdf/', GenerarBoletinPDFView.as_view(), name='boletines_pdf'),
     
     # Endpoints de estadísticas
     path('estadisticas/generales/', EstadisticasGeneralesView.as_view(), name='estadisticas_generales'),

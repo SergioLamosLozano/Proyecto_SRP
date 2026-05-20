@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import '../styles/Coordinacion.css';
 import Breadcrumbs from './Breadcrumbs';
 import EstadisticasCompletas from './EstadisticasCompletas';
+import ReportesAcademicos from './ReportesAcademicos';
 
 const ReportesEstadisticas = ({ onBack }) => {
   const [currentSubSection, setCurrentSubSection] = useState(null);
@@ -164,17 +165,7 @@ const ReportesEstadisticas = ({ onBack }) => {
   const renderSubSection = () => {
     switch (currentSubSection) {
       case 'reportes':
-        return (
-          <div>
-            <div style={headerStyle}>
-              <h2 style={titleStyle}>Reportes Académicos</h2>
-              <p style={subtitleStyle}>Genera reportes detallados de rendimiento académico</p>
-            </div>
-            <div style={contentStyle}>
-              <p>Funcionalidad de generación de reportes en desarrollo...</p>
-            </div>
-          </div>
-        );
+        return <ReportesAcademicos onBack={handleBackToSections} />;
       case 'estadisticas':
         return <EstadisticasCompletas onBack={handleBackToSections} />;
       default:
