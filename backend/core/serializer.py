@@ -265,16 +265,110 @@ class ProfesoresSerializer(serializers.ModelSerializer):
     def get_nombre_completo(self, obj):
         return f"{obj.nombre1} {obj.nombre2 or ''} {obj.apellido1} {obj.apellido2 or ''}".strip()
     
+class ActividadDetalleSerializer(serializers.ModelSerializer):
+    """Serializer para actividades con información completa"""
+    MateriaProfesores = serializers.SerializerMethodField()
+    fk_id_periodo_academico = serializers.SerializerMethodField()
+    
+    def get_MateriaProfesores(self, obj):
+        try:
+            if obj.fk_id_ra and obj.fk_id_ra.fk_id_materia_profesores:
+                mp = obj.fk_id_ra.fk_id_materia_profesores
+                return {
+                    'id_materia_profesores': mp.id_materia_profesores,
+                    'materia_nombre': mp.fk_id_materia.nombre if mp.fk_id_materia else None,
+                    'curso_nombre': mp.fk_id_curso.nombre if mp.fk_id_curso else None,
+                }
+        except Exception:
+            pass
+        return None
+    
+    def get_fk_id_periodo_academico(self, obj):
+        try:
+            if obj.fk_id_ra and obj.fk_id_ra.fk_id_periodo_academico:
+                return obj.fk_id_ra.fk_id_periodo_academico.id_periodo
+        except Exception:
+            pass
+        return None
+    
+    class Meta:
+        model = Actividades
+        fields = ['id_actividades', 'nombre', 'descripcion', 'porcentaje', 
+                  'fecha_inicio', 'fecha_fin', 'MateriaProfesores', 'fk_id_periodo_academico']
+
+
 class EstudianteNotasSerializer(serializers.ModelSerializer):
-    nombre_actividad = serializers.CharField(read_only=True, source="fk_id_actividad.nombre") 
-    descripcion_actividad = serializers.CharField(read_only=True, source="fk_id_actividad.descripcion")
-    periodo = serializers.IntegerField(read_only=True, source="fk_id_actividad.fk_id_ra.fk_id_periodo_academico.id_periodo") 
-    nombre_materia = serializers.CharField(read_only=True, source="fk_id_actividad.fk_id_ra.fk_id_materia_profesores.fk_id_materia.nombre") 
-    id_materia = serializers.CharField(read_only=True, source="fk_id_actividad.fk_id_ra.fk_id_materia_profesores.fk_id_materia.id_materia") 
-    nombre_grado = serializers.CharField(read_only=True, source="fk_id_actividad.fk_id_ra.fk_id_materia_profesores.fk_id_curso.nombre") 
+    # Campos adicionales para compatibilidad con frontend web
+    nombre_actividad = serializers.SerializerMethodField()
+    descripcion_actividad = serializers.SerializerMethodField()
+    periodo = serializers.SerializerMethodField()
+    nombre_materia = serializers.SerializerMethodField()
+    id_materia = serializers.SerializerMethodField()
+    nombre_grado = serializers.SerializerMethodField()
     nombre_completo_estudiante = serializers.CharField(read_only=True, source="fk_numero_documento_estudiante.nombre_completo")
-    porcentaje_ra = serializers.DecimalField(max_digits=5, decimal_places=2, read_only=True, source="fk_id_actividad.fk_id_ra.porcentaje")
-    porcentaje_actividad = serializers.DecimalField(max_digits=5, decimal_places=2, read_only=True, source="fk_id_actividad.porcentaje")
+    porcentaje_ra = serializers.SerializerMethodField()
+    porcentaje_actividad = serializers.SerializerMethodField()
+    
+    # Actividad completa anidada para el frontend web
+    actividad = ActividadDetalleSerializer(source='fk_id_actividad', read_only=True)
+
+    def get_nombre_actividad(self, obj):
+        return obj.fk_id_actividad.nombre if obj.fk_id_actividad else None
+    
+    def get_descripcion_actividad(self, obj):
+        return obj.fk_id_actividad.descripcion if obj.fk_id_actividad else None
+    
+    def get_periodo(self, obj):
+        try:
+            if obj.fk_id_actividad and obj.fk_id_actividad.fk_id_ra and obj.fk_id_actividad.fk_id_ra.fk_id_periodo_academico:
+                return obj.fk_id_actividad.fk_id_ra.fk_id_periodo_academico.id_periodo
+        except Exception:
+            pass
+        return None
+    
+    def get_nombre_materia(self, obj):
+        try:
+            if (obj.fk_id_actividad and 
+                obj.fk_id_actividad.fk_id_ra and 
+                obj.fk_id_actividad.fk_id_ra.fk_id_materia_profesores and
+                obj.fk_id_actividad.fk_id_ra.fk_id_materia_profesores.fk_id_materia):
+                return obj.fk_id_actividad.fk_id_ra.fk_id_materia_profesores.fk_id_materia.nombre
+        except Exception:
+            pass
+        return None
+    
+    def get_id_materia(self, obj):
+        try:
+            if (obj.fk_id_actividad and 
+                obj.fk_id_actividad.fk_id_ra and 
+                obj.fk_id_actividad.fk_id_ra.fk_id_materia_profesores and
+                obj.fk_id_actividad.fk_id_ra.fk_id_materia_profesores.fk_id_materia):
+                return obj.fk_id_actividad.fk_id_ra.fk_id_materia_profesores.fk_id_materia.id_materia
+        except Exception:
+            pass
+        return None
+    
+    def get_nombre_grado(self, obj):
+        try:
+            if (obj.fk_id_actividad and 
+                obj.fk_id_actividad.fk_id_ra and 
+                obj.fk_id_actividad.fk_id_ra.fk_id_materia_profesores and
+                obj.fk_id_actividad.fk_id_ra.fk_id_materia_profesores.fk_id_curso):
+                return obj.fk_id_actividad.fk_id_ra.fk_id_materia_profesores.fk_id_curso.nombre
+        except Exception:
+            pass
+        return None
+    
+    def get_porcentaje_ra(self, obj):
+        try:
+            if obj.fk_id_actividad and obj.fk_id_actividad.fk_id_ra:
+                return obj.fk_id_actividad.fk_id_ra.porcentaje
+        except Exception:
+            pass
+        return None
+    
+    def get_porcentaje_actividad(self, obj):
+        return obj.fk_id_actividad.porcentaje if obj.fk_id_actividad else None
 
     def validate_calificacion(self, value):
         if value < 0 or value > 5.0:

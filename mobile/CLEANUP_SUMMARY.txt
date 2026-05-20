@@ -1,0 +1,157 @@
+═══════════════════════════════════════════════════════════════════════════════
+  RESUMEN DE LIMPIEZA Y ORGANIZACIÓN - APP MÓVIL
+═══════════════════════════════════════════════════════════════════════════════
+
+Fecha: Mayo 2026
+Estado: COMPLETADO ✓
+
+───────────────────────────────────────────────────────────────────────────────
+1. ARCHIVOS ELIMINADOS
+───────────────────────────────────────────────────────────────────────────────
+
+✓ scripts/reset-project.js          - Script de desarrollo innecesario
+✓ REQUISITOS_FUNCIONALES.md         - Documentación que no debe estar en código
+✓ README.md (original)               - README por defecto de Expo
+✓ assets/images/react-logo*.png     - Logos de React innecesarios (4 archivos)
+✓ scripts/ (carpeta vacía)          - Carpeta eliminada tras limpiar contenido
+
+───────────────────────────────────────────────────────────────────────────────
+2. ARCHIVOS CREADOS/ORGANIZADOS
+───────────────────────────────────────────────────────────────────────────────
+
+CONFIGURACIÓN:
+✓ src/config/api.js                 - Endpoints centralizados del backend
+✓ .env.example                       - Plantilla de variables de entorno
+✓ .gitignore                         - Configuración de archivos ignorados
+
+SERVICIOS:
+✓ src/services/apiService.js        - Cliente HTTP con JWT y manejo de errores
+✓ src/services/notificacionesService.js - Servicio de notificaciones (ya existía)
+
+CONSTANTES:
+✓ src/constants/index.js             - Constantes globales (estados, mensajes, etc.)
+
+UTILIDADES:
+✓ src/utils/gradeUtils.js            - Utilidades para calificaciones (ya existía)
+✓ src/utils/dateUtils.js             - Utilidades para manejo de fechas
+✓ src/utils/validationUtils.js      - Utilidades para validación de datos
+
+DOCUMENTACIÓN:
+✓ README.md (nuevo)                  - Documentación completa y actualizada
+
+───────────────────────────────────────────────────────────────────────────────
+3. CORRECCIONES DE CÓDIGO
+───────────────────────────────────────────────────────────────────────────────
+
+✓ NotificacionesContext.js:
+  - Eliminado import innecesario de 'React'
+  - Eliminado import de 'Constants' (deprecated)
+  - Removida variable 'token' no utilizada
+  - Simplificada lógica de detección de Expo Go
+
+✓ package.json:
+  - Eliminado script 'reset-project'
+  - Agregado script 'clean' para limpiar caché
+
+───────────────────────────────────────────────────────────────────────────────
+4. ESTRUCTURA FINAL DEL PROYECTO
+───────────────────────────────────────────────────────────────────────────────
+
+mobile/
+├── app/                          # Expo Router
+│   ├── _layout.jsx
+│   └── index.jsx
+├── assets/                       # Recursos estáticos
+│   └── images/
+├── src/
+│   ├── components/              # 7 componentes reutilizables
+│   ├── config/                  # Configuración de API
+│   ├── constants/               # Constantes globales
+│   ├── context/                 # 2 contextos (Session, Notificaciones)
+│   ├── hooks/                   # 2 hooks personalizados
+│   ├── models/                  # Datos mock temporales
+│   ├── navigation/              # Configuración de navegación
+│   ├── screens/                 # 9 pantallas
+│   ├── services/                # 2 servicios (API, Notificaciones)
+│   ├── styles/                  # Estilos globales
+│   └── utils/                   # 3 archivos de utilidades
+├── .env.example
+├── .gitignore
+├── app.json
+├── package.json
+└── README.md
+
+───────────────────────────────────────────────────────────────────────────────
+5. MEJORAS IMPLEMENTADAS
+───────────────────────────────────────────────────────────────────────────────
+
+ORGANIZACIÓN:
+✓ Estructura de carpetas clara y escalable
+✓ Separación de responsabilidades (config, services, utils)
+✓ Código modular y reutilizable
+
+SERVICIOS:
+✓ Cliente HTTP centralizado con manejo de tokens JWT
+✓ Interceptores para peticiones y respuestas
+✓ Manejo de errores estandarizado
+✓ Timeout configurable
+✓ Refresh token automático
+
+UTILIDADES:
+✓ Funciones para formateo de fechas
+✓ Validaciones de formularios
+✓ Utilidades para calificaciones
+
+DOCUMENTACIÓN:
+✓ README completo con instrucciones de instalación
+✓ Documentación de arquitectura
+✓ Guía de integración con backend
+✓ Solución de problemas comunes
+
+───────────────────────────────────────────────────────────────────────────────
+6. ESTADO ACTUAL
+───────────────────────────────────────────────────────────────────────────────
+
+COMPLETADO:
+✓ Limpieza de archivos innecesarios
+✓ Organización de estructura
+✓ Creación de servicios base
+✓ Utilidades de soporte
+✓ Documentación completa
+✓ Corrección de warnings de linting
+
+PENDIENTE (SIGUIENTE FASE):
+□ Integración real con backend Django
+□ Reemplazar datos mock por llamadas a API
+□ Implementar caché local
+□ Agregar tests unitarios
+□ Optimizar rendimiento
+□ Preparar para publicación
+
+───────────────────────────────────────────────────────────────────────────────
+7. NOTAS IMPORTANTES
+───────────────────────────────────────────────────────────────────────────────
+
+• Los datos actuales son MOCK (src/models/subjectsData.js)
+• La integración con el backend se realizará en la siguiente fase
+• El servicio apiService.js está listo para usar con el backend Django
+• Las notificaciones push requieren un build (no funcionan en Expo Go)
+• La autenticación biométrica requiere dispositivo físico
+
+───────────────────────────────────────────────────────────────────────────────
+8. COMANDOS ÚTILES
+───────────────────────────────────────────────────────────────────────────────
+
+npm start          - Iniciar servidor de desarrollo
+npm run android    - Abrir en Android
+npm run ios        - Abrir en iOS
+npm run clean      - Limpiar caché de Expo
+npm run lint       - Ejecutar linter
+
+───────────────────────────────────────────────────────────────────────────────
+
+✓ LIMPIEZA COMPLETADA EXITOSAMENTE
+  La aplicación móvil está organizada, documentada y lista para la siguiente
+  fase de integración con el backend Django.
+
+═══════════════════════════════════════════════════════════════════════════════

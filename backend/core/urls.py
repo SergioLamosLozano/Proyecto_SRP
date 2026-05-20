@@ -33,6 +33,7 @@ router.register(r'estudiantes', EstudianteViewSet, basename='Estudiantes')
 router.register(r'profesores', ProfesorViewSet, basename='Profesores')
 router.register(r'acudientes', AcudienteViewSet, basename='Acudientes')
 router.register(r'notas', EstudianteNotasViewSet, basename='Notas')
+router.register(r'definitivas-estudiante', DefinitivasViewSet, basename='Definitivas-Estudiante')
 router.register(r'match-acudientes', AcudienteUserMatchViewSet, basename='match-acudientes')
 router.register(r'estudiantes-acudientes', EstudianteAcudienteViewSet, basename='Estudiante_Acudiente')
 router.register(r'estudiante_cursos', EstudiantesCursosViewSet, basename='Estudiantes_Cursos')
@@ -56,6 +57,7 @@ urlpatterns = [
     path('definitivas/', DefinitivasView.as_view(), name='definitivas'),
     path('promedio/', Promedios.as_view(), name='promedio'),
     path('traer_todas_las_materias_agrupadas/', TraerTodasLasMateriasAgrupadas.as_view(), name='traer_todas_las_materias_agrupadas'),
+    path('consultar_notas_curso/', ConsultarNotasCursoAPIView.as_view(), name='consultar_notas_curso'),
     
     # Endpoints de estadísticas
     path('estadisticas/generales/', EstadisticasGeneralesView.as_view(), name='estadisticas_generales'),

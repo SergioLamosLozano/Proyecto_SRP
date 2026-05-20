@@ -10,6 +10,7 @@ import { padresAPI } from "../api/usuarios";
 import {
   Estudiantes_notas,
   Estudiantes_notas_por_periodo,
+  Estudiantes_definitivas,
 } from "../api/cursos";
 import { jwtDecode } from "jwt-decode";
 import { Periodos, PeriodoById } from "../api/cursos";
@@ -98,13 +99,16 @@ function PadresPage() {
   const cargarNotas = async (doc, periodoId) => {
     try {
       setLoadingNotas(true);
+      
+      // Cargar notas para las actividades
       const resp = periodoId
         ? await Estudiantes_notas_por_periodo(doc, periodoId)
         : await Estudiantes_notas(doc);
       const data = resp.data || [];
       setNotas(data);
+      
+      // Procesar actividades por materia
       const porMateriaActs = {};
-      const porMateria = {};
       for (const n of data) {
         const act = n.actividad;
         const mat = act?.MateriaProfesores?.materia_nombre || "";
@@ -119,29 +123,70 @@ function PadresPage() {
           porcentaje: porc,
           calificacion: cal,
         });
-        if (!porMateria[mat]) {
-          porMateria[mat] = { suma: 0, totalPorc: 0 };
-        }
-        porMateria[mat].suma += cal * (porc / 100);
-        porMateria[mat].totalPorc += porc;
       }
       setActividadesPorMateria(porMateriaActs);
+      
       // Set first subject as selected by default
       const materias = Object.keys(porMateriaActs);
       if (materias.length > 0) {
         setMateriaSeleccionada(materias[0]);
       }
-      const resumen = Object.entries(porMateria).map(([materia, v]) => ({
-        materia,
-        definitiva: Number(v.suma.toFixed(2)),
-      }));
-      setCalificaciones(resumen);
+      
+      // Cargar definitivas desde la base de datos
+      if (periodoId) {
+        try {
+          const defResp = await Estudiantes_definitivas(doc, periodoId);
+          const definitivas = defResp.data || [];
+          
+          if (definitivas.length > 0) {
+            // Usar las definitivas de la base de datos
+            const resumen = definitivas.map(def => ({
+              materia: def.nombre_materia,
+              definitiva: parseFloat(def.valor_definitiva),
+              estado: def.estado
+            }));
+            setCalificaciones(resumen);
+          } else {
+            // Si no hay definitivas guardadas, calcularlas (fallback)
+            calcularDefinitivasDesdeNotas(data);
+          }
+        } catch (e) {
+          console.error('Error cargando definitivas:', e);
+          // Fallback: calcular desde notas
+          calcularDefinitivasDesdeNotas(data);
+        }
+      } else {
+        // Sin periodo, calcular desde notas
+        calcularDefinitivasDesdeNotas(data);
+      }
     } catch (e) {
       setNotas([]);
       setCalificaciones([]);
     } finally {
       setLoadingNotas(false);
     }
+  };
+  
+  const calcularDefinitivasDesdeNotas = (data) => {
+    const porMateria = {};
+    for (const n of data) {
+      const act = n.actividad;
+      const mat = act?.MateriaProfesores?.materia_nombre || "";
+      const porc = parseFloat(act?.porcentaje || 0);
+      const cal = parseFloat(n.calificacion || 0);
+      
+      if (!porMateria[mat]) {
+        porMateria[mat] = { suma: 0, totalPorc: 0 };
+      }
+      porMateria[mat].suma += cal * (porc / 100);
+      porMateria[mat].totalPorc += porc;
+    }
+    
+    const resumen = Object.entries(porMateria).map(([materia, v]) => ({
+      materia,
+      definitiva: Number(v.suma.toFixed(2)),
+    }));
+    setCalificaciones(resumen);
   };
 
   const ensurePeriodos = async (doc) => {

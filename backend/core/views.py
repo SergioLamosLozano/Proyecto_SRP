@@ -95,6 +95,15 @@ class AcudienteUserMatchViewSet(viewsets.ViewSet):
 
             for rel in relaciones:
                 est = rel.fk_numero_documento_estudiante
+                
+                # Obtener el curso actual del estudiante
+                curso_actual = Estudiantes_cursos.objects.filter(
+                    numero_documento_estudiante=est,
+                    estado='activo'
+                ).select_related('id_curso').first()
+                
+                grado = curso_actual.id_curso.nombre if curso_actual and curso_actual.id_curso else 'Sin grado asignado'
+                
                 estudiantes_data.append({
                     "numero_documento": est.numero_documento_estudiante,
                     "nombre_completo": est.nombre_completo,
@@ -102,6 +111,7 @@ class AcudienteUserMatchViewSet(viewsets.ViewSet):
                     "edad": est.edad,
                     "telefono": est.telefono,
                     "direccion": est.direccion,
+                    "grado": grado,
                 })
 
         # Construcción de respuesta
@@ -255,16 +265,84 @@ class AcudienteViewSet(viewsets.ModelViewSet):
     filter_backends = [filters.SearchFilter]
     search_fields = ['numero_documento_acudiente']
 
+class EstudianteNotasFilter(django_filters.FilterSet):
+    fk_numero_documento_estudiante = django_filters.CharFilter(
+        field_name='fk_numero_documento_estudiante__numero_documento_estudiante',
+        lookup_expr='exact'
+    )
+    # Mantener compatibilidad con el frontend web existente
+    fk_id_actividad__fk_id_periodo_academico = django_filters.NumberFilter(
+        field_name='fk_id_actividad__fk_id_ra__fk_id_periodo_academico__id_periodo',
+        lookup_expr='exact'
+    )
+    # Alias más corto para la app móvil
+    periodo = django_filters.NumberFilter(
+        field_name='fk_id_actividad__fk_id_ra__fk_id_periodo_academico__id_periodo',
+        lookup_expr='exact'
+    )
+    fk_id_actividad__fk_id_materia_profesores = django_filters.NumberFilter(
+        field_name='fk_id_actividad__fk_id_ra__fk_id_materia_profesores__id_materia_profesores',
+        lookup_expr='exact'
+    )
+    # Alias más corto para la app móvil
+    materia = django_filters.NumberFilter(
+        field_name='fk_id_actividad__fk_id_ra__fk_id_materia_profesores__fk_id_materia__id_materia',
+        lookup_expr='exact'
+    )
+
+    class Meta:
+        model = EstudianteNotas
+        fields = ['fk_numero_documento_estudiante', 'fk_id_actividad']
+
+
+class DefinitivasFilter(django_filters.FilterSet):
+    estudiante = django_filters.CharFilter(
+        field_name='fk_id_estudiantes_cursos__numero_documento_estudiante__numero_documento_estudiante',
+        lookup_expr='exact'
+    )
+    periodo = django_filters.NumberFilter(
+        field_name='fk_id_periodo__id_periodo',
+        lookup_expr='exact'
+    )
+    materia = django_filters.NumberFilter(
+        field_name='fk_id_materia__id_materia',
+        lookup_expr='exact'
+    )
+
+    class Meta:
+        model = Definitivas
+        fields = ['estudiante', 'periodo', 'materia']
+
+
+class DefinitivasViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet para consultar definitivas de estudiantes
+    Uso: /api/definitivas-estudiante/?estudiante=121212&periodo=1
+    """
+    queryset = Definitivas.objects.select_related(
+        'fk_id_estudiantes_cursos',
+        'fk_id_estudiantes_cursos__numero_documento_estudiante',
+        'fk_id_materia',
+        'fk_id_periodo'
+    ).all()
+    serializer_class = DefinitivaSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = DefinitivasFilter
+
+
 class EstudianteNotasViewSet(viewsets.ModelViewSet):
-    queryset = EstudianteNotas.objects.all()
+    queryset = EstudianteNotas.objects.select_related(
+        'fk_numero_documento_estudiante',
+        'fk_id_actividad',
+        'fk_id_actividad__fk_id_ra',
+        'fk_id_actividad__fk_id_ra__fk_id_periodo_academico',
+        'fk_id_actividad__fk_id_ra__fk_id_materia_profesores',
+        'fk_id_actividad__fk_id_ra__fk_id_materia_profesores__fk_id_materia',
+        'fk_id_actividad__fk_id_ra__fk_id_materia_profesores__fk_id_curso'
+    ).all()
     serializer_class = EstudianteNotasSerializer
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = [
-        'fk_numero_documento_estudiante',
-        'fk_id_actividad__fk_id_periodo_academico',
-        'fk_id_actividad__fk_id_materia_profesores',
-        'fk_id_actividad'
-    ]
+    filterset_class = EstudianteNotasFilter
 
 class PeriodoViewSet(viewsets.ModelViewSet):
     queryset = Periodo.objects.all()

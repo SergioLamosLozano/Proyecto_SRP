@@ -29,7 +29,14 @@ SECRET_KEY = 'django-insecure-j_3z0wv-^yh9$_!64h&l)8czw0)@h7apq!y$oztwzm%3*x3y*^
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+# Permitir conexiones desde la red local para desarrollo móvil
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    '192.168.1.7',  # Tu IP actual
+    '192.168.*',     # Cualquier IP en la red local
+    '10.0.2.2',      # Emulador Android
+]
 
 AUTH_USER_MODEL = 'core.User' 
 
@@ -144,7 +151,12 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://localhost:5174",
     "http://localhost:5175",
+    "http://192.168.1.7:19000",  # Expo en tu dispositivo
+    "http://192.168.1.7:19006",  # Expo web
 ]
+
+# Permitir todas las IPs locales en desarrollo
+CORS_ALLOW_ALL_ORIGINS = DEBUG  # Solo en desarrollo
 
 # settings.py
 

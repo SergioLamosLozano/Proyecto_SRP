@@ -109,6 +109,12 @@ export const Estudiantes_notas_por_periodo = (id, periodoId) => {
   );
 };
 
+export const Estudiantes_definitivas = (id, periodoId) => {
+  return axiosInstance.get(
+    `/definitivas-estudiante/?estudiante=${id}&periodo=${periodoId}`,
+  );
+};
+
 export const Estudiantes_notasPost = (datos) => {
   return axiosInstance.post(`/notas/`, datos);
 };
@@ -267,4 +273,10 @@ export const ObtenerPromedioGeneral = (datos) => {
 
 export const TraerMateriasAgrupadas = (datos) => {
   return axiosInstance.get("/traer_todas_las_materias_agrupadas/");
+};
+
+export const ConsultarNotasCurso = (idCurso, idMateria, idPeriodo) => {
+  return axiosInstance.get(
+    `/consultar_notas_curso/?id_curso=${idCurso}&fk_id_materia=${idMateria}&fk_id_periodo=${idPeriodo}`
+  );
 };
