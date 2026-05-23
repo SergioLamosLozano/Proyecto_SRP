@@ -1,21 +1,60 @@
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import {
     StyleSheet,
     View,
     Text,
-    ScrollView,
     SafeAreaView,
     StatusBar,
     TouchableOpacity,
-    FlatList
+    FlatList,
+    ActivityIndicator
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 import ActivityItem from '../components/ActivityItem';
-import { allActivities } from '../models/subjectsData';
+import { useSession } from '../context/SessionContext';
+import studentService from '../services/studentService';
 import colors from '../styles/colors';
 
 const SeguimientoScreen = ({ navigation }) => {
+    const { currentStudent } = useSession();
+    const [activities, setActivities] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useFocusEffect(
+        useCallback(() => {
+            if (currentStudent?.id) {
+                loadActivities();
+            }
+        }, [currentStudent])
+    );
+
+    const loadActivities = async () => {
+        try {
+            setLoading(true);
+            const response = await studentService.getStudentGrades(currentStudent.id);
+            
+            if (response.success) {
+                // Extraer todas las actividades de todas las materias
+                const allActivities = response.data.flatMap(subject =>
+                    subject.grades.map(grade => ({
+                        ...grade,
+                        subjectName: subject.name,
+                        subjectIcon: subject.icon
+                    }))
+                );
+                setActivities(allActivities);
+            }
+        } catch (error) {
+            console.error('Error cargando actividades:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const sobresalientes = activities.filter(a => a.grade >= 4.0).length;
+
     return (
         <View style={styles.mainContainer}>
             <StatusBar barStyle="light-content" />
@@ -37,13 +76,13 @@ const SeguimientoScreen = ({ navigation }) => {
                         </View>
                         <View style={styles.summaryBox}>
                             <View style={styles.summaryItem}>
-                                <Text style={styles.summaryCount}>{allActivities.length}</Text>
+                                <Text style={styles.summaryCount}>{loading ? '...' : activities.length}</Text>
                                 <Text style={styles.summaryLabel}>Actividades</Text>
                             </View>
                             <View style={styles.summaryDivider} />
                             <View style={styles.summaryItem}>
                                 <Text style={styles.summaryCount}>
-                                    {allActivities.filter(a => a.grade >= 4.0).length}
+                                    {loading ? '...' : sobresalientes}
                                 </Text>
                                 <Text style={styles.summaryLabel}>Sobresalientes</Text>
                             </View>
@@ -52,22 +91,29 @@ const SeguimientoScreen = ({ navigation }) => {
                 </SafeAreaView>
             </LinearGradient>
 
-            <FlatList
-                data={allActivities}
-                keyExtractor={(item) => item.id.toString()}
-                renderItem={({ item }) => <ActivityItem activity={item} />}
-                contentContainerStyle={styles.listContent}
-                showsVerticalScrollIndicator={false}
-                ListHeaderComponent={() => (
-                    <Text style={styles.sectionTitle}>Registro de Calificaciones</Text>
-                )}
-                ListEmptyComponent={() => (
-                    <View style={styles.emptyContainer}>
-                        <MaterialCommunityIcons name="clipboard-text-outline" size={60} color={colors.border} />
-                        <Text style={styles.emptyText}>No hay actividades registradas aún.</Text>
-                    </View>
-                )}
-            />
+            {loading ? (
+                <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color={colors.primary} />
+                    <Text style={styles.loadingText}>Cargando actividades...</Text>
+                </View>
+            ) : (
+                <FlatList
+                    data={activities}
+                    keyExtractor={(item) => item.id.toString()}
+                    renderItem={({ item }) => <ActivityItem activity={item} />}
+                    contentContainerStyle={styles.listContent}
+                    showsVerticalScrollIndicator={false}
+                    ListHeaderComponent={() => (
+                        <Text style={styles.sectionTitle}>Registro de Calificaciones</Text>
+                    )}
+                    ListEmptyComponent={() => (
+                        <View style={styles.emptyContainer}>
+                            <MaterialCommunityIcons name="clipboard-text-outline" size={60} color={colors.border} />
+                            <Text style={styles.emptyText}>No hay actividades registradas aún.</Text>
+                        </View>
+                    )}
+                />
+            )}
         </View>
     );
 };
@@ -149,6 +195,16 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: colors.textMuted,
         marginTop: 15,
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    loadingText: {
+        marginTop: 10,
+        fontSize: 16,
+        color: colors.textMuted,
     },
 });
 

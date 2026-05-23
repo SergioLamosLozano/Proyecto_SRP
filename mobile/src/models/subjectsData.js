@@ -1,3 +1,5 @@
+// Datos de ejemplo para desarrollo - Se pueden eliminar cuando todo esté conectado al backend
+
 export const subjects = [
     {
         id: 1,
@@ -90,20 +92,6 @@ export const allActivities = subjects.flatMap(subject =>
         subjectIcon: subject.icon
     }))
 );
-
-export const scheduleData = [
-    { id: 1, day: "Lunes", subject: "Matemáticas", time: "07:00 - 09:00", room: "Salón 201" },
-    { id: 2, day: "Lunes", subject: "Inglés", time: "09:30 - 11:30", room: "Lab Idiomas" },
-    { id: 3, day: "Martes", subject: "Español", time: "07:00 - 09:00", room: "Salón 102" },
-    { id: 4, day: "Martes", subject: "Sociales", time: "10:00 - 12:00", room: "Salón 304" },
-    { id: 5, day: "Miércoles", subject: "Ciencias", time: "07:00 - 10:00", room: "Laboratorio" },
-];
-
-export const messagesData = [
-    { id: 1, title: "Reunión de Padres", sender: "Rectoría", date: "25 Feb", content: "Cordial saludo, citamos a reunión este viernes a las 4:00 PM.", icon: "account-group" },
-    { id: 2, title: "Salida Pedagógica", sender: "Doc. Sociales", date: "22 Feb", content: "Recordar traer el permiso firmado para el museo.", icon: "bus-school" },
-    { id: 3, title: "Nueva Tarea", sender: "Plataforma", date: "20 Feb", content: "Se ha asignado un nuevo taller de integrales.", icon: "bell-outline" },
-];
 
 export const semesterAverages = [
     { period: "Primer Periodo", average: "4.2" },

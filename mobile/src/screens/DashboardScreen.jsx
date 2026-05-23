@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
     StyleSheet,
     View,
@@ -23,9 +23,8 @@ import colors from '../styles/colors';
 
 const { width } = Dimensions.get('window');
 
-const DashboardScreen = ({ navigation, route }) => {
-    const { childId } = route.params || {};
-    const { seenAlerts, markAsSeen, currentStudent } = useSession();
+const DashboardScreen = ({ navigation }) => {
+    const { alertsShownForStudent, markAlertsShown, currentStudent } = useSession();
     
     const [logoutAlertVisible, setLogoutAlertVisible] = useState(false);
     const [subjects, setSubjects] = useState([]);
@@ -33,9 +32,17 @@ const DashboardScreen = ({ navigation, route }) => {
     const [loading, setLoading] = useState(true);
     
     // Low grades logic
-    const [lowGrades, setLowGrades] = useState([]); // All low grades for cards
+    const [lowGrades, setLowGrades] = useState([]);
     const [currentAlertIndex, setCurrentAlertIndex] = useState(0);
     const [gradeAlertVisible, setGradeAlertVisible] = useState(false);
+    
+    // Ref para rastrear si ya se mostraron alertas (evita problemas de closure)
+    const alertsShownRef = useRef(alertsShownForStudent);
+    
+    // Mantener la ref actualizada
+    useEffect(() => {
+        alertsShownRef.current = alertsShownForStudent;
+    }, [alertsShownForStudent]);
 
     useFocusEffect(
         useCallback(() => {
@@ -67,13 +74,19 @@ const DashboardScreen = ({ navigation, route }) => {
                 const consolidated = getConsolidatedLowGrades(response.data);
                 setLowGrades(consolidated);
 
-                // Modal logic: Only show if not seen in this session
-                if (childId && !seenAlerts[childId]) {
-                    if (consolidated.length > 0) {
-                        setGradeAlertVisible(true);
-                    } else {
-                        markAsSeen(childId);
-                    }
+                // Modal logic: Usar la ref para verificar el estado más reciente
+                const studentId = currentStudent.id;
+                const alreadyShown = alertsShownRef.current[studentId] === true;
+                
+                console.log('🔔 Verificando alertas - StudentID:', studentId, 'Ya mostradas:', alreadyShown, 'Notas bajas:', consolidated.length);
+                
+                if (studentId && !alreadyShown && consolidated.length > 0) {
+                    console.log('🚨 Mostrando alertas de notas bajas');
+                    setCurrentAlertIndex(0);
+                    setGradeAlertVisible(true);
+                    markAlertsShown(studentId);
+                    // Actualizar la ref inmediatamente
+                    alertsShownRef.current = { ...alertsShownRef.current, [studentId]: true };
                 }
             } else {
                 console.log('❌ Error cargando notas:', response.error);
@@ -89,23 +102,17 @@ const DashboardScreen = ({ navigation, route }) => {
         if (currentAlertIndex < lowGrades.length - 1) {
             setCurrentAlertIndex(currentAlertIndex + 1);
         } else {
-            handleCloseAlerts();
+            setGradeAlertVisible(false);
         }
     };
 
     const handleCloseAlerts = () => {
         setGradeAlertVisible(false);
-        if (childId) {
-            markAsSeen(childId);
-        }
     };
 
     const handleViewSubject = (subjectId) => {
         setGradeAlertVisible(false);
         const subject = subjects.find(s => s.id === subjectId);
-        if (childId) {
-            markAsSeen(childId);
-        }
         navigation.navigate('SubjectDetail', { subject });
     };
 
@@ -188,18 +195,11 @@ const DashboardScreen = ({ navigation, route }) => {
                         onPress={() => navigation.navigate('Seguimiento')}
                     />
                     <MenuCard
-                        title="Horario"
-                        icon="calendar-clock"
+                        title="Notas"
+                        icon="school-outline"
                         color="#388E3C"
-                        description="Mis clases"
-                        onPress={() => navigation.navigate('Horario')}
-                    />
-                    <MenuCard
-                        title="Mensajes"
-                        icon="message-text-outline"
-                        color="#FBC02D"
-                        description="Comunicación"
-                        onPress={() => navigation.navigate('Mensajes')}
+                        description="Definitivas por periodo"
+                        onPress={() => navigation.navigate('Notas')}
                     />
                 </View>
 

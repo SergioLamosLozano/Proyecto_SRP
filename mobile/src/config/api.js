@@ -10,7 +10,7 @@
 // - Windows: ipconfig (busca IPv4)
 // - Mac/Linux: ifconfig (busca inet)
 export const API_BASE_URL = __DEV__ 
-  ? 'http://192.168.1.7:8000/api'  // Desarrollo local - CAMBIAR localhost por tu IP si usas dispositivo físico
+  ? 'http://192.168.1.8:8000/api'  // Desarrollo local - CAMBIAR localhost por tu IP si usas dispositivo físico
   : 'https://tu-dominio.com/api'; // Producción
 
 // Endpoints de autenticación

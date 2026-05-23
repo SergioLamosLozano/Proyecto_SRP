@@ -3,25 +3,34 @@ import React, { createContext, useState, useContext } from 'react';
 const SessionContext = createContext();
 
 export const SessionProvider = ({ children }) => {
-    const [seenAlerts, setSeenAlerts] = useState({});
+    const [alertsShownForStudent, setAlertsShownForStudent] = useState({});
     const [user, setUser] = useState({ name: 'Acudiente' });
     const [currentStudent, setCurrentStudent] = useState(null);
 
-    const markAsSeen = (childId) => {
-        setSeenAlerts((prev) => ({
+    // Marcar que ya se mostraron las alertas para un estudiante
+    const markAlertsShown = (childId) => {
+        setAlertsShownForStudent((prev) => ({
             ...prev,
             [childId]: true,
         }));
     };
 
     const resetSession = () => {
-        setSeenAlerts({});
+        setAlertsShownForStudent({});
         setUser({ name: 'Acudiente' });
         setCurrentStudent(null);
     };
 
     return (
-        <SessionContext.Provider value={{ seenAlerts, markAsSeen, resetSession, user, setUser, currentStudent, setCurrentStudent }}>
+        <SessionContext.Provider value={{ 
+            alertsShownForStudent,
+            markAlertsShown,
+            resetSession, 
+            user, 
+            setUser, 
+            currentStudent, 
+            setCurrentStudent 
+        }}>
             {children}
         </SessionContext.Provider>
     );
