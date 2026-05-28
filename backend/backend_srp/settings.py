@@ -35,7 +35,8 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
     '192.168.1.8',  # Tu IP actual
     '192.168.*',     # Cualquier IP en la red local
-    '10.0.2.2',      # Emulador Android
+    '10.0.2.2', 
+    '*'     # Emulador Android
 ]
 
 AUTH_USER_MODEL = 'core.User' 

@@ -60,7 +60,12 @@ const GestionUsuarios = ({ onBack }) => {
   //boton del filtro 1
   const [BTNfiltro, setBTNfiltro] = useState(true);
   //filtro Activos (estudiantes)
-  const filtro1 = Estudiantes.filter((est) => est.estado == "Activo");
+  const filtro1Activos = Estudiantes.filter(
+    (est) => String(est.estado).toLowerCase() === "activo"
+  );
+  const filtro1Inactivos = Estudiantes.filter(
+    (est) => String(est.estado).toLowerCase() === "inactivo"
+  );
   //cargar todo lo que se necesita del estudiante
   const CargarEstudiante = async () => {
     try {
@@ -90,8 +95,13 @@ const GestionUsuarios = ({ onBack }) => {
   const [direccionP, setDireccionP] = useState("");
   const [tipoSangreP, setTipoSangreP] = useState(0);
   const [seleccionP, setSeleccionP] = useState([]);
-  // filtro para profesore
-  const filtro2 = Profesores.filter((prof) => prof.estado_desc == "Activo");
+  // filtro para profesores
+  const filtro2Activos = Profesores.filter(
+    (prof) => String(prof.estado_desc).toLowerCase() === "activo"
+  );
+  const filtro2Inactivos = Profesores.filter(
+    (prof) => String(prof.estado_desc).toLowerCase() === "inactivo"
+  );
   //ver materias asignada
   const [verMaterias, setVerMaterias] = useState(false);
   //cargar todo lo necesario del profesor
@@ -406,6 +416,18 @@ const GestionUsuarios = ({ onBack }) => {
   const deshabilitarE = async (item) => {
     try {
       if (item) {
+        const result = await Swal.fire({
+          title: "¿Desactivar usuario?",
+          text: "Esta acción cambiará el estado del usuario a inactivo.",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#c41e3a",
+          cancelButtonColor: "#c41e3a",
+          confirmButtonText: "Sí, desactivar",
+          cancelButtonText: "No, cancelar",
+        });
+        if (!result.isConfirmed) return;
+
         if (item.numero_documento_estudiante) {
           const respons = await EditarEstudiante(
             item.numero_documento_estudiante,
@@ -416,7 +438,7 @@ const GestionUsuarios = ({ onBack }) => {
             .then(() => {
               Swal.fire({
                 icon: "success",
-                text: "Estudiante deshabilitado con exito",
+                text: "Estudiante desactivado con éxito",
                 timer: 3000,
               });
               CargarEstudiante();
@@ -425,7 +447,7 @@ const GestionUsuarios = ({ onBack }) => {
               console.log(err);
               Swal.fire({
                 icon: "error",
-                text: "Estudiante no se pudo deshabilitar",
+                text: "El estudiante no se pudo desactivar",
                 timer: 3000,
               });
             });
@@ -439,7 +461,7 @@ const GestionUsuarios = ({ onBack }) => {
             .then(() => {
               Swal.fire({
                 icon: "success",
-                text: "Profesor deshabilitado con exito",
+                text: "Profesor desactivado con éxito",
                 timer: 3000,
               });
               CargarProfesor();
@@ -448,7 +470,7 @@ const GestionUsuarios = ({ onBack }) => {
               console.log(err);
               Swal.fire({
                 icon: "error",
-                text: "Profesor no se pudo deshabilitar",
+                text: "El profesor no se pudo desactivar",
                 timer: 3000,
               });
             });
@@ -456,9 +478,100 @@ const GestionUsuarios = ({ onBack }) => {
       } else {
         Swal.fire({
           icon: "error",
-          text: "No se encontro el item necesario para deshabilitar el usuario",
+          text: "No se encontró el item necesario para desactivar el usuario",
           timer: 3000,
         });
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const habilitarE = async (item) => {
+    try {
+      if (item) {
+        const result = await Swal.fire({
+          title: "¿Activar usuario?",
+          text: "Esta acción cambiará el estado del usuario a activo.",
+          icon: "question",
+          showCancelButton: true,
+          confirmButtonColor: "#28a745",
+          cancelButtonColor: "#c41e3a",
+          confirmButtonText: "Sí, activar",
+          cancelButtonText: "No, cancelar",
+        });
+        if (!result.isConfirmed) return;
+
+        if (item.numero_documento_estudiante) {
+          await EditarEstudiante(
+            item.numero_documento_estudiante,
+            {
+              fk_tipo_estado: 1,
+            },
+          )
+            .then(() => {
+              Swal.fire({
+                icon: "success",
+                text: "Estudiante activado con éxito",
+                timer: 3000,
+              });
+              CargarEstudiante();
+            })
+            .catch((err) => {
+              console.log(err);
+              Swal.fire({
+                icon: "error",
+                text: "El estudiante no se pudo activar",
+                timer: 3000,
+              });
+            });
+        } else if (item.numero_documento_profesor) {
+          await EditarProfesores(
+            item.numero_documento_profesor,
+            {
+              fk_id_estado: 1,
+            },
+          )
+            .then(() => {
+              Swal.fire({
+                icon: "success",
+                text: "Profesor activado con éxito",
+                timer: 3000,
+              });
+              CargarProfesor();
+            })
+            .catch((err) => {
+              console.log(err);
+              Swal.fire({
+                icon: "error",
+                text: "El profesor no se pudo activar",
+                timer: 3000,
+              });
+            });
+        } else if (item.numero_documento_acudiente) {
+          await EditarPadres(
+            item.numero_documento_acudiente,
+            {
+              fk_id_estado: 1,
+            },
+          )
+            .then(() => {
+              Swal.fire({
+                icon: "success",
+                text: "Acudiente activado con éxito",
+                timer: 3000,
+              });
+              CargarPadres();
+            })
+            .catch((err) => {
+              console.log(err);
+              Swal.fire({
+                icon: "error",
+                text: "El acudiente no se pudo activar",
+                timer: 3000,
+              });
+            });
+        }
       }
     } catch (err) {
       console.log(err);
@@ -748,13 +861,13 @@ const GestionUsuarios = ({ onBack }) => {
     try {
       if (item.numero_documento_acudiente) {
         const result = await Swal.fire({
-          title: "¿Eliminar acudiente?",
-          text: "Esta acción eliminará el acudiente permanentemente.",
+          title: "¿Desactivar acudiente?",
+          text: "Esta acción cambiará el estado del acudiente a inactivo.",
           icon: "warning",
           showCancelButton: true,
           confirmButtonColor: "#c41e3a",
           cancelButtonColor: "#c41e3a",
-          confirmButtonText: "Sí, eliminar",
+          confirmButtonText: "Sí, desactivar",
           cancelButtonText: "No, cancelar",
         });
         if (result.isConfirmed) {
@@ -765,7 +878,7 @@ const GestionUsuarios = ({ onBack }) => {
               .then(() => {
                 Swal.fire({
                   icon: "success",
-                  text: "El acudiente se eliminó exitosamente",
+                  text: "El acudiente se desactivó exitosamente",
                   timer: 3000,
                 });
                 CargarPadres();
@@ -983,7 +1096,7 @@ const GestionUsuarios = ({ onBack }) => {
                   onClick: (item) => AbrirModalParaEditarE(item),
                 },
                 {
-                  label: "Eliminar 🗑️",
+                  label: "Desactivar 🗑️",
                   onClick: (item) => eliminarPadres(item),
                 },
               ]}
@@ -1292,10 +1405,10 @@ const GestionUsuarios = ({ onBack }) => {
                 },
                 { key: "estado", label: "ESTADO" },
               ]}
-              data={BTNfiltro ? filtro1 : Estudiantes}
+              data={BTNfiltro ? filtro1Activos : filtro1Inactivos}
               check={[
                 {
-                  title: "Filtro solo activos",
+                  title: "Mostrar solo activos",
                   check: BTNfiltro,
                   onChange: (e) => setBTNfiltro(e.target.checked),
                 },
@@ -1307,10 +1420,15 @@ const GestionUsuarios = ({ onBack }) => {
                   label: "Editar ✏️",
                   onClick: (item) => AbrirModalParaEditarE(item),
                 },
-                {
-                  label: "Inactivar 🗑️",
-                  onClick: (item) => deshabilitarE(item),
-                },
+                BTNfiltro
+                  ? {
+                      label: "Desactivar 🗑️",
+                      onClick: (item) => deshabilitarE(item),
+                    }
+                  : {
+                      label: "Activar ✅",
+                      onClick: (item) => habilitarE(item),
+                    },
               ]}
               onAdd={() => setModal(true)}
             />
@@ -1460,12 +1578,12 @@ const GestionUsuarios = ({ onBack }) => {
                 { key: "numero_documento_profesor", label: "IDENTIFICACIÓN" },
                 { key: "estado_desc", label: "ESTADO" },
               ]}
-              data={BTNfiltro ? filtro2 : Profesores}
+              data={BTNfiltro ? filtro2Activos : filtro2Inactivos}
               searchPlaceholder="Buscar por cedula..."
               addButtonText="Añadir Profesor"
               check={[
                 {
-                  title: "Filtro solo activos",
+                  title: "Mostrar solo activos",
                   check: BTNfiltro,
                   onChange: (e) => setBTNfiltro(e.target.checked),
                 },
@@ -1482,10 +1600,15 @@ const GestionUsuarios = ({ onBack }) => {
                   label: "Editar ✏️",
                   onClick: (item) => AbrirModalParaEditarE(item),
                 },
-                {
-                  label: "Inactivar 🗑️",
-                  onClick: (item) => deshabilitarE(item),
-                },
+                BTNfiltro
+                  ? {
+                      label: "Desactivar 🗑️",
+                      onClick: (item) => deshabilitarE(item),
+                    }
+                  : {
+                      label: "Activar ✅",
+                      onClick: (item) => habilitarE(item),
+                    },
               ]}
               onAdd={() => setModal(true)}
             />

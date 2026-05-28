@@ -3,7 +3,10 @@ import Breadcrumbs from "./Breadcrumbs";
 import "../styles/Materias.css";
 import { jwtDecode } from "jwt-decode";
 import { TraerMateriasProfesor, Estudiante_id_curso } from "../api/cursos";
+import { estudiantesAPI } from "../api/usuarios";
 import Table from "./Table";
+import Modal from "./modal";
+import Swal from "sweetalert2";
 
 function DocentesMaterias({ onBack }) {
   const [caso, setcaso] = useState(0); // 0: Materias, 1: Cursos, 2: Tabla Estudiantes
@@ -11,6 +14,10 @@ function DocentesMaterias({ onBack }) {
   const [materiaSeleccionada, setMateriaSeleccionada] = useState(null);
   const [cursoSeleccionadoTexto, setCursoSeleccionadoTexto] = useState("");
   const [estudiantes, setEstudiantes] = useState([]);
+  const [estudianteSeleccionado, setEstudianteSeleccionado] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [estudianteCompleto, setEstudianteCompleto] = useState(null);
+  const [cargandoEstudiante, setCargandoEstudiante] = useState(false);
 
   const cargarMaterias = async (idProfesor) => {
     try {
@@ -98,6 +105,35 @@ function DocentesMaterias({ onBack }) {
       setEstudiantes(null);
       setcaso(2);
     }
+  };
+
+  const handleVerEstudiante = async (estudiante) => {
+    setEstudianteSeleccionado(estudiante);
+    setModalVisible(true);
+    setCargandoEstudiante(true);
+    
+    try {
+      const response = await estudiantesAPI.getById(estudiante.documento);
+      if (response && response.data) {
+        setEstudianteCompleto(response.data);
+      }
+    } catch (error) {
+      console.error("Error cargando información del estudiante:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "No se pudo cargar la información completa del estudiante",
+        timer: 3000,
+      });
+    } finally {
+      setCargandoEstudiante(false);
+    }
+  };
+
+  const cerrarModal = () => {
+    setModalVisible(false);
+    setEstudianteSeleccionado(null);
+    setEstudianteCompleto(null);
   };
 
   // VISTA 0: Mapeo de Materias Únicas
@@ -199,7 +235,12 @@ function DocentesMaterias({ onBack }) {
             ]}
             searchPlaceholder="Buscar por documento o nombre..."
             addButtonText="Añadir estudiante"
-            actions={[{ label: "ver 👀" }]}
+            actions={[
+              {
+                label: "Ver 👀",
+                onClick: (estudiante) => handleVerEstudiante(estudiante),
+              },
+            ]}
           />
         ) : (
           <div
@@ -221,15 +262,215 @@ function DocentesMaterias({ onBack }) {
     </div>
   );
 
+  // Modal de información del estudiante
+  const ModalEstudiante = () => {
+    if (!modalVisible) return null;
+
+    const est = estudianteCompleto || {};
+    
+    // Mapeo de valores para mostrar
+    const getEstadoText = (fk) => {
+      if (fk === 1) return "Activo";
+      if (fk === 2) return "Inactivo";
+      return "N/A";
+    };
+
+    const getGeneroText = (fk) => {
+      const generos = {
+        1: "Masculino",
+        2: "Femenino",
+        3: "No binario",
+        4: "Prefiere no decirlo",
+        5: "Otro"
+      };
+      return generos[fk] || "N/A";
+    };
+
+    const getTipoDocumentoText = (fk) => {
+      const tipos = {
+        1: "Cédula de ciudadanía",
+        2: "Tarjeta de Identidad",
+        3: "Cédula de extranjería",
+        4: "Pasaporte",
+        5: "DNI extranjero"
+      };
+      return tipos[fk] || "N/A";
+    };
+
+    return (
+      <Modal
+        titulo="Información del Estudiante"
+        SalirM={cerrarModal}
+        inputs={[
+          {
+            nombre: "Documento",
+            type: "text",
+            value: est.numero_documento_estudiante || estudianteSeleccionado?.documento || "",
+            disabled: true,
+          },
+          {
+            nombre: "Primer Nombre",
+            type: "text",
+            value: est.nombre1 || "",
+            disabled: true,
+          },
+          {
+            nombre: "Segundo Nombre",
+            type: "text",
+            value: est.nombre2 || "",
+            disabled: true,
+          },
+          {
+            nombre: "Primer Apellido",
+            type: "text",
+            value: est.apellido1 || "",
+            disabled: true,
+          },
+          {
+            nombre: "Segundo Apellido",
+            type: "text",
+            value: est.apellido2 || "",
+            disabled: true,
+          },
+          {
+            nombre: "Correo",
+            type: "email",
+            value: est.correo || estudianteSeleccionado?.correo || "",
+            disabled: true,
+          },
+          {
+            nombre: "Teléfono",
+            type: "text",
+            value: est.telefono || estudianteSeleccionado?.telefono || "",
+            disabled: true,
+          },
+          {
+            nombre: "Dirección",
+            type: "text",
+            value: est.direccion || "",
+            disabled: true,
+          },
+          {
+            nombre: "Institución de procedencia",
+            type: "text",
+            value: est.institucion_procedencia || "",
+            disabled: true,
+          },
+          {
+            nombre: "Edad",
+            type: "number",
+            value: est.edad || "",
+            disabled: true,
+          },
+          {
+            nombre: "Fecha de nacimiento",
+            type: "date",
+            value: est.fecha_nacimiento || "",
+            disabled: true,
+          },
+          {
+            nombre: "Estado",
+            type: "text",
+            value: getEstadoText(est.fk_tipo_estado),
+            disabled: true,
+          },
+          {
+            nombre: "Género",
+            type: "text",
+            value: getGeneroText(est.fk_id_genero),
+            disabled: true,
+          },
+          {
+            nombre: "Tipo de Documento",
+            type: "text",
+            value: getTipoDocumentoText(est.fk_id_tipo_documento),
+            disabled: true,
+          },
+          {
+            nombre: "Tipo de Sangre",
+            type: "text",
+            value: est.tipo_sangre || "N/A",
+            disabled: true,
+          },
+          {
+            nombre: "Religión",
+            type: "text",
+            value: est.religion || "N/A",
+            disabled: true,
+          },
+          {
+            nombre: "Sisbén",
+            type: "text",
+            value: est.tipo_sisben || "N/A",
+            disabled: true,
+          },
+          {
+            nombre: "Discapacidad",
+            type: "text",
+            value: est.tipo_discapacidad || "N/A",
+            disabled: true,
+          },
+          {
+            nombre: "Alergias",
+            type: "text",
+            value: est.tipo_alergia || "N/A",
+            disabled: true,
+          },
+          {
+            nombre: "Ciudad",
+            type: "text",
+            value: est.municipio || "N/A",
+            disabled: true,
+          },
+          {
+            nombre: "Materia",
+            type: "text",
+            value: materiaSeleccionada?.nombre_materia || "",
+            disabled: true,
+          },
+          {
+            nombre: "Curso",
+            type: "text",
+            value: cursoSeleccionadoTexto || "",
+            disabled: true,
+          },
+        ]}
+        acciones={[
+          { nombre: "Cerrar", click: cerrarModal },
+        ]}
+      />
+    );
+  };
+
   switch (caso) {
     case 0:
-      return <VistaMaterias />;
+      return (
+        <>
+          <VistaMaterias />
+          <ModalEstudiante />
+        </>
+      );
     case 1:
-      return <VistaCursosPorMateria />;
+      return (
+        <>
+          <VistaCursosPorMateria />
+          <ModalEstudiante />
+        </>
+      );
     case 2:
-      return <VistaEstudiantesMateria />;
+      return (
+        <>
+          <VistaEstudiantesMateria />
+          <ModalEstudiante />
+        </>
+      );
     default:
-      return <VistaMaterias />;
+      return (
+        <>
+          <VistaMaterias />
+          <ModalEstudiante />
+        </>
+      );
   }
 }
 

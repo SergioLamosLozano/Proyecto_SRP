@@ -218,7 +218,12 @@ const GestionAcademica = ({ onBack }) => {
   // Datos de ejemplo basados en la estructura de la BD
   const [cursos, setCursos] = useState([]);
   
-  const filtro = cursos.filter((item) => item.estado === "Activo");
+  const filtroCursosActivos = cursos.filter(
+    (item) => String(item.estado).toLowerCase() === "activo"
+  );
+  const filtroCursosInactivos = cursos.filter(
+    (item) => String(item.estado).toLowerCase() === "inactivo"
+  );
 
   const fetchCursos = async () => {
     try {
@@ -276,7 +281,12 @@ const GestionAcademica = ({ onBack }) => {
 
   const [materias, setMaterias] = useState([]);
   const [materiasFiltrados, setMateriasFiltrados] = useState(true);
-  const filtroMaterias = materias.filter((item) => item.estado === "Activo");
+  const filtroMateriasActivos = materias.filter(
+    (item) => String(item.estado).toLowerCase() === "activo"
+  );
+  const filtroMateriasInactivos = materias.filter(
+    (item) => String(item.estado).toLowerCase() === "inactivo"
+  );
 
   const [materiaProfesores, setMateriaProfesores] = useState([]);
 
@@ -300,13 +310,13 @@ const GestionAcademica = ({ onBack }) => {
   const Eliminarcurso = async (item) => {
     if (item.id_curso) {
       const result = await Swal.fire({
-        title: "¿Inactivar curso?",
+        title: "¿Desactivar curso?",
         text: "Esta acción cambiará el estado del curso a inactivo.",
         icon: "warning",
         showCancelButton: true,
         confirmButtonColor: "#c41e3a",
         cancelButtonColor: "#c41e3a",
-        confirmButtonText: "Sí, inactivar",
+        confirmButtonText: "Sí, desactivar",
         cancelButtonText: "No, cancelar",
       });
 
@@ -318,6 +328,43 @@ const GestionAcademica = ({ onBack }) => {
           Swal.fire({
             icon: "success",
             text: "Curso inactivado con éxito",
+            timer: 3000,
+          }).then(() => {
+            fetchCursos();
+          });
+        } catch (error) {
+          console.log(error);
+          Swal.fire({
+            icon: "error",
+            text: "Error en la respuesta del servidor, intente nuevamente",
+            timer: 3000,
+          });
+        }
+      }
+    }
+  };
+
+  const Activarcurso = async (item) => {
+    if (item.id_curso) {
+      const result = await Swal.fire({
+        title: "¿Activar curso?",
+        text: "Esta acción cambiará el estado del curso a activo.",
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonColor: "#28a745",
+        cancelButtonColor: "#c41e3a",
+        confirmButtonText: "Sí, activar",
+        cancelButtonText: "No, cancelar",
+      });
+
+      if (result.isConfirmed) {
+        try {
+          await EditarCurso(item.id_curso, {
+            estado: "Activo",
+          });
+          Swal.fire({
+            icon: "success",
+            text: "Curso activado con éxito",
             timer: 3000,
           }).then(() => {
             fetchCursos();
@@ -501,13 +548,13 @@ const GestionAcademica = ({ onBack }) => {
   const Eliminarmateria = async (item) => {
     if (item.id_materia) {
       const result = await Swal.fire({
-        title: "¿Inactivar materia?",
+        title: "¿Desactivar materia?",
         text: "Esta acción cambiará el estado de la materia a inactivo.",
         icon: "warning",
         showCancelButton: true,
         confirmButtonColor: "#c41e3a",
         cancelButtonColor: "#c41e3a",
-        confirmButtonText: "Sí, inactivar",
+        confirmButtonText: "Sí, desactivar",
         cancelButtonText: "No, cancelar",
       });
 
@@ -519,6 +566,43 @@ const GestionAcademica = ({ onBack }) => {
           Swal.fire({
             icon: "success",
             text: "Materia inactivada con éxito",
+            timer: 3000,
+          }).then(() => {
+            fetchMaterias();
+          });
+        } catch (error) {
+          console.log(error);
+          Swal.fire({
+            icon: "error",
+            text: "Error en la respuesta del servidor, intente nuevamente",
+            timer: 3000,
+          });
+        }
+      }
+    }
+  };
+
+  const Activarmateria = async (item) => {
+    if (item.id_materia) {
+      const result = await Swal.fire({
+        title: "¿Activar materia?",
+        text: "Esta acción cambiará el estado de la materia a activo.",
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonColor: "#28a745",
+        cancelButtonColor: "#c41e3a",
+        confirmButtonText: "Sí, activar",
+        cancelButtonText: "No, cancelar",
+      });
+
+      if (result.isConfirmed) {
+        try {
+          await EditarMateria(item.id_materia, {
+            estado: "Activo",
+          });
+          Swal.fire({
+            icon: "success",
+            text: "Materia activada con éxito",
             timer: 3000,
           }).then(() => {
             fetchMaterias();
@@ -739,6 +823,7 @@ const GestionAcademica = ({ onBack }) => {
             {modal && (
               <Modal
                 titulo={editar ? "Editar Curso" : "Crear Curso"}
+                SalirM={cerrarModal}
                 inputs={[
                   {
                     nombre: "Nombre del curso",
@@ -776,11 +861,11 @@ const GestionAcademica = ({ onBack }) => {
 
             <Table
               id="Cursos"
-              data={cursosFiltrados ? filtro : cursos}
+              data={cursosFiltrados ? filtroCursosActivos : filtroCursosInactivos}
               busqueda={["fecha_inicio", "fecha_fin", "nombre"]}
               check={[
                 {
-                  title: "Filtro solo activos",
+                  title: "Mostrar solo activos",
                   check: cursosFiltrados,
                   onChange: (e) => setCursosFiltrados(e.target.checked),
                 },
@@ -812,10 +897,15 @@ const GestionAcademica = ({ onBack }) => {
                   variant: "edit",
                   onClick: (item) => AbrirModalConDatos(item),
                 },
-                {
-                  label: "Inactivar 🗑️",
-                  onClick: (item) => Eliminarcurso(item),
-                },
+                cursosFiltrados
+                  ? {
+                      label: "Desactivar 🗑️",
+                      onClick: (item) => Eliminarcurso(item),
+                    }
+                  : {
+                      label: "Activar ✅",
+                      onClick: (item) => Activarcurso(item),
+                    },
               ]}
               searchable={true}
               searchPlaceholder="Buscar cursos..."
@@ -847,6 +937,7 @@ const GestionAcademica = ({ onBack }) => {
             {modal && (
               <Modal
                 titulo={editar ? "Editar Materia" : "Crear Materia"}
+                SalirM={cerrarModal}
                 inputs={[
                   {
                     nombre: "Nombre de la materia",
@@ -901,11 +992,11 @@ const GestionAcademica = ({ onBack }) => {
 
             <Table
               id="Materias"
-              data={materiasFiltrados ? filtroMaterias : materias}
+              data={materiasFiltrados ? filtroMateriasActivos : filtroMateriasInactivos}
               busqueda={["nombre_area_conocimiento", "nombre", "estado"]}
               check={[
                 {
-                  title: "Filtro solo activos",
+                  title: "Mostrar solo activos",
                   check: materiasFiltrados,
                   onChange: (e) => setMateriasFiltrados(e.target.checked),
                 },
@@ -936,12 +1027,17 @@ const GestionAcademica = ({ onBack }) => {
                   variant: "edit",
                   onClick: (item) => AbrirModalConDatosMateria(item),
                 },
-                {
-                  label: "Inactivar 🗑️",
-                  icon: "🗑️",
-                  variant: "delete",
-                  onClick: (item) => Eliminarmateria(item),
-                },
+                materiasFiltrados
+                  ? {
+                      label: "Desactivar 🗑️",
+                      icon: "🗑️",
+                      variant: "delete",
+                      onClick: (item) => Eliminarmateria(item),
+                    }
+                  : {
+                      label: "Activar ✅",
+                      onClick: (item) => Activarmateria(item),
+                    },
               ]}
               searchable={true}
               searchPlaceholder="Buscar materias..."
@@ -997,6 +1093,7 @@ const GestionAcademica = ({ onBack }) => {
               ? modal && (
                   <Modal
                     titulo={editar ? "Editar Asignacion" : "Asignar Materia"}
+                    SalirM={cerrarModal}
                     inputs={[
                       {
                         nombre: "Numero de documento prof.",
@@ -1063,6 +1160,7 @@ const GestionAcademica = ({ onBack }) => {
                         ? "Editar Curso Estudiante"
                         : "Crear Curso Estudiante"
                     }
+                    SalirM={cerrarModal}
                     inputs={[
                       {
                         nombre: "Numero de documento Estudiante.",
@@ -1128,7 +1226,7 @@ const GestionAcademica = ({ onBack }) => {
                     onClick: (item) => AbrirModalConDatosMateriaAsignada(item),
                   },
                   {
-                    label: "Eliminar  🗑️",
+                    label: "Eliminar 🗑️",
                     icon: "🗑️",
                     variant: "delete",
                     onClick: (item) => EliminarMateriaA(item),
@@ -1183,7 +1281,7 @@ const GestionAcademica = ({ onBack }) => {
                     onClick: (item) => AbrirModalConDatosEstudianteCurso(item),
                   },
                   {
-                    label: "Eliminar🗑️",
+                    label: "Eliminar 🗑️",
                     icon: "🗑️",
                     variant: "delete",
                     onClick: (item) => EliminarEstudianteCurso(item),

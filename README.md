@@ -545,7 +545,7 @@ npm run lint
 
 | Rango | Clasificación | Color |
 |-------|---------------|-------|
-| 4.0 - 5.0 | Excelente | � Verde |
+| 4.0 - 5.0 | Excelente | 🟢 Verde |
 | 3.0 - 3.9 | Aceptable | 🟡 Amarillo |
 | 1.0 - 2.9 | Insuficiente | 🔴 Rojo |
 | 0.0 | Sin calificar | ⚪ Gris |
