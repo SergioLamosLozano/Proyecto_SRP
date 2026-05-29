@@ -45,7 +45,7 @@ class GenerarReporteNotasExcelView(APIView):
     - curso: ID del curso (opcional, si no se envía genera para todos)
     - materia: ID de la materia (opcional)
     """
-    permission_classes = []  # Permitir acceso sin autenticación por ahora
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
         if Workbook is None:
@@ -102,7 +102,8 @@ class GenerarReporteNotasExcelView(APIView):
         ws_resumen = wb.create_sheet("Resumen General")
         
         # Título principal
-        ws_resumen.append([f"REPORTE DE NOTAS - PERIODO {periodo_id}"])
+        periodo_titulo = periodo.nombre or f"Periodo {periodo.id_periodo}"
+        ws_resumen.append([f"REPORTE DE NOTAS - {periodo_titulo.upper()}"])
         ws_resumen['A1'].font = title_font
         ws_resumen['A1'].alignment = center_alignment
         ws_resumen.merge_cells('A1:C1')
@@ -188,7 +189,7 @@ class GenerarReporteNotasExcelView(APIView):
             headers.append("Promedio General")
             
             # Título con merge correcto
-            ws.append([f"NOTAS - {curso.nombre} - PERIODO {periodo_id}"])
+            ws.append([f"NOTAS - {curso.nombre} - {periodo_titulo.upper()}"])
             ws['A1'].font = title_font
             ws['A1'].alignment = center_alignment
             last_col_letter = chr(64 + len(headers))  # Calcular letra de última columna
@@ -323,7 +324,7 @@ class GenerarBoletinPDFView(APIView):
     - periodo: ID del periodo académico (requerido)
     - formato: 'individual' o 'lote' (default: 'individual')
     """
-    permission_classes = []  # Permitir acceso sin autenticación por ahora
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
         if not REPORTLAB_AVAILABLE:
@@ -442,7 +443,7 @@ class GenerarBoletinPDFView(APIView):
         
         # Título
         elements.append(Paragraph("BOLETÍN ACADÉMICO", title_style))
-        elements.append(Paragraph(f"Periodo {periodo.id_periodo}", subtitle_style))
+        elements.append(Paragraph(periodo.nombre or f"Periodo {periodo.id_periodo}", subtitle_style))
         elements.append(Spacer(1, 0.3*inch))
         
         # Información del estudiante
@@ -455,7 +456,7 @@ class GenerarBoletinPDFView(APIView):
             ["Estudiante:", estudiante.nombre_completo],
             ["Documento:", estudiante.numero_documento_estudiante],
             ["Grado:", est_curso.id_curso.nombre if est_curso else "N/A"],
-            ["Periodo:", f"{periodo.fecha_inicio} - {periodo.fecha_fin}"]
+            ["Periodo:", f"{periodo.nombre or f'Periodo {periodo.id_periodo}'} ({periodo.fecha_inicio} - {periodo.fecha_fin})"]
         ]
         
         info_table = Table(info_data, colWidths=[2*inch, 4*inch])

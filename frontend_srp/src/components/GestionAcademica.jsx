@@ -1200,23 +1200,18 @@ const GestionAcademica = ({ onBack }) => {
             {activeAssignmentTab === "materias-profesores" ? (
               <Table
                 id="MateriaA"
-                busqueda={["materia_nombre", "profesor_nombre", "curso_nombre"]}
+                busqueda={["materia", "profe_nombre", "curso"]}
                 data={materiaProfesores}
                 columns={[
                   { key: "id_materia_profesores", label: "ID", sortable: true },
-                  { key: "materia_nombre", label: "Materia", sortable: true },
+                  { key: "materia", label: "Materia", sortable: true },
                   {
-                    key: "profesor_nombre",
+                    key: "profe_nombre",
                     label: "Profesor",
                     sortable: true,
                   },
-                  { key: "curso_nombre", label: "Curso", sortable: true },
-                  { key: "año_electivo_valor", label: "Año", sortable: true },
-                  {
-                    key: "usuario_creacion_nombre",
-                    label: "Creado por",
-                    sortable: true,
-                  },
+                  { key: "curso", label: "Curso", sortable: true },
+                  { key: "fk_id_año_electivo", label: "Año", sortable: true },
                 ]}
                 actions={[
                   {
@@ -1238,11 +1233,16 @@ const GestionAcademica = ({ onBack }) => {
             ) : (
               <Table
                 id="EstudianteC"
-                data={estudianteCursos}
+                data={estudianteCursos.map((item) => ({
+                  ...item,
+                  numero_documento_estudiante: item.estudiante?.numero_documento || "",
+                  nombre_estudiante: item.estudiante?.nombre || "",
+                  estado_curso: item.estado || "",
+                }))}
                 busqueda={[
                   "numero_documento_estudiante",
                   "nombre_estudiante",
-                  "curso_nombre",
+                  "nombre_curso",
                 ]}
                 columns={[
                   { key: "id_estudiantes_cursos", label: "ID", sortable: true },
@@ -1256,12 +1256,7 @@ const GestionAcademica = ({ onBack }) => {
                     label: "Estudiante",
                     sortable: true,
                   },
-                  { key: "curso_nombre", label: "Curso", sortable: true },
-                  {
-                    key: "año_electivo",
-                    label: "Año Electivo",
-                    sortable: true,
-                  },
+                  { key: "nombre_curso", label: "Curso", sortable: true },
                   {
                     key: "fecha_asignacion",
                     label: "Fecha Asignación",
@@ -1269,7 +1264,7 @@ const GestionAcademica = ({ onBack }) => {
                   },
                   {
                     key: "estado_curso",
-                    label: "Estado del curso",
+                    label: "Estado",
                     sortable: true,
                   },
                 ]}

@@ -15,15 +15,21 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useSession } from '../context/SessionContext';
 import studentService from '../services/studentService';
 import colors from '../styles/colors';
+import { nombrePeriodoPorId } from '../utils/periodo';
 
 const NotasScreen = ({ navigation }) => {
     const { currentStudent } = useSession();
     const [periodos, setPeriodos] = useState([]);
+    const [periodosCatalogo, setPeriodosCatalogo] = useState([]);
     const [generalAverage, setGeneralAverage] = useState('0.0');
     const [loading, setLoading] = useState(true);
 
     useFocusEffect(
         useCallback(() => {
+            // Cargar lista de periodos para nombres
+            studentService.getPeriodos().then((res) => {
+                if (res.success) setPeriodosCatalogo(res.data);
+            });
             if (currentStudent?.id) {
                 loadDefinitivas();
             }
@@ -106,7 +112,7 @@ const NotasScreen = ({ navigation }) => {
                     periodos.map((item, index) => (
                         <View key={index} style={styles.periodCard}>
                             <View style={styles.periodInfo}>
-                                <Text style={styles.periodTitle}>Periodo {item.periodo}</Text>
+                                <Text style={styles.periodTitle}>{nombrePeriodoPorId(periodosCatalogo, item.periodo)}</Text>
                                 <Text style={styles.periodStatus}>
                                     {item.materias.length} {item.materias.length === 1 ? 'materia' : 'materias'}
                                 </Text>

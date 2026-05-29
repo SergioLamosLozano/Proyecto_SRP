@@ -2,6 +2,7 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import *
 from .reportes_views import GenerarReporteNotasExcelView, GenerarBoletinPDFView
+from .configuracion_views import ConfiguracionBoletinesViewSet
 from .estadisticas_views import (
     EstadisticasGeneralesView,
     EstadisticasDemograficasView,
@@ -39,6 +40,7 @@ router.register(r'match-acudientes', AcudienteUserMatchViewSet, basename='match-
 router.register(r'estudiantes-acudientes', EstudianteAcudienteViewSet, basename='Estudiante_Acudiente')
 router.register(r'estudiante_cursos', EstudiantesCursosViewSet, basename='Estudiantes_Cursos')
 router.register(r'materias_asignadas', MateriasAsignadasViewSet, basename='Materias_Asignadas')
+router.register(r'configuracion/boletines', ConfiguracionBoletinesViewSet, basename='Configuracion_Boletines')
 
 urlpatterns = [
     path('token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),

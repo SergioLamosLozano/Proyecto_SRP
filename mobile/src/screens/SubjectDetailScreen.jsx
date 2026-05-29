@@ -16,15 +16,21 @@ import GradeItem from '../components/GradeItem';
 import { useSession } from '../context/SessionContext';
 import studentService from '../services/studentService';
 import colors from '../styles/colors';
+import { nombrePeriodoPorId } from '../utils/periodo';
 
 const SubjectDetailScreen = ({ route, navigation }) => {
-    const { subject } = route.params;
+    const { subject, allDefinitivas: allDefsInit, activePeriodo } = route.params;
     const { currentStudent } = useSession();
-    
+
+    // El selector inicia en el periodo activo (mismo que ve la card / dashboard)
     const [periodos, setPeriodos] = useState([]);
-    const [selectedPeriodo, setSelectedPeriodo] = useState('todos');
-    const [filteredGrades, setFilteredGrades] = useState(subject.grades);
+    const [selectedPeriodo, setSelectedPeriodo] = useState(
+        activePeriodo ? String(activePeriodo) : 'todos'
+    );
+    const [filteredGrades, setFilteredGrades] = useState([]);
     const [average, setAverage] = useState(subject.average);
+    const [averageLabel, setAverageLabel] = useState('Promedio');
+    const [allDefinitivas] = useState(allDefsInit || []);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -51,23 +57,48 @@ const SubjectDetailScreen = ({ route, navigation }) => {
     };
 
     const filterGradesByPeriod = () => {
+        // Cuando hay periodo seleccionado mostramos LA DEFINITIVA OFICIAL
+        // (ponderada por %actividad y %RA, calculada en backend), idéntica
+        // a la que ve el padre en la web. Esto evita que el badge muestre
+        // 3.29 (aritmético) cuando la web muestra 3.25 (oficial).
         if (selectedPeriodo === 'todos') {
-            // Mostrar todas las calificaciones
-            setFilteredGrades(subject.grades);
-            const totalGrades = subject.grades.reduce((sum, g) => sum + g.grade, 0);
-            const avg = subject.grades.length > 0 
-                ? parseFloat((totalGrades / subject.grades.length).toFixed(2))
-                : 0;
-            setAverage(avg);
+            setFilteredGrades(subject.grades || []);
+            // Promedio de definitivas oficiales del estudiante en esta materia
+            // (a través de todos los periodos en los que tenga definitiva).
+            const defsMateria = allDefinitivas.filter(
+                d => parseInt(d.fk_id_materia) === parseInt(subject.id)
+            );
+            if (defsMateria.length > 0) {
+                const sum = defsMateria.reduce(
+                    (acc, d) => acc + (parseFloat(d.valor_definitiva) || 0), 0
+                );
+                setAverage(parseFloat((sum / defsMateria.length).toFixed(2)));
+                setAverageLabel('Promedio (todos los periodos)');
+            } else {
+                setAverage(0);
+                setAverageLabel('Promedio');
+            }
+            return;
+        }
+
+        // Periodo específico: filtrar las notas que pertenecen a él
+        const periodoInt = parseInt(selectedPeriodo);
+        const filtered = (subject.grades || []).filter(
+            g => parseInt(g.period) === periodoInt
+        );
+        setFilteredGrades(filtered);
+
+        // Buscar la definitiva oficial del backend para ese (materia, periodo)
+        const def = allDefinitivas.find(
+            d => parseInt(d.fk_id_materia) === parseInt(subject.id)
+              && parseInt(d.fk_id_periodo) === periodoInt
+        );
+        if (def) {
+            setAverage(parseFloat(parseFloat(def.valor_definitiva).toFixed(2)));
+            setAverageLabel(`Definitiva ${nombrePeriodoPorId(periodos, periodoInt)}`);
         } else {
-            // Filtrar por periodo seleccionado (comparar con el ID del periodo)
-            const filtered = subject.grades.filter(g => g.period === selectedPeriodo);
-            setFilteredGrades(filtered);
-            const totalGrades = filtered.reduce((sum, g) => sum + g.grade, 0);
-            const avg = filtered.length > 0 
-                ? parseFloat((totalGrades / filtered.length).toFixed(2))
-                : 0;
-            setAverage(avg);
+            setAverage(0);
+            setAverageLabel(`Definitiva ${nombrePeriodoPorId(periodos, periodoInt)}`);
         }
     };
 
@@ -93,7 +124,7 @@ const SubjectDetailScreen = ({ route, navigation }) => {
                             </View>
                             <Text style={styles.subjectName}>{subject.name}</Text>
                             <View style={styles.averageBadge}>
-                                <Text style={styles.averageLabel}>Promedio: </Text>
+                                <Text style={styles.averageLabel}>{averageLabel}: </Text>
                                 <Text style={styles.averageValue}>{average}</Text>
                             </View>
                         </View>
@@ -157,7 +188,7 @@ const SubjectDetailScreen = ({ route, navigation }) => {
                     <Text style={styles.infoText}>
                         {selectedPeriodo === 'todos' 
                             ? 'Estas notas corresponden a todos los periodos. Si tienes alguna duda, contacta al docente.'
-                            : `Estas notas corresponden al Periodo ${selectedPeriodo}. Si tienes alguna duda, contacta al docente.`
+                            : `Estas notas corresponden al ${nombrePeriodoPorId(periodos, selectedPeriodo)}. Si tienes alguna duda, contacta al docente.`
                         }
                     </Text>
                 </View>

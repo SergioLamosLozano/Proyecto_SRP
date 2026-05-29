@@ -59,6 +59,18 @@ export const PeriodoById = (id) => {
   return axiosInstance.get(`/periodo/${id}/`);
 };
 
+export const CrearPeriodo = (datos) => {
+  return axiosInstance.post("/periodo/", datos);
+};
+
+export const EditarPeriodo = (id, datos) => {
+  return axiosInstance.patch(`/periodo/${id}/`, datos);
+};
+
+export const EliminarPeriodo = (id) => {
+  return axiosInstance.delete(`/periodo/${id}/`);
+};
+
 export const CrearMateriaAsignada = (datos) => {
   return axiosInstance.post(`/materias_asignadas/`, datos);
 };
@@ -263,6 +275,19 @@ export const CrearRAs = (datos) => {
     });
 };
 
+export const ModificarRA = (id_ra, datos) => {
+  return axiosInstance
+    .patch(`/resultados_aprendizaje/?id_ra=${id_ra}`, datos)
+    .then((res) => {
+      Alert("success", "R.A modificado con exito");
+      return res;
+    })
+    .catch((err) => {
+      Alert("error", err.response?.data || "Error al modificar R.A");
+      throw err;
+    });
+};
+
 export const ObtenerDefinitivas = (datos) => {
   return axiosInstance.post("/definitivas/", datos);
 };
@@ -279,4 +304,19 @@ export const ConsultarNotasCurso = (idCurso, idMateria, idPeriodo) => {
   return axiosInstance.get(
     `/consultar_notas_curso/?id_curso=${idCurso}&fk_id_materia=${idMateria}&fk_id_periodo=${idPeriodo}`
   );
+};
+
+// Configuración de Boletines
+export const ObtenerConfiguracionBoletines = () => {
+  return axiosInstance.get(`/configuracion/boletines/`);
+};
+
+export const ActualizarConfiguracionBoletines = (datos) => {
+  return axiosInstance.put(`/configuracion/boletines/1/`, datos);
+};
+
+export const ObtenerEstadoBoletines = () => {
+  // Este endpoint es público, no requiere autenticación
+  return fetch(`${baseURL}/configuracion/boletines/estado/`)
+    .then(res => res.json());
 };

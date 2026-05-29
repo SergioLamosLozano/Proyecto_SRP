@@ -11,9 +11,13 @@ import {
   Estudiantes_notas,
   Estudiantes_notas_por_periodo,
   Estudiantes_definitivas,
+  ObtenerEstadoBoletines,
 } from "../api/cursos";
 import { jwtDecode } from "jwt-decode";
 import { Periodos, PeriodoById } from "../api/cursos";
+import { Alert } from "../utils/alert";
+import Swal from "sweetalert2";
+import { nombrePeriodo } from "../utils/periodo";
 
 function PadresPage() {
   const [vista, setVista] = useState("inicio");
@@ -29,6 +33,10 @@ function PadresPage() {
   const [loadingNotas, setLoadingNotas] = useState(false);
   const [actividadesPorMateria, setActividadesPorMateria] = useState({});
   const [materiaSeleccionada, setMateriaSeleccionada] = useState(null);
+  
+  // Estados para descarga de boletines
+  const [descargaBoletinesHabilitada, setDescargaBoletinesHabilitada] = useState(true);
+  const [loadingBoletin, setLoadingBoletin] = useState(false);
 
   useEffect(() => {
     const cargarEstudiantesVinculados = async () => {
@@ -67,6 +75,21 @@ function PadresPage() {
     };
 
     cargarEstudiantesVinculados();
+  }, []);
+
+  // Cargar estado de descarga de boletines
+  useEffect(() => {
+    const cargarEstadoBoletines = async () => {
+      try {
+        const response = await ObtenerEstadoBoletines();
+        setDescargaBoletinesHabilitada(response.descarga_habilitada);
+      } catch (error) {
+        console.error('Error cargando estado de boletines:', error);
+        // Por defecto, asumir que está habilitado
+      }
+    };
+    
+    cargarEstadoBoletines();
   }, []);
 
   useEffect(() => {
@@ -132,32 +155,25 @@ function PadresPage() {
         setMateriaSeleccionada(materias[0]);
       }
       
-      // Cargar definitivas desde la base de datos
+      // Cargar definitivas desde la base de datos (única fuente de verdad)
+      // El backend SIEMPRE recalcula desde las notas, así que estos valores
+      // son siempre correctos.
       if (periodoId) {
         try {
           const defResp = await Estudiantes_definitivas(doc, periodoId);
           const definitivas = defResp.data || [];
-          
-          if (definitivas.length > 0) {
-            // Usar las definitivas de la base de datos
-            const resumen = definitivas.map(def => ({
-              materia: def.nombre_materia,
-              definitiva: parseFloat(def.valor_definitiva),
-              estado: def.estado
-            }));
-            setCalificaciones(resumen);
-          } else {
-            // Si no hay definitivas guardadas, calcularlas (fallback)
-            calcularDefinitivasDesdeNotas(data);
-          }
+          const resumen = definitivas.map(def => ({
+            materia: def.nombre_materia,
+            definitiva: parseFloat(def.valor_definitiva),
+            estado: def.estado
+          }));
+          setCalificaciones(resumen);
         } catch (e) {
           console.error('Error cargando definitivas:', e);
-          // Fallback: calcular desde notas
-          calcularDefinitivasDesdeNotas(data);
+          setCalificaciones([]);
         }
       } else {
-        // Sin periodo, calcular desde notas
-        calcularDefinitivasDesdeNotas(data);
+        setCalificaciones([]);
       }
     } catch (e) {
       setNotas([]);
@@ -165,28 +181,6 @@ function PadresPage() {
     } finally {
       setLoadingNotas(false);
     }
-  };
-  
-  const calcularDefinitivasDesdeNotas = (data) => {
-    const porMateria = {};
-    for (const n of data) {
-      const act = n.actividad;
-      const mat = act?.MateriaProfesores?.materia_nombre || "";
-      const porc = parseFloat(act?.porcentaje || 0);
-      const cal = parseFloat(n.calificacion || 0);
-      
-      if (!porMateria[mat]) {
-        porMateria[mat] = { suma: 0, totalPorc: 0 };
-      }
-      porMateria[mat].suma += cal * (porc / 100);
-      porMateria[mat].totalPorc += porc;
-    }
-    
-    const resumen = Object.entries(porMateria).map(([materia, v]) => ({
-      materia,
-      definitiva: Number(v.suma.toFixed(2)),
-    }));
-    setCalificaciones(resumen);
   };
 
   const ensurePeriodos = async (doc) => {
@@ -219,6 +213,66 @@ function PadresPage() {
       }
     } catch (e) {
       // noop
+    }
+  };
+
+  const descargarBoletin = async () => {
+    if (!descargaBoletinesHabilitada) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Descarga no disponible',
+        text: 'La descarga de boletines está temporalmente deshabilitada. Por favor, contacte con la institución.',
+        confirmButtonColor: '#d32f2f'
+      });
+      return;
+    }
+
+    if (!periodoSel) {
+      Alert('warning', 'Por favor seleccione un periodo');
+      return;
+    }
+
+    if (!estudianteSeleccionado) {
+      Alert('warning', 'No hay estudiante seleccionado');
+      return;
+    }
+
+    try {
+      setLoadingBoletin(true);
+      
+      const documento = estudianteSeleccionado.numero_documento || 
+                       estudianteSeleccionado.numero_documento_estudiante;
+      
+      const url = `http://127.0.0.1:8000/api/reportes/boletines-pdf/?periodo=${periodoSel}&estudiante=${documento}&formato=individual`;
+
+      // Necesitamos enviar el token JWT del padre porque el endpoint requiere auth
+      const token = sessionStorage.getItem("token");
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || errorData.detail || 'Error al generar el boletín');
+      }
+
+      const blob = await response.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = `Boletin_${estudianteSeleccionado.nombre_completo}_Periodo_${periodoSel}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(downloadUrl);
+
+      Alert('success', 'Boletín descargado exitosamente');
+    } catch (error) {
+      console.error('Error:', error);
+      Alert('error', error.message || 'Error al descargar el boletín');
+    } finally {
+      setLoadingBoletin(false);
     }
   };
 
@@ -328,7 +382,7 @@ function PadresPage() {
                           key={p.id_periodo || p.id}
                           value={p.id_periodo || p.id}
                         >
-                          {p.fecha_inicio} - {p.fecha_fin}
+                          {nombrePeriodo(p, { includeFechas: true })}
                         </option>
                       ))
                     )}
@@ -356,9 +410,75 @@ function PadresPage() {
                     </table>
                   </div>
                 )}
+                
+                {/* Botón de descarga de boletín */}
+                <div style={{ 
+                  marginTop: '1.5rem', 
+                  display: 'flex', 
+                  gap: '1rem',
+                  flexWrap: 'wrap'
+                }}>
+                  <button
+                    onClick={descargarBoletin}
+                    disabled={!descargaBoletinesHabilitada || loadingBoletin || !periodoSel}
+                    style={{
+                      padding: '0.75rem 1.5rem',
+                      backgroundColor: descargaBoletinesHabilitada ? '#d32f2f' : '#ccc',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontSize: '1rem',
+                      fontWeight: '600',
+                      cursor: descargaBoletinesHabilitada && !loadingBoletin && periodoSel ? 'pointer' : 'not-allowed',
+                      opacity: (!descargaBoletinesHabilitada || loadingBoletin || !periodoSel) ? 0.6 : 1,
+                      transition: 'all 0.3s ease',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (descargaBoletinesHabilitada && !loadingBoletin && periodoSel) {
+                        e.target.style.backgroundColor = '#b71c1c';
+                        e.target.style.transform = 'translateY(-2px)';
+                        e.target.style.boxShadow = '0 4px 8px rgba(0,0,0,0.2)';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (descargaBoletinesHabilitada && !loadingBoletin && periodoSel) {
+                        e.target.style.backgroundColor = '#d32f2f';
+                        e.target.style.transform = 'translateY(0)';
+                        e.target.style.boxShadow = 'none';
+                      }
+                    }}
+                  >
+                    <span style={{ fontSize: '1.2rem' }}>📄</span>
+                    {loadingBoletin ? 'Generando boletín...' : 'Descargar Boletín (PDF)'}
+                  </button>
+                  
+                  {!descargaBoletinesHabilitada && (
+                    <div style={{
+                      padding: '0.75rem 1rem',
+                      backgroundColor: '#fff3cd',
+                      border: '1px solid #ffc107',
+                      borderRadius: '8px',
+                      color: '#856404',
+                      fontSize: '0.9rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                      flex: 1,
+                      minWidth: '250px'
+                    }}>
+                      <span>⚠️</span>
+                      <span>La descarga de boletines está temporalmente deshabilitada</span>
+                    </div>
+                  )}
+                </div>
+                
                 <button
                   className="btn-volver"
                   onClick={() => setVista("inicio")}
+                  style={{ marginTop: '1rem' }}
                 >
                   Volver
                 </button>
@@ -397,7 +517,7 @@ function PadresPage() {
                           key={p.id_periodo || p.id}
                           value={p.id_periodo || p.id}
                         >
-                          {p.fecha_inicio} - {p.fecha_fin}
+                          {nombrePeriodo(p, { includeFechas: true })}
                         </option>
                       ))
                     )}

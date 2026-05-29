@@ -332,19 +332,6 @@ class Profesores(models.Model):
         return f"{nombres} {apellidos}"
 
 
-class TipoAcudiente(models.Model):
-    id_tipo_acudiente = models.IntegerField(primary_key=True)
-    descripcion = models.CharField(max_length=100)
-
-    class Meta:
-        db_table = 'tipo_acudiente'
-        verbose_name = 'Tipo de Acudiente'
-        verbose_name_plural = 'Tipos de Acudiente'
-
-    def __str__(self):
-        return self.descripcion
-
-
 class Acudiente(models.Model):
     numero_documento_acudiente = models.CharField(primary_key=True, max_length=20)
     fk_id_tipo_documento = models.ForeignKey(
@@ -487,6 +474,9 @@ class MateriasAsignadas(models.Model) :
 
     class Meta:
         db_table = "materia_profesores"
+        unique_together = (
+            ('fk_numero_documento_profesor', 'fk_id_materia', 'fk_id_curso', 'fk_id_año_electivo'),
+        )
 
     def __str__(self) :
         return self.id_materia_profesores
@@ -500,14 +490,27 @@ class Estudiantes_cursos(models.Model) :
 
     class Meta:
         db_table = "estudiantes_cursos"
+        unique_together = (
+            ('numero_documento_estudiante', 'id_curso'),
+        )
 
     def __str__(self) :
         return self.id_estudiantes_cursos
 
 class Periodo(models.Model):
     id_periodo = models.AutoField(primary_key=True)
+    nombre = models.CharField(max_length=100, blank=True, null=True,
+                              help_text="Nombre descriptivo del periodo (ej: 'Primer Trimestre 2026')")
     fecha_inicio = models.DateField()
     fecha_fin = models.DateField()
+    fk_id_año_electivo = models.ForeignKey(
+        ano_electivo,
+        on_delete=models.CASCADE,
+        db_column='FK_id_año_electivo',
+        blank=True,
+        null=True,
+        help_text="Año electivo al que pertenece el periodo"
+    )
 
     class Meta:
         db_table = 'periodo'
@@ -515,6 +518,8 @@ class Periodo(models.Model):
         verbose_name_plural = 'Periodos'
 
     def __str__(self):
+        if self.nombre:
+            return self.nombre
         return f"Periodo {self.id_periodo}: {self.fecha_inicio} - {self.fecha_fin}"
 
 class RA(models.Model):
@@ -538,6 +543,9 @@ class RA(models.Model):
         db_table = 'resultados_aprendizaje'
         verbose_name = 'resultados_aprendizaje'
         verbose_name_plural = 'resultados_aprendizaje'
+        unique_together = (
+            ('fk_id_materia_profesores', 'fk_id_periodo_academico', 'numero_ra'),
+        )
 
     def __str__(self):
         return f"RA {self.numero_ra}"
@@ -608,7 +616,7 @@ class NotaHistorial(models.Model):
     
 class Definitivas(models.Model):
     id_definitiva = models.AutoField(primary_key=True)
-    valor_definitiva = models.DecimalField(max_digits=3, decimal_places=2)
+    valor_definitiva = models.DecimalField(max_digits=4, decimal_places=2)
     fk_id_estudiantes_cursos = models.ForeignKey(Estudiantes_cursos, on_delete=models.CASCADE, db_column="fk_id_estudiantes_cursos", null=True)
     fk_id_materia = models.ForeignKey(Materias, on_delete=models.CASCADE, db_column="fk_id_materia")
     estado = models.CharField(max_length=50)
@@ -616,7 +624,48 @@ class Definitivas(models.Model):
 
     class Meta:
         db_table = "definitiva"
+        unique_together = (
+            ('fk_id_estudiantes_cursos', 'fk_id_materia', 'fk_id_periodo'),
+        )
     
     def __str__(self):
         return f'la definitiva es de definitiva {self.valor_definitiva}'
+
+
+class ConfiguracionBoletines(models.Model):
+    """
+    Modelo para controlar la habilitación/deshabilitación de descarga de boletines
+    para padres/acudientes. Solo debe existir un registro en esta tabla.
+    """
+    id_configuracion = models.AutoField(primary_key=True)
+    descarga_habilitada = models.BooleanField(default=True, help_text="Habilita o deshabilita la descarga de boletines para padres/acudientes")
+    fecha_modificacion = models.DateTimeField(auto_now=True, help_text="Fecha de última modificación")
+    fk_usuario_modificacion = models.ForeignKey(
+        User, 
+        on_delete=models.SET_NULL, 
+        db_column="fk_usuario_modificacion", 
+        null=True, 
+        blank=True,
+        help_text="Usuario que realizó la última modificación"
+    )
+
+    class Meta:
+        db_table = "configuracion_boletines"
+        verbose_name = "Configuración de Boletines"
+        verbose_name_plural = "Configuración de Boletines"
+    
+    def __str__(self):
+        estado = "Habilitada" if self.descarga_habilitada else "Deshabilitada"
+        return f"Descarga de boletines: {estado}"
+    
+    @classmethod
+    def get_configuracion(cls):
+        """
+        Obtiene o crea la configuración única de boletines
+        """
+        config, created = cls.objects.get_or_create(
+            id_configuracion=1,
+            defaults={'descarga_habilitada': True}
+        )
+        return config
 

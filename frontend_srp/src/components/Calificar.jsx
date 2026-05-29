@@ -37,8 +37,8 @@ function Calificar({ listaRAs }) {
   const calificar_estudiante = (id_estudiante) => {
     const nota = calificacion[id_estudiante];
 
-    if (nota === undefined || nota === "" || nota < 1 || nota > 5) {
-      return Alert("info", "la calificación debe estar entre 1 y 5");
+    if (nota === undefined || nota === "" || nota < 0 || nota > 5) {
+      return Alert("info", "la calificación debe estar entre 0 y 5");
     }
     Swal.fire({
       title: "¿Estás seguro?",
@@ -186,7 +186,7 @@ function Calificar({ listaRAs }) {
                     Nota:{" "}
                     <input
                       type="number"
-                      min="1"
+                      min="0"
                       max="5"
                       step="0.1"
                       placeholder="Ej: 4.5"

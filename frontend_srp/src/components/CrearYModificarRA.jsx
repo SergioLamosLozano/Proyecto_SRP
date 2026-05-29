@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
 import "../styles/RAs.css";
-import { CrearRAs, TraerMateriasProfesor } from "../api/cursos";
+import { CrearRAs, TraerMateriasProfesor, ModificarRA, Periodos } from "../api/cursos";
 import { Alert } from "../utils/alert";
+import { nombrePeriodo } from "../utils/periodo";
 
 function CrearOModificarRAs({ listaRAs, funcion }) {
   const [id_profe, setid_profe] = useState("");
@@ -31,6 +32,9 @@ function CrearOModificarRAs({ listaRAs, funcion }) {
   const [selecciondemateriaycursoM, setselecciondemateriaycursoM] = useState(
     "seleccione una materia",
   );
+
+  // Lista de periodos cargados desde la BD (en lugar de hardcoded 1/2)
+  const [periodosLista, setPeriodosLista] = useState([]);
 
   const RAseleccionado = (item) => {
     setdisabledModificar(false);
@@ -111,11 +115,50 @@ function CrearOModificarRAs({ listaRAs, funcion }) {
     funcion();
   };
 
+  const ActualizarRA = async () => {
+    if (!idRAM) {
+      return Alert("info", "Seleccione un R.A para modificar");
+    }
+    if (!nombreRAM || !porcentajeM || !numeroRAM || !periodoRAM || !matM) {
+      return Alert("info", "Llene todos los campos para modificar");
+    }
+    try {
+      await ModificarRA(idRAM, {
+        id_profesor: id_profe,
+        nombre_ra: nombreRAM,
+        porcentaje: parseFloat(porcentajeM),
+        numero_ra: parseInt(numeroRAM),
+        fk_id_periodo_academico: parseInt(periodoRAM),
+        fk_id_materia_profesores: parseInt(matM),
+      });
+      // Resetear estado tras modificación exitosa
+      setdisabledModificar(true);
+      setidRAM(0);
+      setnombreRAM("");
+      setporcentajeM(0);
+      setnumeroRAM(0);
+      setperiodoRAM(0);
+      setmatM(0);
+      setselecciondemateriaycursoM("seleccione una materia");
+      funcion();
+    } catch (e) {
+      // Alert ya mostrado por ModificarRA
+    }
+  };
+
   useEffect(() => {
     const token = sessionStorage.getItem("token");
     const decoded = jwtDecode(token);
     TraerMat(decoded.username);
     setid_profe(decoded.username);
+
+    // Cargar periodos reales desde la BD
+    Periodos()
+      .then((res) => {
+        const lista = res?.data?.results || res?.data || [];
+        setPeriodosLista(Array.isArray(lista) ? lista : []);
+      })
+      .catch(() => setPeriodosLista([]));
   }, []);
 
   const MateriasProfesor = () => {
@@ -262,8 +305,18 @@ function CrearOModificarRAs({ listaRAs, funcion }) {
                       onChange={(e) => setperiodoRA(e.target.value)}
                     >
                       <option hidden>Seleccione una opcion</option>
-                      <option>1</option>
-                      <option>2</option>
+                      {periodosLista.length > 0 ? (
+                        periodosLista.map((p) => (
+                          <option key={p.id_periodo} value={p.id_periodo}>
+                            {nombrePeriodo(p, { includeFechas: true })}
+                          </option>
+                        ))
+                      ) : (
+                        <>
+                          <option value="1">1</option>
+                          <option value="2">2</option>
+                        </>
+                      )}
                     </select>
                   </section>
                   <section>
@@ -410,8 +463,18 @@ function CrearOModificarRAs({ listaRAs, funcion }) {
                       disabled={disabledModificar}
                     >
                       <option hidden>Seleccione una opcion</option>
-                      <option>1</option>
-                      <option>2</option>
+                      {periodosLista.length > 0 ? (
+                        periodosLista.map((p) => (
+                          <option key={p.id_periodo} value={p.id_periodo}>
+                            {nombrePeriodo(p, { includeFechas: true })}
+                          </option>
+                        ))
+                      ) : (
+                        <>
+                          <option value="1">1</option>
+                          <option value="2">2</option>
+                        </>
+                      )}
                     </select>
                   </section>
                   <section>
@@ -462,9 +525,10 @@ function CrearOModificarRAs({ listaRAs, funcion }) {
               </div>
               <button
                 className="RA-contenedor-modificar-o-crear-contenedor-2-campos-RAs-boton-crear"
-                onClick={() => CrearRA()}
+                onClick={() => ActualizarRA()}
+                disabled={disabledModificar}
               >
-                Crear R.A
+                Actualizar R.A
               </button>
             </div>
           </div>

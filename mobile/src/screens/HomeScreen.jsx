@@ -22,6 +22,8 @@ const HomeScreen = ({ navigation }) => {
     const { currentStudent } = useSession();
     const [logoutAlertVisible, setLogoutAlertVisible] = useState(false);
     const [subjects, setSubjects] = useState([]);
+    const [allDefinitivas, setAllDefinitivas] = useState([]);
+    const [activePeriodo, setActivePeriodo] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useFocusEffect(
@@ -42,6 +44,8 @@ const HomeScreen = ({ navigation }) => {
             if (response.success) {
                 console.log('✅ Materias cargadas:', response.data);
                 setSubjects(response.data);
+                setAllDefinitivas(response.allDefinitivas || []);
+                setActivePeriodo(response.periodo || null);
             } else {
                 console.log('❌ Error cargando materias:', response.error);
             }
@@ -111,7 +115,11 @@ const HomeScreen = ({ navigation }) => {
                         <SubjectCard
                             key={subject.id}
                             subject={subject}
-                            onPress={() => navigation.navigate('SubjectDetail', { subject })}
+                            onPress={() => navigation.navigate('SubjectDetail', {
+                                subject,
+                                allDefinitivas,
+                                activePeriodo,
+                            })}
                         />
                     ))
                 )}

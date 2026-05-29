@@ -9,6 +9,7 @@ import SubjectDetailScreen from '../screens/SubjectDetailScreen';
 import SeguimientoScreen from '../screens/SeguimientoScreen';
 import NotasScreen from '../screens/NotasScreen';
 import SelectChildScreen from '../screens/SelectChildScreen';
+import BoletinesScreen from '../screens/BoletinesScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -29,6 +30,7 @@ const AppNavigator = () => {
                     <Stack.Screen name="SubjectDetail" component={SubjectDetailScreen} />
                     <Stack.Screen name="Seguimiento" component={SeguimientoScreen} />
                     <Stack.Screen name="Notas" component={NotasScreen} />
+                    <Stack.Screen name="Boletines" component={BoletinesScreen} />
                 </Stack.Navigator>
             </NotificacionesProvider>
         </SessionProvider>

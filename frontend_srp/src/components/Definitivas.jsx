@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
 import "../styles/Definitivas.css";
-import { TraerMateriasProfesor, ObtenerDefinitivas } from "../api/cursos";
+import { TraerMateriasProfesor, ObtenerDefinitivas, Periodos } from "../api/cursos";
 import { Alert } from "../utils/alert";
+import { nombrePeriodo } from "../utils/periodo";
 
 export default function DefinitivasModal() {
   const [listaDefinitivas, setListaDefinitivas] = useState([]);
@@ -21,7 +22,8 @@ export default function DefinitivasModal() {
   // Payloads limpios para Django
   const [idCursoPayload, setIdCursoPayload] = useState(null);
   const [idMateriaPayload, setIdMateriaPayload] = useState(null);
-  const [periodoSeleccionado, setPeriodoSeleccionado] = useState(1);
+  const [periodoSeleccionado, setPeriodoSeleccionado] = useState("");
+  const [periodosLista, setPeriodosLista] = useState([]);
 
   useEffect(() => {
     const token = sessionStorage.getItem("token");
@@ -30,6 +32,17 @@ export default function DefinitivasModal() {
       setIdProfe(decoded.username);
       cargarMateriasDelProfesor(decoded.username);
     }
+
+    Periodos()
+      .then((res) => {
+        const lista = res?.data?.results || res?.data || [];
+        const arr = Array.isArray(lista) ? lista : [];
+        setPeriodosLista(arr);
+        if (arr.length > 0 && !periodoSeleccionado) {
+          setPeriodoSeleccionado(arr[0].id_periodo);
+        }
+      })
+      .catch(() => setPeriodosLista([]));
   }, []);
 
   const cargarMateriasDelProfesor = async (profesorUsername) => {
@@ -235,8 +248,12 @@ export default function DefinitivasModal() {
                 onChange={(e) => setPeriodoSeleccionado(e.target.value)}
                 className="definitivas-select-periodo"
               >
-                <option value={1}>Periodo 1</option>
-                <option value={2}>Periodo 2</option>
+                <option value="" hidden>Seleccione un periodo</option>
+                {periodosLista.map((p) => (
+                  <option key={p.id_periodo} value={p.id_periodo}>
+                    {nombrePeriodo(p)}
+                  </option>
+                ))}
               </select>
             </div>
           </div>

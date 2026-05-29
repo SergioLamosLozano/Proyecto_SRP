@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/Coordinacion.css';
-import { Periodos, Cursos, Materias } from '../api/cursos';
+import { Periodos, Cursos, Materias, ObtenerConfiguracionBoletines, ActualizarConfiguracionBoletines } from '../api/cursos';
 import { Alert } from '../utils/alert';
+import Swal from 'sweetalert2';
+import { nombrePeriodo } from '../utils/periodo';
 
 const ReportesAcademicos = ({ onBack }) => {
   const [periodos, setPeriodos] = useState([]);
@@ -19,9 +21,14 @@ const ReportesAcademicos = ({ onBack }) => {
   const [cursoSeleccionadoBoletin, setCursoSeleccionadoBoletin] = useState('');
   const [formatoBoletin, setFormatoBoletin] = useState('lote');
   const [loadingBoletin, setLoadingBoletin] = useState(false);
+  
+  // Estados para Configuración de Boletines
+  const [descargaHabilitada, setDescargaHabilitada] = useState(true);
+  const [loadingConfig, setLoadingConfig] = useState(false);
 
   useEffect(() => {
     cargarDatos();
+    cargarConfiguracionBoletines();
   }, []);
 
   const cargarDatos = async () => {
@@ -38,6 +45,63 @@ const ReportesAcademicos = ({ onBack }) => {
     } catch (error) {
       console.error('Error cargando datos:', error);
       Alert('error', 'Error al cargar los datos');
+    }
+  };
+
+  const cargarConfiguracionBoletines = async () => {
+    try {
+      const response = await ObtenerConfiguracionBoletines();
+      setDescargaHabilitada(response.data.descarga_habilitada);
+    } catch (error) {
+      console.error('Error cargando configuración de boletines:', error);
+      // No mostrar error al usuario, usar valor por defecto
+    }
+  };
+
+  const cambiarEstadoBoletines = async (nuevoEstado) => {
+    const accion = nuevoEstado ? 'habilitar' : 'deshabilitar';
+    
+    const result = await Swal.fire({
+      title: `¿${nuevoEstado ? 'Habilitar' : 'Deshabilitar'} descarga de boletines?`,
+      html: `
+        <p>Esto ${nuevoEstado ? 'permitirá' : 'bloqueará'} que los padres/acudientes puedan descargar boletines desde:</p>
+        <ul style="text-align: left; margin: 1rem 2rem;">
+          <li>La aplicación web (Portal de Padres)</li>
+          <li>La aplicación móvil</li>
+        </ul>
+        <p style="margin-top: 1rem;"><strong>¿Desea continuar?</strong></p>
+      `,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: nuevoEstado ? '#4caf50' : '#d32f2f',
+      cancelButtonColor: '#757575',
+      confirmButtonText: `Sí, ${accion}`,
+      cancelButtonText: 'Cancelar'
+    });
+
+    if (result.isConfirmed) {
+      try {
+        setLoadingConfig(true);
+        await ActualizarConfiguracionBoletines({ descarga_habilitada: nuevoEstado });
+        setDescargaHabilitada(nuevoEstado);
+        
+        Swal.fire({
+          icon: 'success',
+          title: '¡Configuración actualizada!',
+          text: `La descarga de boletines ha sido ${nuevoEstado ? 'habilitada' : 'deshabilitada'} exitosamente.`,
+          confirmButtonColor: '#4caf50'
+        });
+      } catch (error) {
+        console.error('Error actualizando configuración:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudo actualizar la configuración. Intente nuevamente.',
+          confirmButtonColor: '#d32f2f'
+        });
+      } finally {
+        setLoadingConfig(false);
+      }
     }
   };
 
@@ -60,14 +124,16 @@ const ReportesAcademicos = ({ onBack }) => {
         url += `&materia=${materiaSeleccionadaNotas}`;
       }
 
-      // Usar fetch directo sin token
+      // El endpoint requiere autenticación; enviamos el JWT del coordinador
+      const token = sessionStorage.getItem('token');
       const response = await fetch(`http://127.0.0.1:8000/api${url}`, {
         method: 'GET',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Error al generar el reporte');
+        throw new Error(errorData.error || errorData.detail || 'Error al generar el reporte');
       }
 
       const blob = await response.blob();
@@ -105,14 +171,16 @@ const ReportesAcademicos = ({ onBack }) => {
       
       let url = `/reportes/boletines-pdf/?periodo=${periodoSeleccionadoBoletin}&curso=${cursoSeleccionadoBoletin}&formato=${formatoBoletin}`;
 
-      // Usar fetch directo sin token
+      // El endpoint requiere autenticación; enviamos el JWT del coordinador
+      const token = sessionStorage.getItem('token');
       const response = await fetch(`http://127.0.0.1:8000/api${url}`, {
         method: 'GET',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Error al generar los boletines');
+        throw new Error(errorData.error || errorData.detail || 'Error al generar los boletines');
       }
 
       const blob = await response.blob();
@@ -173,7 +241,7 @@ const ReportesAcademicos = ({ onBack }) => {
                 <option value="">-- Seleccione un periodo --</option>
                 {periodos.map((periodo) => (
                   <option key={periodo.id_periodo} value={periodo.id_periodo}>
-                    Periodo {periodo.id_periodo} ({periodo.fecha_inicio} - {periodo.fecha_fin})
+                    {nombrePeriodo(periodo, { includeFechas: true })}
                   </option>
                 ))}
               </select>
@@ -249,6 +317,93 @@ const ReportesAcademicos = ({ onBack }) => {
             Genera boletines académicos en PDF. Puedes descargarlos por lote (ZIP) o individuales.
           </p>
 
+          {/* Switch de Control de Descarga para Padres */}
+          <div style={{
+            backgroundColor: descargaHabilitada ? '#e8f5e9' : '#ffebee',
+            padding: '1rem',
+            borderRadius: '8px',
+            marginTop: '1rem',
+            marginBottom: '1rem',
+            border: `2px solid ${descargaHabilitada ? '#4caf50' : '#d32f2f'}`
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ flex: 1 }}>
+                <h4 style={{ 
+                  margin: '0 0 0.5rem 0', 
+                  color: descargaHabilitada ? '#2e7d32' : '#c62828',
+                  fontSize: '0.95rem',
+                  fontWeight: '600'
+                }}>
+                  🔐 Control de Descarga para Padres/Acudientes
+                </h4>
+                <p style={{ 
+                  margin: 0, 
+                  fontSize: '0.85rem', 
+                  color: '#666',
+                  lineHeight: '1.4'
+                }}>
+                  {descargaHabilitada 
+                    ? 'Los padres pueden descargar boletines desde la web y app móvil' 
+                    : 'La descarga de boletines está bloqueada para padres/acudientes'}
+                </p>
+              </div>
+              
+              <div style={{ marginLeft: '1rem' }}>
+                <label style={{ 
+                  position: 'relative', 
+                  display: 'inline-block', 
+                  width: '60px', 
+                  height: '34px',
+                  cursor: loadingConfig ? 'not-allowed' : 'pointer',
+                  opacity: loadingConfig ? 0.6 : 1
+                }}>
+                  <input
+                    type="checkbox"
+                    checked={descargaHabilitada}
+                    onChange={(e) => cambiarEstadoBoletines(e.target.checked)}
+                    disabled={loadingConfig}
+                    style={{ opacity: 0, width: 0, height: 0 }}
+                  />
+                  <span style={{
+                    position: 'absolute',
+                    cursor: loadingConfig ? 'not-allowed' : 'pointer',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: descargaHabilitada ? '#4caf50' : '#ccc',
+                    transition: '0.4s',
+                    borderRadius: '34px'
+                  }}>
+                    <span style={{
+                      position: 'absolute',
+                      content: '""',
+                      height: '26px',
+                      width: '26px',
+                      left: descargaHabilitada ? '30px' : '4px',
+                      bottom: '4px',
+                      backgroundColor: 'white',
+                      transition: '0.4s',
+                      borderRadius: '50%'
+                    }}></span>
+                  </span>
+                </label>
+              </div>
+            </div>
+            
+            <div style={{
+              marginTop: '0.75rem',
+              padding: '0.5rem',
+              backgroundColor: 'rgba(255,255,255,0.7)',
+              borderRadius: '4px',
+              fontSize: '0.75rem',
+              color: '#555'
+            }}>
+              <strong>ℹ️ Nota:</strong> Este control solo afecta la descarga desde el portal de padres. 
+              Los coordinadores siempre pueden generar boletines desde aquí.
+            </div>
+          </div>
+
           <div style={{ marginTop: '1rem' }}>
             <div style={{ marginBottom: '1rem' }}>
               <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>
@@ -267,7 +422,7 @@ const ReportesAcademicos = ({ onBack }) => {
                 <option value="">-- Seleccione un periodo --</option>
                 {periodos.map((periodo) => (
                   <option key={periodo.id_periodo} value={periodo.id_periodo}>
-                    Periodo {periodo.id_periodo} ({periodo.fecha_inicio} - {periodo.fecha_fin})
+                    {nombrePeriodo(periodo, { includeFechas: true })}
                   </option>
                 ))}
               </select>

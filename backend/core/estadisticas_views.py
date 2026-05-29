@@ -399,7 +399,7 @@ class EstadisticasComparativasView(APIView):
                 tasa_aprobacion = (aprobadas / total_notas * 100) if total_notas > 0 else 0
 
                 comparativa_periodos.append({
-                    'periodo': f'Periodo {periodo.id_periodo}',
+                    'periodo': periodo.nombre or f'Periodo {periodo.id_periodo}',
                     'promedio': round(float(promedio), 2) if promedio else 0,
                     'tasa_aprobacion': round(tasa_aprobacion, 2),
                     'total_evaluaciones': total_notas

@@ -29,6 +29,9 @@ const DashboardScreen = ({ navigation }) => {
     const [logoutAlertVisible, setLogoutAlertVisible] = useState(false);
     const [subjects, setSubjects] = useState([]);
     const [generalAverage, setGeneralAverage] = useState('0.0');
+    const [activePeriodo, setActivePeriodo] = useState(null);
+    const [activePeriodoNombre, setActivePeriodoNombre] = useState(null);
+    const [allDefinitivas, setAllDefinitivas] = useState([]);
     const [loading, setLoading] = useState(true);
     
     // Low grades logic
@@ -62,12 +65,35 @@ const DashboardScreen = ({ navigation }) => {
             if (response.success) {
                 console.log('✅ Notas cargadas:', response.data);
                 setSubjects(response.data);
+                setActivePeriodo(response.periodo || null);
+                setAllDefinitivas(response.allDefinitivas || []);
+
+                // Resolver el nombre del periodo activo desde el catálogo de periodos
+                if (response.periodo) {
+                    try {
+                        const peRes = await studentService.getPeriodos();
+                        if (peRes.success && Array.isArray(peRes.data)) {
+                            const p = peRes.data.find(
+                                (x) => parseInt(x.id_periodo || x.id) === parseInt(response.periodo)
+                            );
+                            setActivePeriodoNombre(p ? p.nombre : `Periodo ${response.periodo}`);
+                        } else {
+                            setActivePeriodoNombre(`Periodo ${response.periodo}`);
+                        }
+                    } catch {
+                        setActivePeriodoNombre(`Periodo ${response.periodo}`);
+                    }
+                } else {
+                    setActivePeriodoNombre(null);
+                }
                 
-                // Calcular promedio general
+                // Promedio del PERIODO mostrado (mismas materias que ve el padre en web)
                 if (response.data.length > 0) {
                     const totalAverage = response.data.reduce((sum, subject) => sum + subject.average, 0);
                     const avg = (totalAverage / response.data.length).toFixed(2);
                     setGeneralAverage(avg);
+                } else {
+                    setGeneralAverage('0.0');
                 }
                 
                 // Obtener notas bajas
@@ -113,7 +139,11 @@ const DashboardScreen = ({ navigation }) => {
     const handleViewSubject = (subjectId) => {
         setGradeAlertVisible(false);
         const subject = subjects.find(s => s.id === subjectId);
-        navigation.navigate('SubjectDetail', { subject });
+        navigation.navigate('SubjectDetail', {
+            subject,
+            allDefinitivas,
+            activePeriodo,
+        });
     };
 
     const handleLogoutConfirm = () => {
@@ -161,7 +191,9 @@ const DashboardScreen = ({ navigation }) => {
                         >
                             <View style={styles.statItem}>
                                 <Text style={styles.statValue}>{loading ? '...' : generalAverage}</Text>
-                                <Text style={styles.statLabel}>Promedio Gral.</Text>
+                                <Text style={styles.statLabel}>
+                                    {activePeriodoNombre ? `Promedio ${activePeriodoNombre}` : 'Promedio Gral.'}
+                                </Text>
                             </View>
                             <View style={styles.divider} />
                             <View style={styles.statItem}>
@@ -200,6 +232,13 @@ const DashboardScreen = ({ navigation }) => {
                         color="#388E3C"
                         description="Definitivas por periodo"
                         onPress={() => navigation.navigate('Notas')}
+                    />
+                    <MenuCard
+                        title="Boletines"
+                        icon="file-document"
+                        color="#F57C00"
+                        description="Descargar boletines PDF"
+                        onPress={() => navigation.navigate('Boletines')}
                     />
                 </View>
 

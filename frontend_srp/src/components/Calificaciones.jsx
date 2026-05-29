@@ -6,6 +6,8 @@ import Table from "./Table";
 import { EstudiantesGET } from "../api/usuarios";
 import { TraerMateriasAgrupadas, Periodos, ConsultarNotasCurso } from "../api/cursos";
 import VerNotas from "./VerNotas";
+import GestionPeriodos from "./GestionPeriodos";
+import { nombrePeriodo } from "../utils/periodo";
 
 const Calificaciones = ({ onBack }) => {
   const [currentSubSection, setCurrentSubSection] = useState(null);
@@ -112,7 +114,7 @@ const Calificaciones = ({ onBack }) => {
     ...(currentSubSection
       ? [
           {
-            label: currentSubSection === "cno" ? "CNO" : "Carga Masiva",
+            label: currentSubSection === "cno" ? "CNO" : "Gestión de Periodos",
             path: `/coordinacion/calificaciones/${currentSubSection}`,
           },
         ]
@@ -163,12 +165,12 @@ const Calificaciones = ({ onBack }) => {
       buttonText: "Acceder a CNO",
     },
     {
-      id: "carga-masiva",
-      title: "Carga Masiva",
+      id: "periodos",
+      title: "Gestión de Periodos",
       description:
-        "Realiza carga masiva de calificaciones mediante archivos Excel o CSV.",
-      icon: "📊",
-      buttonText: "Cargar Calificaciones",
+        "Crea, edita y elimina los periodos académicos del año lectivo (nombre, fechas y año electivo).",
+      icon: "📅",
+      buttonText: "Administrar Periodos",
     },
   ];
 
@@ -299,8 +301,7 @@ const Calificaciones = ({ onBack }) => {
                         key={periodo.id_periodo}
                         value={periodo.id_periodo}
                       >
-                        Periodo {periodo.id_periodo} ({periodo.fecha_inicio} -{" "}
-                        {periodo.fecha_fin})
+                        {nombrePeriodo(periodo, { includeFechas: true })}
                       </option>
                     ))}
                   </select>
@@ -338,13 +339,8 @@ const Calificaciones = ({ onBack }) => {
             )}
           </div>
         );
-      case "carga-masiva":
-        return (
-          <div>
-            <h2>Carga Masiva de Calificaciones</h2>
-            <p>Funcionalidad de carga masiva en desarrollo...</p>
-          </div>
-        );
+      case "periodos":
+        return <GestionPeriodos />;
       default:
         return null;
     }
@@ -387,8 +383,26 @@ const Calificaciones = ({ onBack }) => {
   );
 };
 
+// Helper de estilo para botones de paginación de TablaNotasCNO
+const btnPaginacionStyle = (disabled, active) => ({
+  minWidth: "34px",
+  height: "34px",
+  padding: "0 10px",
+  border: "1px solid #ddd",
+  background: active ? "#b71c1c" : "#fff",
+  color: active ? "#fff" : "#333",
+  borderRadius: "6px",
+  cursor: disabled ? "not-allowed" : "pointer",
+  fontSize: "0.9rem",
+  fontWeight: 600,
+  opacity: disabled ? 0.45 : 1,
+});
+
 // Componente para la Tabla de Notas CNO
 const TablaNotasCNO = ({ notas }) => {
+  const PAGE_SIZE = 20;
+  const [pagina, setPagina] = useState(1);
+
   // Agrupar notas por estudiante y actividad
   const procesarNotas = () => {
     const estudiantesMap = {};
@@ -433,6 +447,17 @@ const TablaNotasCNO = ({ notas }) => {
   };
 
   const { estudiantes, actividades } = procesarNotas();
+
+  // Resetear página cuando cambian las notas
+  useEffect(() => {
+    setPagina(1);
+  }, [notas]);
+
+  const totalPaginas = Math.max(1, Math.ceil(estudiantes.length / PAGE_SIZE));
+  const inicio = (pagina - 1) * PAGE_SIZE;
+  const estudiantesPaginados = estudiantes.slice(inicio, inicio + PAGE_SIZE);
+  const desde = estudiantes.length === 0 ? 0 : inicio + 1;
+  const hasta = Math.min(inicio + PAGE_SIZE, estudiantes.length);
 
   // Calcular promedio de un estudiante
   const calcularPromedio = (notasEstudiante) => {
@@ -516,7 +541,7 @@ const TablaNotasCNO = ({ notas }) => {
           </tr>
         </thead>
         <tbody>
-          {estudiantes.map((estudiante, index) => (
+          {estudiantesPaginados.map((estudiante, index) => (
             <tr
               key={estudiante.documento}
               style={{
@@ -605,6 +630,76 @@ const TablaNotasCNO = ({ notas }) => {
           ))}
         </tbody>
       </table>
+
+      {/* Paginación */}
+      {estudiantes.length > 0 && (
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: "12px",
+            padding: "12px 16px",
+            marginTop: "8px",
+            background: "#fafafa",
+            borderRadius: "8px",
+            border: "1px solid #eee",
+          }}
+        >
+          <span style={{ fontSize: "0.9rem", color: "#555" }}>
+            Mostrando <strong style={{ color: "#b71c1c" }}>{desde}</strong>–
+            <strong style={{ color: "#b71c1c" }}>{hasta}</strong> de{" "}
+            <strong style={{ color: "#b71c1c" }}>{estudiantes.length}</strong>{" "}
+            estudiantes
+          </span>
+          <div style={{ display: "flex", gap: "4px" }}>
+            <button
+              type="button"
+              onClick={() => setPagina(1)}
+              disabled={pagina === 1}
+              style={btnPaginacionStyle(pagina === 1, false)}
+            >
+              «
+            </button>
+            <button
+              type="button"
+              onClick={() => setPagina(pagina - 1)}
+              disabled={pagina === 1}
+              style={btnPaginacionStyle(pagina === 1, false)}
+            >
+              ‹
+            </button>
+            <span
+              style={{
+                padding: "0 12px",
+                display: "flex",
+                alignItems: "center",
+                fontWeight: 600,
+                color: "#333",
+              }}
+            >
+              Página {pagina} de {totalPaginas}
+            </span>
+            <button
+              type="button"
+              onClick={() => setPagina(pagina + 1)}
+              disabled={pagina === totalPaginas}
+              style={btnPaginacionStyle(pagina === totalPaginas, false)}
+            >
+              ›
+            </button>
+            <button
+              type="button"
+              onClick={() => setPagina(totalPaginas)}
+              disabled={pagina === totalPaginas}
+              style={btnPaginacionStyle(pagina === totalPaginas, false)}
+            >
+              »
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Leyenda */}
       <div

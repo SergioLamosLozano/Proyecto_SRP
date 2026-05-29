@@ -1397,10 +1397,13 @@ const GestionUsuarios = ({ onBack }) => {
                   key: "cursos",
                   label: "CURSO",
                   render: (row) => {
-                    const curso = row.cursos.find(
-                      (c) => c.estado_curso === "Activo",
+                    // El backend devuelve `nombre_curso` y `estado` (en minúsculas)
+                    const cursos = Array.isArray(row.cursos) ? row.cursos : [];
+                    const cursoActivo = cursos.find(
+                      (c) => String(c.estado || "").toLowerCase() === "activo",
                     );
-                    return curso ? curso.curso_nombre : "Sin curso";
+                    const elegido = cursoActivo || cursos[0];
+                    return elegido?.nombre_curso || "Sin curso";
                   },
                 },
                 { key: "estado", label: "ESTADO" },

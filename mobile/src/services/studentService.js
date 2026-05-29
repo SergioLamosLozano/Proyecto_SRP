@@ -83,55 +83,73 @@ class StudentService {
   }
 
   /**
-   * Obtiene las notas de un estudiante y las agrupa por materia
-   * @param {string} studentId - ID del estudiante
-   * @param {number} periodoId - ID del periodo (opcional, si no se envía trae todos)
-   * @returns {Promise} Materias con sus notas agrupadas
+   * Obtiene las notas de un estudiante y las agrupa por materia.
+   *
+   * - Carga TODAS las notas del estudiante (todos los periodos) — necesarias
+   *   para que la pantalla de detalle pueda filtrar por periodo sin tener
+   *   que volver a llamar al backend.
+   * - El "average" de cada materia (mostrado en la card de Materias y
+   *   sumado en el Dashboard) corresponde a la DEFINITIVA OFICIAL del
+   *   periodo activo, calculada por el backend con la fórmula ponderada
+   *   Σ nota × %actividad × %RA. Esto mantiene a la app móvil mostrando
+   *   exactamente el mismo número que ve el padre en el portal web.
+   * - Si no se pasa periodoId, se usa automáticamente el periodo más
+   *   reciente con definitivas del estudiante.
+   *
+   * @param {string} studentId - documento del estudiante
+   * @param {number} periodoId - ID del periodo (opcional)
+   * @returns {Promise} { success, data: materias[], periodo, allDefinitivas }
    */
   async getStudentGrades(studentId, periodoId = null) {
     try {
       console.log('📊 Obteniendo notas del estudiante:', studentId, 'periodo:', periodoId);
-      
-      // Construir URL con filtro de periodo si se proporciona
-      let url = STUDENT_ENDPOINTS.GRADES(studentId);
-      if (periodoId) {
-        url += `&periodo=${periodoId}`;
-      }
-      
-      const response = await apiService.get(url);
 
-      console.log('📊 Respuesta del backend:', response);
+      // Traer TODAS las definitivas del estudiante (sin filtrar por periodo).
+      // Sirve para: (1) detectar el periodo más reciente con datos,
+      //             (2) que la pantalla de detalle tenga la definitiva
+      //                 oficial de cada periodo lista, sin recalcular.
+      let allDefinitivas = [];
+      try {
+        const allDefRes = await apiService.get(
+          `${API_BASE_URL}/definitivas-estudiante/?estudiante=${studentId}`
+        );
+        if (allDefRes.success && Array.isArray(allDefRes.data)) {
+          allDefinitivas = allDefRes.data;
+        }
+      } catch (e) {
+        console.warn('No se pudieron obtener definitivas:', e);
+      }
+
+      // Determinar periodo efectivo (el seleccionado o el más reciente con datos)
+      let effectivePeriodo = periodoId;
+      if (!effectivePeriodo && allDefinitivas.length > 0) {
+        const periodos = allDefinitivas
+          .map(d => parseInt(d.fk_id_periodo))
+          .filter(p => !isNaN(p));
+        if (periodos.length > 0) {
+          effectivePeriodo = Math.max(...periodos);
+          console.log('📅 Sin periodo: usando el más reciente con datos →', effectivePeriodo);
+        }
+      }
+
+      // Traer TODAS las notas del estudiante (todos los periodos)
+      const url = STUDENT_ENDPOINTS.GRADES(studentId);
+      const response = await apiService.get(url);
 
       if (response.success && response.data) {
         console.log('📊 Total de notas recibidas:', response.data.length);
-        
+
         if (response.data.length === 0) {
-          console.log('⚠️ No hay notas registradas para este estudiante');
-          return {
-            success: true,
-            data: []
-          };
+          return { success: true, data: [], periodo: effectivePeriodo, allDefinitivas };
         }
-        
-        // Agrupar notas por materia
+
+        // Agrupar TODAS las notas por materia (sin filtrar por periodo)
         const notasPorMateria = {};
-        
-        response.data.forEach((nota, index) => {
-          console.log(`📝 Nota ${index + 1}:`, {
-            materia: nota.nombre_materia,
-            actividad: nota.nombre_actividad,
-            calificacion: nota.calificacion,
-            periodo: nota.periodo
-          });
-          
+        response.data.forEach((nota) => {
           const materiaId = nota.id_materia;
           const materiaNombre = nota.nombre_materia;
-          
-          if (!materiaId || !materiaNombre) {
-            console.log('⚠️ Nota sin materia asociada:', nota);
-            return;
-          }
-          
+          if (!materiaId || !materiaNombre) return;
+
           if (!notasPorMateria[materiaId]) {
             notasPorMateria[materiaId] = {
               id: materiaId,
@@ -141,41 +159,46 @@ class StudentService {
               icon: this.getSubjectIcon(materiaNombre),
             };
           }
-          
           notasPorMateria[materiaId].grades.push({
             id: nota.id_estudiante_notas,
             activity: nota.nombre_actividad || 'Actividad sin nombre',
             grade: parseFloat(nota.calificacion) || 0,
             description: nota.descripcion_actividad,
-            period: nota.periodo,
+            period: nota.periodo, // ID del periodo de la nota
             percentage: parseFloat(nota.porcentaje_actividad) || 0,
           });
         });
-        
-        // Calcular promedios por materia
-        const materias = Object.values(notasPorMateria).map(materia => {
-          const totalGrades = materia.grades.reduce((sum, g) => sum + g.grade, 0);
-          materia.average = materia.grades.length > 0 
-            ? parseFloat((totalGrades / materia.grades.length).toFixed(2))
-            : 0;
-          return materia;
-        });
-        
-        console.log('✅ Materias procesadas:', materias.length);
-        
+
+        const materias = Object.values(notasPorMateria);
+
+        // Asignar como "average" la DEFINITIVA oficial del periodo efectivo
+        if (effectivePeriodo) {
+          const defsPeriodo = {};
+          allDefinitivas.forEach(d => {
+            if (parseInt(d.fk_id_periodo) === parseInt(effectivePeriodo)) {
+              defsPeriodo[d.fk_id_materia] = parseFloat(d.valor_definitiva) || 0;
+            }
+          });
+          materias.forEach(m => {
+            if (defsPeriodo[m.id] !== undefined) {
+              m.average = parseFloat(defsPeriodo[m.id].toFixed(2));
+            }
+          });
+        }
+
+        console.log('✅ Materias procesadas:', materias.length, 'periodo activo:', effectivePeriodo);
         return {
           success: true,
-          data: materias
+          data: materias,
+          periodo: effectivePeriodo,
+          allDefinitivas,
         };
       }
 
       return response;
     } catch (error) {
       console.error('❌ Error obteniendo notas:', error);
-      return {
-        success: false,
-        error: 'No se pudieron cargar las notas.'
-      };
+      return { success: false, error: 'No se pudieron cargar las notas.' };
     }
   }
 
@@ -194,7 +217,10 @@ class StudentService {
           success: true,
           data: response.data.map(p => ({
             id: p.id_periodo,
-            nombre: `Periodo ${p.id_periodo}`,
+            id_periodo: p.id_periodo,           // alias para utilidades
+            nombre: p.nombre || `Periodo ${p.id_periodo}`,
+            fecha_inicio: p.fecha_inicio,        // alias
+            fecha_fin: p.fecha_fin,              // alias
             fechaInicio: p.fecha_inicio,
             fechaFin: p.fecha_fin,
           }))

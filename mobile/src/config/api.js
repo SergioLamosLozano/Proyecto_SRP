@@ -10,7 +10,7 @@
 // - Windows: ipconfig (busca IPv4)
 // - Mac/Linux: ifconfig (busca inet)
 export const API_BASE_URL = __DEV__ 
-  ? 'http://10.214.121.146:8000/api'  // Desarrollo local - CAMBIAR localhost por tu IP si usas dispositivo físico
+  ? 'http://192.168.1.8:8000/api'  // Desarrollo local - CAMBIAR localhost por tu IP si usas dispositivo físico
   : 'https://tu-dominio.com/api'; // Producción
 
 // Endpoints de autenticación
@@ -50,6 +50,18 @@ export const MESSAGE_ENDPOINTS = {
   SEND: `${API_BASE_URL}/mensajes/enviar/`,
 };
 
+// Endpoints de boletines
+export const BOLETIN_ENDPOINTS = {
+  ESTADO: `${API_BASE_URL}/configuracion/boletines/estado/`,
+  DESCARGAR: (periodo, estudiante) => `${API_BASE_URL}/reportes/boletines-pdf/?periodo=${periodo}&estudiante=${estudiante}&formato=individual`,
+};
+
+// Endpoints de periodos
+export const PERIODO_ENDPOINTS = {
+  LIST: `${API_BASE_URL}/periodo/`,
+  DETAIL: (id) => `${API_BASE_URL}/periodo/${id}/`,
+};
+
 // Timeout para las peticiones (en milisegundos)
 export const REQUEST_TIMEOUT = 30000; // Aumentado a 30 segundos
 
@@ -66,6 +78,8 @@ export default {
   SUBJECT_ENDPOINTS,
   NOTIFICATION_ENDPOINTS,
   MESSAGE_ENDPOINTS,
+  BOLETIN_ENDPOINTS,
+  PERIODO_ENDPOINTS,
   REQUEST_TIMEOUT,
   DEFAULT_HEADERS,
 };

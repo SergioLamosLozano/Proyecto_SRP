@@ -23,6 +23,7 @@ import {
 } from '../api/estadisticas';
 import toast from 'react-hot-toast';
 import '../styles/EstadisticasCompletas.css';
+import { nombrePeriodo } from '../utils/periodo';
 
 // Registrar componentes de Chart.js
 ChartJS.register(
@@ -396,7 +397,7 @@ const EstadisticasCompletas = ({ onBack }) => {
               <option value="">Todos los periodos</option>
               {filtrosDisponibles?.periodos?.map((periodo) => (
                 <option key={periodo.id_periodo} value={periodo.id_periodo}>
-                  Periodo {periodo.id_periodo}
+                  {nombrePeriodo(periodo)}
                 </option>
               ))}
             </select>

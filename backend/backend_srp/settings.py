@@ -54,7 +54,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'drf_yasg',
     'drf_spectacular',
-    'core',
+    'core.apps.BackendConfig',
 ]
 
 MIDDLEWARE = [

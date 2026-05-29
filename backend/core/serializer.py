@@ -86,9 +86,18 @@ class DepartamentoSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class PeriodoSerializer(serializers.ModelSerializer):
+    # Nombre derivado: si no hay 'nombre' explícito devolvemos uno legible
+    nombre_display = serializers.SerializerMethodField()
+    año_electivo = serializers.IntegerField(
+        source='fk_id_año_electivo.id_año_electivo', read_only=True
+    )
+
     class Meta:
         model = Periodo
         fields = '__all__'
+
+    def get_nombre_display(self, obj):
+        return obj.nombre or f"Periodo {obj.id_periodo}"
 
 class CiudadSerializer(serializers.ModelSerializer):
     # Removemos departamento_nombre temporalmente para evitar el error
@@ -371,8 +380,15 @@ class EstudianteNotasSerializer(serializers.ModelSerializer):
         return obj.fk_id_actividad.porcentaje if obj.fk_id_actividad else None
 
     def validate_calificacion(self, value):
-        if value < 0 or value > 5.0:
-            return serializers.ValidationError("La calificacion debe estar entre 0 y 5")
+        # Bug fix: antes usaba "return" en vez de "raise", la validación nunca se aplicaba.
+        if value is None:
+            raise serializers.ValidationError("La calificación es requerida")
+        try:
+            v = float(value)
+        except (TypeError, ValueError):
+            raise serializers.ValidationError("La calificación debe ser numérica")
+        if v < 0 or v > 5.0:
+            raise serializers.ValidationError("La calificación debe estar entre 0 y 5")
         return value
 
     class Meta:
@@ -408,3 +424,20 @@ class DefinitivaSerializer(serializers.ModelSerializer):
             'nombre_estudiante',
             'nombre_materia'
         ]
+
+
+class ConfiguracionBoletinesSerializer(serializers.ModelSerializer):
+    """
+    Serializer para la configuración de descarga de boletines
+    """
+    usuario_modificacion_nombre = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = ConfiguracionBoletines
+        fields = '__all__'
+        read_only_fields = ['fecha_modificacion']
+    
+    def get_usuario_modificacion_nombre(self, obj):
+        if obj.fk_usuario_modificacion:
+            return f"{obj.fk_usuario_modificacion.first_name} {obj.fk_usuario_modificacion.last_name}".strip() or obj.fk_usuario_modificacion.username
+        return None
