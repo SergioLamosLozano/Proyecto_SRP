@@ -118,6 +118,8 @@ class AcudienteSerializer(serializers.ModelSerializer):
     nombre_completo = serializers.ReadOnlyField()
     tipo_documento_desc = serializers.CharField(source='fk_id_tipo_documento.descripcion', read_only=True)
     ciudad_nombre = serializers.CharField(source='fk_codigo_municipio.nombre', read_only=True)
+    estado = serializers.CharField(source='fk_id_estado.descripcion', read_only=True)
+    estado_desc = serializers.CharField(source='fk_id_estado.descripcion', read_only=True)
     
     class Meta:
         model = Acudiente

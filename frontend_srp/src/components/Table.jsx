@@ -36,7 +36,6 @@ const Table = ({
 }) => {
   const [searchTerm, setSearchTerm] = React.useState("");
   const [filterValue, setFilterValue] = React.useState("");
-  const [usuarios, setUsuarios] = useState([]);
 
   // === PAGINACIÓN (client-side) ===
   const [currentPage, setCurrentPage] = useState(1);
@@ -111,21 +110,10 @@ const Table = ({
       .sort((a, b) => a - b);
   }, [currentPage, totalPages]);
 
-  const buscar = async (letras) => {
-    if (!users) {
-      alert("no se enviaron los usuarios requeridos");
-    }
-    const filtrados = users.filter((u) =>
-      String(u[parametrobuscar]).toLowerCase().includes(letras.toLowerCase()),
-    );
-    setUsuarios(filtrados);
-  };
-
   const handleSearch = (e) => {
     const value = e.target.value;
     setSearchTerm(value);
     if (onSearch) onSearch(value);
-    buscar(value);
   };
 
   const handleFilter = (e) => {
@@ -210,30 +198,6 @@ const Table = ({
                   </option>
                 ))}
               </select>
-            )}
-          </div>
-          <div className="contenedor_busqueda2">
-            {searchTerm.length > 2 && (
-              <div className="busqueda_por_nombre">
-                {usuarios.length > 0 ? (
-                  usuarios.map((item, index) => (
-                    <div className="targeta_busqueda" key={index}>
-                      {busqueda.map((parametro, index) => (
-                        <label key={index}>{`${item[parametro]} - `}</label>
-                      ))}
-                      {actions.length > 0 && (
-                        <div style={{ display: "flex", gap: "10px" }}>
-                          {renderActionButtons(item, index)}
-                        </div>
-                      )}
-                    </div>
-                  ))
-                ) : (
-                  <h1 className="Alerta_busqueda">
-                    No se encontró ningún usuario por '{searchTerm}'
-                  </h1>
-                )}
-              </div>
             )}
           </div>
         </div>

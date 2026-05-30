@@ -355,6 +355,14 @@ class Acudiente(models.Model):
         blank=True, 
         null=True
     )
+    fk_id_estado = models.ForeignKey(
+        TipoEstado,
+        on_delete=models.SET_NULL,
+        db_column='FK_id_estado',
+        blank=True,
+        null=True,
+        help_text="Estado del acudiente (Activo/Inactivo)"
+    )
 
     class Meta:
         db_table = 'acudiente'
@@ -503,6 +511,8 @@ class Periodo(models.Model):
                               help_text="Nombre descriptivo del periodo (ej: 'Primer Trimestre 2026')")
     fecha_inicio = models.DateField()
     fecha_fin = models.DateField()
+    estado = models.CharField(max_length=20, default="activo",
+                              help_text="activo | inactivo (soft-delete)")
     fk_id_año_electivo = models.ForeignKey(
         ano_electivo,
         on_delete=models.CASCADE,

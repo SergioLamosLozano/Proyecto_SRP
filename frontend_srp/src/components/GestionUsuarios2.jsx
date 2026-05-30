@@ -115,6 +115,13 @@ const GestionUsuarios = ({ onBack }) => {
   };
   // padres
   const [padres, setPadres] = useState([]);
+  // Filtro padres (mismo patrón que estudiantes y profesores)
+  const filtro3Activos = padres.filter(
+    (pad) => String(pad.estado_desc || pad.estado || "").toLowerCase() === "activo"
+  );
+  const filtro3Inactivos = padres.filter(
+    (pad) => String(pad.estado_desc || pad.estado || "").toLowerCase() === "inactivo"
+  );
   const [tipoDocumentoC, setTipoDocumentoC] = useState(0);
   const [documentoC, setDocumentoC] = useState("");
   const [primerNombreC, setPrimerNombreC] = useState("");
@@ -471,6 +478,29 @@ const GestionUsuarios = ({ onBack }) => {
               Swal.fire({
                 icon: "error",
                 text: "El profesor no se pudo desactivar",
+                timer: 3000,
+              });
+            });
+        } else if (item.numero_documento_acudiente) {
+          await EditarPadres(
+            item.numero_documento_acudiente,
+            {
+              fk_id_estado: 2,
+            },
+          )
+            .then(() => {
+              Swal.fire({
+                icon: "success",
+                text: "Acudiente desactivado con éxito",
+                timer: 3000,
+              });
+              CargarPadres();
+            })
+            .catch((err) => {
+              console.log(err);
+              Swal.fire({
+                icon: "error",
+                text: "El acudiente no se pudo desactivar",
                 timer: 3000,
               });
             });
@@ -1080,14 +1110,23 @@ const GestionUsuarios = ({ onBack }) => {
             )}
             <Table
               id="Acudientes"
+              busqueda={["numero_documento_acudiente", "nombre_completo"]}
               title="Gestión de Padres"
               description="Registro manual de padres de familia."
               columns={[
                 { key: "nombre_completo", label: "Nombre" },
                 { key: "numero_documento_acudiente", label: "Documento" },
                 { key: "telefono1", label: "Telefono" },
+                { key: "estado_desc", label: "Estado" },
               ]}
-              data={padres}
+              data={BTNfiltro ? filtro3Activos : filtro3Inactivos}
+              check={[
+                {
+                  title: "Mostrar solo activos",
+                  check: BTNfiltro,
+                  onChange: (e) => setBTNfiltro(e.target.checked),
+                },
+              ]}
               searchPlaceholder="Buscar por nombre..."
               addButtonText="Añadir Padre"
               actions={[
@@ -1095,10 +1134,15 @@ const GestionUsuarios = ({ onBack }) => {
                   label: "Editar ✏️",
                   onClick: (item) => AbrirModalParaEditarE(item),
                 },
-                {
-                  label: "Desactivar 🗑️",
-                  onClick: (item) => eliminarPadres(item),
-                },
+                BTNfiltro
+                  ? {
+                      label: "Desactivar 🗑️",
+                      onClick: (item) => deshabilitarE(item),
+                    }
+                  : {
+                      label: "Activar ✅",
+                      onClick: (item) => habilitarE(item),
+                    },
               ]}
               onAdd={() => setModal(true)}
             />

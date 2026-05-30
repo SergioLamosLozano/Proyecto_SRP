@@ -177,8 +177,9 @@ function CrearOModificarRAs({ listaRAs, funcion }) {
                     key={index}
                     className="modal-campos-materias-selecionar-materia-2-cursos"
                   >
-                    {item.cursos.map((item2, index) => (
+                    {item.cursos.map((item2, index2) => (
                       <div
+                        key={item2.id_materia_profesores || index2}
                         onClick={() =>
                           SeleccionarCursoYMateria(
                             item2.id_materia_profesores,
@@ -329,6 +330,7 @@ function CrearOModificarRAs({ listaRAs, funcion }) {
                     </button>
                     <input
                       value={selecciondemateriaycurso}
+                      readOnly
                       className="RA-contenedor-modificar-o-crear-contenedor-2-campos-seleccionar-materia-ver-materia"
                     />
                   </section>
@@ -339,7 +341,7 @@ function CrearOModificarRAs({ listaRAs, funcion }) {
                   </div>
                   {listaRAs.length > 0 ? (
                     listaRAs.map((item, index) => (
-                      <section onClick={() => RAseleccionado(item)}>
+                      <section key={item.id_ra || index} onClick={() => RAseleccionado(item)}>
                         <span>
                           ID: <label>{item.id_ra}</label>
                         </span>
@@ -488,6 +490,7 @@ function CrearOModificarRAs({ listaRAs, funcion }) {
                     </button>
                     <input
                       value={selecciondemateriaycursoM}
+                      readOnly
                       className="RA-contenedor-modificar-o-crear-contenedor-2-campos-seleccionar-materia-ver-materia"
                     />
                   </section>
@@ -498,7 +501,7 @@ function CrearOModificarRAs({ listaRAs, funcion }) {
                   </div>
                   {listaRAs.length > 0 ? (
                     listaRAs.map((item, index) => (
-                      <section onClick={() => RAseleccionado(item)}>
+                      <section key={item.id_ra || index} onClick={() => RAseleccionado(item)}>
                         <span>
                           ID: <label>{item.id_ra}</label>
                         </span>

@@ -51,8 +51,11 @@ export const Año_electivo = () => {
   return axiosInstance.get("/ano_electivo/");
 };
 
-export const Periodos = () => {
-  return axiosInstance.get("/periodo/?page_size=100");
+export const Periodos = (incluirInactivos = false) => {
+  const url = incluirInactivos
+    ? "/periodo/?page_size=100&incluir_inactivos=1"
+    : "/periodo/?page_size=100";
+  return axiosInstance.get(url);
 };
 
 export const PeriodoById = (id) => {
@@ -88,19 +91,19 @@ export const Estudiantes_cursos = () => {
 };
 
 export const Estudiantes_cursosBucar = (id) => {
-  return axiosInstance.get(`/estudiantes_cursos/?search=${id}`);
+  return axiosInstance.get(`/estudiante_cursos/?search=${id}`);
 };
 
 export const CrearEstudiantesCursos = (datos) => {
-  return axiosInstance.post(`/estudiantes_cursos/`, datos);
+  return axiosInstance.post(`/estudiante_cursos/`, datos);
 };
 
 export const EditarEstudiantesCursos = (id_estudiante_curso, datos) => {
-  return axiosInstance.patch(`/estudiantes_cursos/${id_estudiante_curso}/`, datos);
+  return axiosInstance.patch(`/estudiante_cursos/${id_estudiante_curso}/`, datos);
 };
 
 export const BuscarEstudiantes_cursos = (Estudiante) => {
-  return axiosInstance.get(`/estudiantes_cursos/?search=${Estudiante}`);
+  return axiosInstance.get(`/estudiante_cursos/?search=${Estudiante}`);
 };
 
 export const BuscarMateriaAsignada = (materia) => {
@@ -108,7 +111,7 @@ export const BuscarMateriaAsignada = (materia) => {
 };
 
 export const EliminarEstudiantes_cursos = (id) => {
-  return axiosInstance.delete(`/estudiantes_cursos/${id}/`);
+  return axiosInstance.delete(`/estudiante_cursos/${id}/`);
 };
 
 export const Estudiantes_notas = (id) => {

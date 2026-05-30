@@ -5,7 +5,6 @@ import {
   Periodos,
   CrearPeriodo,
   EditarPeriodo,
-  EliminarPeriodo,
   Año_electivo,
 } from "../api/cursos";
 import { Alert } from "../utils/alert";
@@ -19,6 +18,7 @@ const GestionPeriodos = () => {
   const [periodos, setPeriodos] = useState([]);
   const [aniosElectivos, setAniosElectivos] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [mostrarSoloActivos, setMostrarSoloActivos] = useState(true);
 
   // Estado del modal
   const [modalAbierto, setModalAbierto] = useState(false);
@@ -39,7 +39,7 @@ const GestionPeriodos = () => {
     setLoading(true);
     try {
       const [resPer, resAnos] = await Promise.all([
-        Periodos(),
+        Periodos(true), // incluir inactivos en gestión
         Año_electivo(),
       ]);
       const lista = resPer?.data?.results || resPer?.data || [];
@@ -129,68 +129,68 @@ const GestionPeriodos = () => {
     }
   };
 
-  const eliminar = (p) => {
+  const cambiarEstado = (p, nuevoEstado) => {
+    const accion = nuevoEstado === "activo" ? "Activar" : "Desactivar";
+    const colorBoton = nuevoEstado === "activo" ? "#2e7d32" : "#c41e3a";
     Swal.fire({
-      title: `¿Eliminar "${p.nombre || `Periodo ${p.id_periodo}`}"?`,
+      title: `¿${accion} "${p.nombre || `Periodo ${p.id_periodo}`}"?`,
       html:
-        '<p>Si hay calificaciones, RAs o definitivas asociadas a este periodo, ' +
-        'la eliminación puede fallar o generar inconsistencias. Solo elimine ' +
-        'periodos sin uso.</p>',
-      icon: "warning",
+        nuevoEstado === "activo"
+          ? "<p>El periodo volverá a aparecer en los selectores y reportes.</p>"
+          : "<p>El periodo quedará oculto en los selectores activos pero <strong>no se borra</strong>: las calificaciones, RAs y definitivas asociadas se conservan intactas.</p>",
+      icon: "question",
       showCancelButton: true,
-      confirmButtonColor: "#d32f2f",
+      confirmButtonColor: colorBoton,
       cancelButtonColor: "#757575",
-      confirmButtonText: "Sí, eliminar",
+      confirmButtonText: `Sí, ${accion.toLowerCase()}`,
       cancelButtonText: "Cancelar",
     }).then(async (result) => {
       if (!result.isConfirmed) return;
       try {
-        await EliminarPeriodo(p.id_periodo);
-        Alert("success", "Periodo eliminado");
+        await EditarPeriodo(p.id_periodo, { estado: nuevoEstado });
+        Alert(
+          "success",
+          nuevoEstado === "activo"
+            ? "Periodo activado"
+            : "Periodo desactivado correctamente"
+        );
         cargarDatos();
       } catch (e) {
-        Alert(
-          "error",
-          "No se pudo eliminar (probablemente tiene datos asociados)"
-        );
+        Alert("error", "No se pudo cambiar el estado del periodo");
       }
     });
   };
 
-  const dataTabla = periodos.map((p) => ({
-    ...p,
-    nombre_display: p.nombre || `Periodo ${p.id_periodo}`,
-    año_electivo_display: p.fk_id_año_electivo
-      ? `Año ${p.fk_id_año_electivo}`
-      : "—",
-  }));
+  const dataTabla = periodos
+    .filter((p) => {
+      const estado = String(p.estado || "activo").toLowerCase();
+      return mostrarSoloActivos ? estado === "activo" : estado !== "activo";
+    })
+    .map((p) => ({
+      ...p,
+      nombre_display: p.nombre || `Periodo ${p.id_periodo}`,
+      año_electivo_display: p.fk_id_año_electivo
+        ? `Año ${p.fk_id_año_electivo}`
+        : "—",
+      estado_display: String(p.estado || "activo").toLowerCase() === "activo"
+        ? "Activo"
+        : "Inactivo",
+    }));
 
   return (
     <div>
       <div className="dashboard-header">
         <h1 className="dashboard-title">Gestión de Periodos</h1>
         <p className="dashboard-subtitle">
-          Crea, edita y elimina periodos académicos. Cada periodo se asocia a
+          Crea, edita y desactiva periodos académicos. Cada periodo se asocia a
           un año electivo y se usará en RAs, actividades, definitivas y
           boletines.
         </p>
       </div>
 
-      <div style={{ marginBottom: "1.5rem" }}>
-        <button
-          className="card-button"
-          style={{
-            backgroundColor: "#d32f2f",
-            color: "#fff",
-            padding: "0.75rem 1.5rem",
-            border: "none",
-            borderRadius: "8px",
-            fontWeight: 600,
-            cursor: "pointer",
-          }}
-          onClick={abrirModalCrear}
-        >
-          ➕ Nuevo Periodo
+      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "1.5rem" }}>
+        <button className="table-add-btn" onClick={abrirModalCrear}>
+          + Nuevo Periodo
         </button>
       </div>
 
@@ -206,9 +206,17 @@ const GestionPeriodos = () => {
             { key: "fecha_inicio", label: "Fecha Inicio" },
             { key: "fecha_fin", label: "Fecha Fin" },
             { key: "año_electivo_display", label: "Año Electivo" },
+            { key: "estado_display", label: "Estado" },
           ]}
           data={dataTabla}
           searchPlaceholder="Buscar periodo..."
+          check={[
+            {
+              title: "Mostrar solo activos",
+              check: mostrarSoloActivos,
+              onChange: (e) => setMostrarSoloActivos(e.target.checked),
+            },
+          ]}
           actions={[
             {
               label: "Editar ✏️",
@@ -216,12 +224,19 @@ const GestionPeriodos = () => {
               title: "Editar periodo",
               onClick: (p) => abrirModalEditar(p),
             },
-            {
-              label: "Eliminar 🗑️",
-              className: "table-action-btn btn-danger",
-              title: "Eliminar periodo",
-              onClick: (p) => eliminar(p),
-            },
+            mostrarSoloActivos
+              ? {
+                  label: "Desactivar 🗑️",
+                  className: "table-action-btn btn-danger",
+                  title: "Desactivar periodo",
+                  onClick: (p) => cambiarEstado(p, "inactivo"),
+                }
+              : {
+                  label: "Activar ✅",
+                  className: "table-action-btn btn-primary",
+                  title: "Activar periodo",
+                  onClick: (p) => cambiarEstado(p, "activo"),
+                },
           ]}
         />
       )}
@@ -262,7 +277,7 @@ const GestionPeriodos = () => {
                 marginBottom: "1.5rem",
               }}
             >
-              <h2 style={{ margin: 0, color: "#d32f2f" }}>
+              <h2 style={{ margin: 0, color: "#c41e3a" }}>
                 {modoEdicion ? "Editar Periodo" : "Nuevo Periodo"}
               </h2>
               <button
@@ -433,7 +448,7 @@ const GestionPeriodos = () => {
                   onClick={guardar}
                   style={{
                     padding: "0.6rem 1.5rem",
-                    background: "#d32f2f",
+                    background: "#c41e3a",
                     color: "#fff",
                     border: "none",
                     borderRadius: "6px",

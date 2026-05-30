@@ -402,6 +402,19 @@ class PeriodoViewSet(viewsets.ModelViewSet):
     queryset = Periodo.objects.all()
     serializer_class = PeriodoSerializer
 
+    def get_queryset(self):
+        """
+        Por defecto devolvemos solo periodos ACTIVOS para que los selects
+        de RAs, reportes, boletines, padres, etc. no muestren periodos
+        desactivados. Para ver todos (modo administración) pasar
+        ?incluir_inactivos=1 en la URL.
+        """
+        qs = Periodo.objects.all().order_by('id_periodo')
+        incluir_inactivos = self.request.query_params.get('incluir_inactivos')
+        if str(incluir_inactivos or '').lower() not in ('1', 'true', 'yes'):
+            qs = qs.filter(estado='activo')
+        return qs
+
 
 class EstudianteAcudienteViewSet(viewsets.ModelViewSet):
     queryset = EstudiantesAcudientes.objects.all()
@@ -1175,73 +1188,88 @@ class TraerRAprofesor(APIView):
         
         return Response(serializer.errors, status=400)
     
-    def patch(self, request): 
+    def patch(self, request):
         idra = request.query_params.get("id_ra")
         id_profesor = request.data.get("id_profesor")
         nombre_ra = request.data.get("nombre_ra")
         porcentaje = request.data.get("porcentaje")
-        numero_ra =  request.data.get("numero_ra")
+        numero_ra = request.data.get("numero_ra")
         fk_id_periodo_academico = request.data.get("fk_id_periodo_academico")
         fk_id_materia_profesores = request.data.get("fk_id_materia_profesores")
 
         if not idra or not id_profesor:
-            return Response("error, se requieren el id del R.A y el id del profesor para la modificacion del R.A", status=400)
-        
-        ra = RA.objects.filter(
-            id_ra = idra
-        ).first()
+            return Response(
+                "error, se requieren el id del R.A y el id del profesor para la modificacion del R.A",
+                status=400,
+            )
 
+        ra = RA.objects.filter(id_ra=idra).first()
         if not ra:
             return Response("error el R.A no existe", status=400)
 
-        if ra.nombre_ra is not None and ra.nombre_ra != nombre_ra:
+        # Helpers de conversión segura
+        def to_float(v, default=None):
+            try:
+                return float(v)
+            except (TypeError, ValueError):
+                return default
+
+        def to_int(v, default=None):
+            try:
+                return int(v)
+            except (TypeError, ValueError):
+                return default
+
+        # --- Nombre ---
+        if nombre_ra is not None and str(nombre_ra).strip() != "":
             ra.nombre_ra = nombre_ra
 
-        if ra.porcentaje is not None and ra.porcentaje != porcentaje:
-            poracumulado = 0
+        # --- Porcentaje (validando que la suma del periodo+materia no exceda 100) ---
+        nuevo_porcentaje = to_float(porcentaje)
+        if nuevo_porcentaje is not None and nuevo_porcentaje != float(ra.porcentaje):
+            if nuevo_porcentaje <= 0 or nuevo_porcentaje > 100:
+                return Response(
+                    "error, el porcentaje debe estar entre 0.01 y 100", status=400
+                )
+            # Suma de los demás RAs (excluyendo el actual) del mismo periodo y materia
+            otros = RA.objects.filter(
+                fk_id_materia_profesores=ra.fk_id_materia_profesores,
+                fk_id_periodo_academico=ra.fk_id_periodo_academico,
+            ).exclude(id_ra=ra.id_ra)
+            acumulado = sum(float(o.porcentaje) for o in otros)
+            if nuevo_porcentaje + acumulado > 100.0001:
+                disponible = round(100 - acumulado, 2)
+                return Response(
+                    f"error el porcentaje sobrepasa el 100%, debe ser menor o igual a: {disponible}",
+                    status=400,
+                )
+            ra.porcentaje = nuevo_porcentaje
 
-            porcen = RA.objects.filter(
-                fk_id_materia_profesores__fk_numero_documento_profesor = id_profesor,
-                fk_id_periodo_academico = ra.fk_id_periodo_academico,
-                fk_id_materia_profesores = ra.fk_id_materia_profesores
-                
-            )
-
-            for po in porcen:
-                poracumulado += float(po.porcentaje)
-            
-            poracumulado -= float(ra.porcentaje)
-
-            if porcentaje + poracumulado > 100:
-                return Response(f"error el porcentaje sobre para el 100%, debe ser menor o igual a: {100 - poracumulado}", status=400)
-
-            ra.porcentaje = float(porcentaje)
-
-        if ra.numero_ra is not None and ra.numero_ra != numero_ra:
-            
-            num = RA.objects.filter(
-                fk_id_materia_profesores__fk_numero_documento_profesor = id_profesor,
-                numero_ra = numero_ra,
-                fk_id_periodo_academico = ra.fk_id_periodo_academico,
-                fk_id_materia_profesores = ra.fk_id_materia_profesores
-            ).exists()
-
-            if num:
+        # --- Número del RA (validando que no se repita en periodo+materia) ---
+        nuevo_numero = to_int(numero_ra)
+        if nuevo_numero is not None and nuevo_numero != ra.numero_ra:
+            existe = RA.objects.filter(
+                fk_id_materia_profesores=ra.fk_id_materia_profesores,
+                fk_id_periodo_academico=ra.fk_id_periodo_academico,
+                numero_ra=nuevo_numero,
+            ).exclude(id_ra=ra.id_ra).exists()
+            if existe:
                 return Response("error ya existe un R.A con ese numero R.A", status=400)
+            ra.numero_ra = nuevo_numero
 
-            ra.numero_ra = numero_ra
-        
-        if ra.fk_id_periodo_academico_id is not None and ra.fk_id_periodo_academico_id != int(fk_id_periodo_academico):
-            ra.fk_id_periodo_academico_id = fk_id_periodo_academico
-        
-        if ra.fk_id_materia_profesores_id is not None and ra.fk_id_materia_profesores_id != int(fk_id_materia_profesores):
-            ra.fk_id_materia_profesores_id = fk_id_materia_profesores
-        
-        serializer = RASerializer(data=request.data)
-        if serializer.is_valid():
-            ra.save()
-            return Response("R.A modificado con exito", status=200)
-        return Response(serializer.errors, status=400)
+        # --- Periodo ---
+        nuevo_periodo = to_int(fk_id_periodo_academico)
+        if nuevo_periodo is not None and nuevo_periodo != ra.fk_id_periodo_academico_id:
+            ra.fk_id_periodo_academico_id = nuevo_periodo
+
+        # --- Materia asignada ---
+        nueva_materia = to_int(fk_id_materia_profesores)
+        if nueva_materia is not None and nueva_materia != ra.fk_id_materia_profesores_id:
+            ra.fk_id_materia_profesores_id = nueva_materia
+
+        # Guardar directamente (los cambios ya fueron validados arriba)
+        ra.save()
+        return Response("R.A modificado con exito", status=200)
 
 
 class TraerActividadesPorRA(APIView):
