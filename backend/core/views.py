@@ -12,7 +12,7 @@ from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnl
 from rest_framework.decorators import action
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
-from django.db.models import Q
+from django.db.models import Q, Sum
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
 from django.urls import reverse_lazy
 from io import BytesIO
@@ -95,6 +95,15 @@ class AcudienteUserMatchViewSet(viewsets.ViewSet):
 
             for rel in relaciones:
                 est = rel.fk_numero_documento_estudiante
+                
+                # Obtener el curso actual del estudiante
+                curso_actual = Estudiantes_cursos.objects.filter(
+                    numero_documento_estudiante=est,
+                    estado='activo'
+                ).select_related('id_curso').first()
+                
+                grado = curso_actual.id_curso.nombre if curso_actual and curso_actual.id_curso else 'Sin grado asignado'
+                
                 estudiantes_data.append({
                     "numero_documento": est.numero_documento_estudiante,
                     "nombre_completo": est.nombre_completo,
@@ -102,6 +111,7 @@ class AcudienteUserMatchViewSet(viewsets.ViewSet):
                     "edad": est.edad,
                     "telefono": est.telefono,
                     "direccion": est.direccion,
+                    "grado": grado,
                 })
 
         # Construcción de respuesta
@@ -161,6 +171,60 @@ class ActividadesViewSet(viewsets.ModelViewSet):
     serializer_class = ActividadesSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = ActividadesFilter
+
+    def _validar_porcentaje_ra(self, fk_id_ra, porcentaje, exclude_id=None):
+        """
+        Valida que la suma de porcentajes de actividades de un RA no supere 100%.
+        Devuelve (es_valido, mensaje_de_error_o_None).
+        """
+        if fk_id_ra is None:
+            return False, "fk_id_ra es requerido"
+        try:
+            nuevo = float(porcentaje)
+        except (TypeError, ValueError):
+            return False, "porcentaje inválido"
+        if nuevo <= 0 or nuevo > 100:
+            return False, "El porcentaje debe estar entre 0.01 y 100"
+
+        qs = Actividades.objects.filter(fk_id_ra=fk_id_ra)
+        if exclude_id is not None:
+            qs = qs.exclude(id_actividades=exclude_id)
+        actual = qs.aggregate(total=Sum('porcentaje'))['total'] or 0
+        actual = float(actual)
+        if actual + nuevo > 100.0001:  # tolerancia por decimales
+            disponible = round(100 - actual, 2)
+            return False, (
+                f"Las actividades de este RA suman {actual}%. "
+                f"El nuevo porcentaje no puede superar {disponible}% disponible."
+            )
+        return True, None
+
+    def create(self, request, *args, **kwargs):
+        ok, err = self._validar_porcentaje_ra(
+            request.data.get('fk_id_ra'),
+            request.data.get('porcentaje')
+        )
+        if not ok:
+            return Response({'error': err}, status=status.HTTP_400_BAD_REQUEST)
+        return super().create(request, *args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        fk_ra = request.data.get('fk_id_ra', instance.fk_id_ra_id)
+        porc = request.data.get('porcentaje', instance.porcentaje)
+        ok, err = self._validar_porcentaje_ra(fk_ra, porc, exclude_id=instance.id_actividades)
+        if not ok:
+            return Response({'error': err}, status=status.HTTP_400_BAD_REQUEST)
+        return super().update(request, *args, **kwargs)
+
+    def partial_update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        fk_ra = request.data.get('fk_id_ra', instance.fk_id_ra_id)
+        porc = request.data.get('porcentaje', instance.porcentaje)
+        ok, err = self._validar_porcentaje_ra(fk_ra, porc, exclude_id=instance.id_actividades)
+        if not ok:
+            return Response({'error': err}, status=status.HTTP_400_BAD_REQUEST)
+        return super().partial_update(request, *args, **kwargs)
 
 class TipoSangreViewSet(viewsets.ModelViewSet):
     queryset = TipoSangre.objects.all()
@@ -255,20 +319,101 @@ class AcudienteViewSet(viewsets.ModelViewSet):
     filter_backends = [filters.SearchFilter]
     search_fields = ['numero_documento_acudiente']
 
+class EstudianteNotasFilter(django_filters.FilterSet):
+    fk_numero_documento_estudiante = django_filters.CharFilter(
+        field_name='fk_numero_documento_estudiante__numero_documento_estudiante',
+        lookup_expr='exact'
+    )
+    # Mantener compatibilidad con el frontend web existente
+    fk_id_actividad__fk_id_periodo_academico = django_filters.NumberFilter(
+        field_name='fk_id_actividad__fk_id_ra__fk_id_periodo_academico__id_periodo',
+        lookup_expr='exact'
+    )
+    # Alias más corto para la app móvil
+    periodo = django_filters.NumberFilter(
+        field_name='fk_id_actividad__fk_id_ra__fk_id_periodo_academico__id_periodo',
+        lookup_expr='exact'
+    )
+    fk_id_actividad__fk_id_materia_profesores = django_filters.NumberFilter(
+        field_name='fk_id_actividad__fk_id_ra__fk_id_materia_profesores__id_materia_profesores',
+        lookup_expr='exact'
+    )
+    # Alias más corto para la app móvil
+    materia = django_filters.NumberFilter(
+        field_name='fk_id_actividad__fk_id_ra__fk_id_materia_profesores__fk_id_materia__id_materia',
+        lookup_expr='exact'
+    )
+
+    class Meta:
+        model = EstudianteNotas
+        fields = ['fk_numero_documento_estudiante', 'fk_id_actividad']
+
+
+class DefinitivasFilter(django_filters.FilterSet):
+    estudiante = django_filters.CharFilter(
+        field_name='fk_id_estudiantes_cursos__numero_documento_estudiante__numero_documento_estudiante',
+        lookup_expr='exact'
+    )
+    periodo = django_filters.NumberFilter(
+        field_name='fk_id_periodo__id_periodo',
+        lookup_expr='exact'
+    )
+    materia = django_filters.NumberFilter(
+        field_name='fk_id_materia__id_materia',
+        lookup_expr='exact'
+    )
+
+    class Meta:
+        model = Definitivas
+        fields = ['estudiante', 'periodo', 'materia']
+
+
+class DefinitivasViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet para consultar definitivas de estudiantes
+    Uso: /api/definitivas-estudiante/?estudiante=121212&periodo=1
+    """
+    queryset = Definitivas.objects.select_related(
+        'fk_id_estudiantes_cursos',
+        'fk_id_estudiantes_cursos__numero_documento_estudiante',
+        'fk_id_materia',
+        'fk_id_periodo'
+    ).all()
+    serializer_class = DefinitivaSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = DefinitivasFilter
+
+
 class EstudianteNotasViewSet(viewsets.ModelViewSet):
-    queryset = EstudianteNotas.objects.all()
+    queryset = EstudianteNotas.objects.select_related(
+        'fk_numero_documento_estudiante',
+        'fk_id_actividad',
+        'fk_id_actividad__fk_id_ra',
+        'fk_id_actividad__fk_id_ra__fk_id_periodo_academico',
+        'fk_id_actividad__fk_id_ra__fk_id_materia_profesores',
+        'fk_id_actividad__fk_id_ra__fk_id_materia_profesores__fk_id_materia',
+        'fk_id_actividad__fk_id_ra__fk_id_materia_profesores__fk_id_curso'
+    ).all()
     serializer_class = EstudianteNotasSerializer
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = [
-        'fk_numero_documento_estudiante',
-        'fk_id_actividad__fk_id_periodo_academico',
-        'fk_id_actividad__fk_id_materia_profesores',
-        'fk_id_actividad'
-    ]
+    filterset_class = EstudianteNotasFilter
 
 class PeriodoViewSet(viewsets.ModelViewSet):
     queryset = Periodo.objects.all()
     serializer_class = PeriodoSerializer
+
+    def get_queryset(self):
+        """
+        Por defecto devolvemos solo periodos ACTIVOS para que los selects
+        de RAs, reportes, boletines, padres, etc. no muestren periodos
+        desactivados. Para ver todos (modo administración) pasar
+        ?incluir_inactivos=1 en la URL.
+        """
+        qs = Periodo.objects.all().order_by('id_periodo')
+        incluir_inactivos = self.request.query_params.get('incluir_inactivos')
+        if str(incluir_inactivos or '').lower() not in ('1', 'true', 'yes'):
+            qs = qs.filter(estado='activo')
+        return qs
 
 
 class EstudianteAcudienteViewSet(viewsets.ModelViewSet):
@@ -870,3 +1015,566 @@ class RegisterView(generics.CreateAPIView):
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
+
+
+class ObtenerMaterias(APIView):
+    def get(self, request):
+        cedula = request.query_params.get("numero_cedula")
+
+        if not cedula:
+            return Response({'error': 'se necesita la cedula'}, status=400)
+        
+        profesor_exist = Profesores.objects.filter(numero_documento_profesor = cedula).exists()
+
+        if not profesor_exist:
+            return Response({'error': 'el profesor no existe'}, status=400)
+        
+        user = MateriasAsignadas.objects.filter(fk_numero_documento_profesor = cedula).all()
+
+        if not user.exists():
+            return Response({'inf': 'el profesor no teien materias'}, status=200)
+        
+        serializer = MateriasAsignadasSerializer(user, many=True)
+        
+        return Response(serializer.data, status=200)
+
+class TraerEstudiantesPorGrado(APIView):
+    def get(self, request):
+        curso = request.query_params.get("curso")
+        id_curso = request.query_params.get("id_curso")
+
+        if id_curso:
+            user = Estudiantes_cursos.objects.filter(id_curso = id_curso, numero_documento_estudiante__fk_tipo_estado = 1)
+
+            if not user.exists():
+                return Response("sin resultados", status=200)
+            
+            serializer = EstudiantesCursosSerializer(user, many=True)
+
+            return Response(serializer.data, status=200)
+
+        if not curso:
+            return Response({'error': 'es necesario el curso para buscar'}, status=400)
+        
+        user = Estudiantes_cursos.objects.filter(id_curso__nombre = curso, numero_documento_estudiante__fk_tipo_estado = 1)
+
+        if not user.exists():
+            return Response("sin resultados", status=200)
+        
+        serializer = EstudiantesCursosSerializer(user, many=True)
+
+        return Response(serializer.data, status=200)
+
+class TraerActividadesProfesor(APIView):
+    def get(self, request):
+        id_profesor = request.query_params.get("id_profesor")
+
+        if not id_profesor:
+            return Response(
+                {"error": "id_profesor es requerido"},
+                status=400
+            )
+
+        actividades = Actividades.objects.filter(
+            fk_id_ra__fk_id_materia_profesores__fk_numero_documento_profesor=id_profesor
+        )
+
+        serializer = ActividadesSerializer(actividades, many=True)
+
+        return Response(serializer.data, status=200)
+
+    def post(self, request):
+        # Mantenemos este endpoint para preservar compatibilidad con el frontend.
+        # La validación de porcentaje se delega al método helper compartido
+        # con ActividadesViewSet (definido en este mismo módulo).
+        User = request.data.get("user_id")
+        id_ra = request.data.get("fk_id_ra")
+        porcentaje = request.data.get("porcentaje")
+
+        if not User:
+            return Response(
+                {'error': 'para crear la actividad es necesario el id del usuario'},
+                status=400
+            )
+
+        # Verificar que el profesor sea dueño del RA (autorización específica)
+        ra_owner = RA.objects.filter(
+            id_ra=id_ra,
+            fk_id_materia_profesores__fk_numero_documento_profesor=User
+        ).exists()
+        if not ra_owner:
+            return Response(
+                {'error': 'el RA no existe o no tiene acceso a el'},
+                status=400
+            )
+
+        # Validación de porcentaje delegada al helper único del ActividadesViewSet
+        ok, err = ActividadesViewSet._validar_porcentaje_ra(
+            None, id_ra, porcentaje
+        )
+        if not ok:
+            return Response({'error': err}, status=400)
+
+        serializer = ActividadesSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({
+                'success': 'actividad creada con exito',
+                'data': serializer.data
+            }, status=201)
+        return Response({'error': serializer.errors}, status=400)
+
+class TraerRAprofesor(APIView):
+    def get(self, request):
+        id_profesor = request.query_params.get("id_profesor")
+
+        ra = RA.objects.filter(
+            fk_id_materia_profesores__fk_numero_documento_profesor = id_profesor
+        )
+
+        if not ra.exists():
+            return Response({'error': 'no existen RA a su nombre, porfavor cree uno para poder acceder a actividades'}, status=400)
+        
+        serializer = RASerializer(ra, many=True)
+
+        return Response(serializer.data, status=200)
+    
+    def post(self, request):
+        numero_ra = request.data.get("numero_ra")
+        fk_id_periodo_academico = request.data.get("fk_id_periodo_academico")
+        fk_id_materia_profesores = request.data.get("fk_id_materia_profesores")
+        id_profesor = request.data.get("id_profesor")
+        porcentaje = request.data.get("porcentaje")
+
+        if not id_profesor:
+            return Response('error se requiere el id del profesor', status=400)
+
+        buscarRA = RA.objects.filter(
+            fk_id_materia_profesores__fk_numero_documento_profesor = id_profesor,
+            numero_ra = numero_ra,
+            fk_id_periodo_academico = fk_id_periodo_academico,
+            fk_id_materia_profesores = fk_id_materia_profesores
+        ).exists()
+
+        if buscarRA:
+            return Response(f'error, el R.A numero: {numero_ra} ya existe para esta materia, porfavor cambie ya sea el periodo, la materia o el numero del R.A', status=400)
+
+        ra = RA.objects.filter(
+            fk_id_materia_profesores__fk_numero_documento_profesor = id_profesor,
+            fk_id_periodo_academico = fk_id_periodo_academico,
+            fk_id_materia_profesores = fk_id_materia_profesores
+        )
+
+        if ra:
+            porcentajeras = 0
+
+            for r in ra:
+                porcentajeras += r.porcentaje
+
+            if porcentajeras == 100:
+                return Response('error, ya no se pueden agregar mas R.As a esta materia ya que esta a su 100%', status=400)
+
+            porcentajetotal = float(porcentajeras) + float(porcentaje)
+
+            if porcentajetotal > 100:
+                return Response(f'error el porcentaje sobrepasa el 100%, el porcentaje debe ser menor o igual a: {100 - porcentajeras}', status=400)
+        
+        serializer = RASerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+
+            return Response(serializer.data, status=201)
+        
+        return Response(serializer.errors, status=400)
+    
+    def patch(self, request):
+        idra = request.query_params.get("id_ra")
+        id_profesor = request.data.get("id_profesor")
+        nombre_ra = request.data.get("nombre_ra")
+        porcentaje = request.data.get("porcentaje")
+        numero_ra = request.data.get("numero_ra")
+        fk_id_periodo_academico = request.data.get("fk_id_periodo_academico")
+        fk_id_materia_profesores = request.data.get("fk_id_materia_profesores")
+
+        if not idra or not id_profesor:
+            return Response(
+                "error, se requieren el id del R.A y el id del profesor para la modificacion del R.A",
+                status=400,
+            )
+
+        ra = RA.objects.filter(id_ra=idra).first()
+        if not ra:
+            return Response("error el R.A no existe", status=400)
+
+        # Helpers de conversión segura
+        def to_float(v, default=None):
+            try:
+                return float(v)
+            except (TypeError, ValueError):
+                return default
+
+        def to_int(v, default=None):
+            try:
+                return int(v)
+            except (TypeError, ValueError):
+                return default
+
+        # --- Nombre ---
+        if nombre_ra is not None and str(nombre_ra).strip() != "":
+            ra.nombre_ra = nombre_ra
+
+        # --- Porcentaje (validando que la suma del periodo+materia no exceda 100) ---
+        nuevo_porcentaje = to_float(porcentaje)
+        if nuevo_porcentaje is not None and nuevo_porcentaje != float(ra.porcentaje):
+            if nuevo_porcentaje <= 0 or nuevo_porcentaje > 100:
+                return Response(
+                    "error, el porcentaje debe estar entre 0.01 y 100", status=400
+                )
+            # Suma de los demás RAs (excluyendo el actual) del mismo periodo y materia
+            otros = RA.objects.filter(
+                fk_id_materia_profesores=ra.fk_id_materia_profesores,
+                fk_id_periodo_academico=ra.fk_id_periodo_academico,
+            ).exclude(id_ra=ra.id_ra)
+            acumulado = sum(float(o.porcentaje) for o in otros)
+            if nuevo_porcentaje + acumulado > 100.0001:
+                disponible = round(100 - acumulado, 2)
+                return Response(
+                    f"error el porcentaje sobrepasa el 100%, debe ser menor o igual a: {disponible}",
+                    status=400,
+                )
+            ra.porcentaje = nuevo_porcentaje
+
+        # --- Número del RA (validando que no se repita en periodo+materia) ---
+        nuevo_numero = to_int(numero_ra)
+        if nuevo_numero is not None and nuevo_numero != ra.numero_ra:
+            existe = RA.objects.filter(
+                fk_id_materia_profesores=ra.fk_id_materia_profesores,
+                fk_id_periodo_academico=ra.fk_id_periodo_academico,
+                numero_ra=nuevo_numero,
+            ).exclude(id_ra=ra.id_ra).exists()
+            if existe:
+                return Response("error ya existe un R.A con ese numero R.A", status=400)
+            ra.numero_ra = nuevo_numero
+
+        # --- Periodo ---
+        nuevo_periodo = to_int(fk_id_periodo_academico)
+        if nuevo_periodo is not None and nuevo_periodo != ra.fk_id_periodo_academico_id:
+            ra.fk_id_periodo_academico_id = nuevo_periodo
+
+        # --- Materia asignada ---
+        nueva_materia = to_int(fk_id_materia_profesores)
+        if nueva_materia is not None and nueva_materia != ra.fk_id_materia_profesores_id:
+            ra.fk_id_materia_profesores_id = nueva_materia
+
+        # Guardar directamente (los cambios ya fueron validados arriba)
+        ra.save()
+        return Response("R.A modificado con exito", status=200)
+
+
+class TraerActividadesPorRA(APIView):
+    def get(self, request):
+        ra = request.query_params.get("id_ra")
+
+        actividades = Actividades.objects.filter(
+            fk_id_ra = ra
+        )
+
+        serializer = ActividadesSerializer(actividades, many=True)
+        return Response(serializer.data, status=200)
+
+class Calificar(APIView):
+
+    def get(self, request):
+        id_estudiante = request.query_params.get("estudiante")
+        id_ra = request.query_params.get("id_ra")
+
+        if not id_ra:
+            return Response({'error': 'es necesario el id del R.A'}, status=400)
+
+        est = EstudianteNotas.objects.filter(
+            fk_numero_documento_estudiante = id_estudiante,
+            fk_id_actividad__fk_id_ra = id_ra
+        )
+
+        if not est:
+            return Response("error al consultar las notas del estudiantes, revise bien los datos enviados", status=400)
+
+        serializer = EstudianteNotasSerializer(est, many=True)
+        return Response(serializer.data, status=200)
+
+
+
+    def post(self, request):
+        estudiante = request.data.get("fk_numero_documento_estudiante")
+        actividad = request.data.get("fk_id_actividad")
+
+        act = EstudianteNotas.objects.filter(
+            fk_numero_documento_estudiante = estudiante,
+            fk_id_actividad = actividad
+        ).exists()
+
+        if act:
+            return Response({'error': 'el estudiante ya tiene asignada una nota en esta atividad'}, status=400)
+        serializer = EstudianteNotasSerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response({
+                'success': 'calificacion asiganada con exito',
+                'data': serializer.data
+            }, status=201)
+        
+        return Response(serializer.error, status=400)
+    
+    def patch(self, request):
+        id_nota = request.query_params.get("id_nota_estudiante")
+        nota = request.data.get("nota_nueva")
+
+        nota_estudiante = EstudianteNotas.objects.filter(
+            id_estudiante_notas = id_nota
+        ).first()
+
+        if not nota_estudiante:
+            return Response({'error': 'no se encontro la nota a cambiar'}, status=400)
+
+        if nota_estudiante.calificacion != nota:
+            nota_estudiante.calificacion = nota
+        
+        serializer = NotaHistorialSerializer(data = request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+
+            nota_estudiante.save()
+            return Response('nota actualizada con exito', status=200)
+
+        return Response(serializer.errors, status=400)
+    
+class TraerMateriaDeProfesor(APIView):
+    def get(self, request):
+        id_profesor = request.query_params.get("id_profesor")
+
+        materias = MateriasAsignadas.objects.filter(
+            fk_numero_documento_profesor=id_profesor
+        )
+
+        if not materias.exists():
+            return Response([], status=200)
+
+        agrupadas = {}
+
+        for m in materias:
+            id_materia = m.fk_id_materia.id_materia
+
+            if id_materia not in agrupadas:
+                agrupadas[id_materia] = {
+                    "fk_id_materia": id_materia,
+                    "nombre_materia": m.fk_id_materia.nombre,
+                    "fk_id_año_electivo": m.fk_id_año_electivo.id_año_electivo,
+                    "cursos": []
+                }
+
+            agrupadas[id_materia]["cursos"].append({
+                "id_materia_profesores": m.id_materia_profesores,
+                "id_curso": m.fk_id_curso.id_curso,
+                "nombre_curso": m.fk_id_curso.nombre
+            })
+
+        return Response(list(agrupadas.values()), status=200)
+
+class DefinitivasView(APIView):
+    """
+    Endpoint para procesar definitivas de un curso/materia/periodo.
+
+    POST con body:
+        {
+            "id_curso": 1,
+            "fk_id_materia": 2,
+            "fk_id_periodo": 1,
+            "consulta": "consulta" | "crear"
+        }
+
+    - "consulta": calcula y devuelve sin persistir (usa los datos en BD pero no
+      escribe). Útil para previsualización.
+    - "crear": calcula, persiste (UPSERT) y devuelve.
+
+    En ambos casos los valores devueltos están SIEMPRE recalculados desde las
+    notas reales (no se devuelven valores cacheados desde la tabla 'definitiva').
+    """
+
+    def post(self, request):
+        from .definitivas_utils import (
+            calcular_definitiva,
+            upsert_definitiva,
+        )
+
+        id_curso = request.data.get("id_curso")
+        materia = request.data.get("fk_id_materia")
+        periodo = request.data.get("fk_id_periodo")
+        consulta = request.data.get("consulta")
+
+        if not id_curso or not materia or not periodo:
+            return Response(
+                {'error': 'Faltan datos obligatorios: id_curso, fk_id_materia y fk_id_periodo'},
+                status=400
+            )
+        if consulta not in ("consulta", "crear"):
+            return Response(
+                {'error': 'Se necesita el parámetro "consulta": "consulta" o "crear"'},
+                status=400
+            )
+
+        # Obtener estudiantes del curso (activos)
+        estudiantes_curso = Estudiantes_cursos.objects.filter(
+            id_curso_id=id_curso,
+            estado='activo',
+        ).select_related('numero_documento_estudiante')
+
+        # Excluir estudiantes inactivos a nivel de Estudiantes (fk_tipo_estado=2)
+        estudiantes_curso = estudiantes_curso.exclude(
+            numero_documento_estudiante__fk_tipo_estado__id_tipo_estado=2
+        )
+
+        if not estudiantes_curso.exists():
+            return Response([], status=200)
+
+        # Resolver nombres una sola vez
+        try:
+            materia_obj = Materias.objects.get(id_materia=materia)
+            materia_nombre = materia_obj.nombre
+        except Materias.DoesNotExist:
+            return Response({'error': 'Materia no encontrada'}, status=404)
+
+        resultados = []
+        for ec in estudiantes_curso:
+            est = ec.numero_documento_estudiante
+            doc = est.numero_documento_estudiante
+
+            calc = calcular_definitiva(doc, materia, periodo)
+
+            # Sólo persistimos cuando es modo 'crear' Y hay notas
+            if consulta == "crear" and calc["tiene_notas"]:
+                upsert_definitiva(doc, materia, periodo)
+
+            # Construir respuesta uniforme
+            resultados.append({
+                "documento_estudiante": doc,
+                "nombre_estudiante": est.nombre_completo,
+                "valor_definitiva": str(calc["valor"]),
+                "fk_id_materia": materia,
+                "nombre_materia": materia_nombre,
+                "fk_id_periodo": periodo,
+                "fk_id_estudiantes_cursos": ec.id_estudiantes_cursos,
+                "estado": calc["estado"] if calc["tiene_notas"] else "sin_notas",
+                "tiene_notas": calc["tiene_notas"],
+            })
+
+        status_code = 201 if consulta == "crear" else 200
+        return Response(resultados, status=status_code)
+
+class Promedios(APIView):
+
+    def post(self, request):
+
+        documento = request.data.get("fk_numero_documento_estudiante")
+        id_curso = request.data.get("id_curso")
+        periodo = request.data.get("fk_id_periodo")
+
+        if not documento or not id_curso or not periodo:
+            return Response(
+                "faltan datos",
+                status=400
+            )
+
+        definitivas = Definitivas.objects.filter(
+            fk_id_estudiantes_cursos__numero_documento_estudiante=documento,
+            fk_id_estudiantes_cursos__id_curso=id_curso,
+            fk_id_periodo=periodo
+        )
+
+        if not definitivas.exists():
+            return Response(
+                "el estudiante no tiene definitivas en ese periodo",
+                status=400
+            )
+
+        suma = 0
+
+        for d in definitivas:
+            suma += float(d.valor_definitiva)
+
+        promedio = suma / definitivas.count()
+
+        estado = "reprobado"
+
+        if promedio >= 3.0:
+            estado = "aprobado"
+
+        return Response({
+            "promedio_general": round(promedio, 2),
+            "cantidad_definitivas": definitivas.count(),
+            "estado": estado,
+            "periodo": periodo
+        }, status=200)
+        
+class TraerTodasLasMateriasAgrupadas(APIView):
+    def get(self, request):
+        # 1. Traemos absolutamente todas las asignaciones sin filtrar por profesor
+        materias = MateriasAsignadas.objects.all()
+
+        if not materias.exists():
+            return Response([], status=200)
+
+        agrupadas = {}
+
+        # 2. Iteramos y agrupamos los cursos bajo su respectiva asignatura
+        for m in materias:
+            id_materia = m.fk_id_materia.id_materia
+
+            # Si la materia no ha sido registrada en el diccionario, la inicializamos
+            if id_materia not in agrupadas:
+                agrupadas[id_materia] = {
+                    "fk_id_materia": id_materia,
+                    "nombre_materia": m.fk_id_materia.nombre,
+                    "fk_id_año_electivo": m.fk_id_año_electivo.id_año_electivo if m.fk_id_año_electivo else None,
+                    "cursos": []
+                }
+
+            # Validamos que el curso no se repita dentro de la misma materia (por si tiene múltiples docentes)
+            curso_ya_agregado = any(c["id_curso"] == m.fk_id_curso.id_curso for c in agrupadas[id_materia]["cursos"])
+
+            if not curso_ya_agregado:
+                agrupadas[id_materia]["cursos"].append({
+                    "id_materia_profesores": m.id_materia_profesores,
+                    "id_curso": m.fk_id_curso.id_curso,
+                    "nombre_curso": m.fk_id_curso.nombre
+                })
+
+        # 3. Retornamos la colección formateada en una lista idéntica a la que usas en el perfil docente
+        return Response(list(agrupadas.values()), status=200)
+
+
+class ConsultarNotasCursoAPIView(APIView):
+    def get(self, request):
+        id_curso = request.query_params.get("id_curso")
+        materia = request.query_params.get("fk_id_materia")
+        periodo = request.query_params.get("fk_id_periodo")
+
+        # Filtro directo a la base de datos usando tu lógica exacta
+        notas_curso = EstudianteNotas.objects.filter(
+            fk_id_actividad__fk_id_ra__fk_id_materia_profesores__fk_id_curso__id_curso=id_curso,
+            fk_id_actividad__fk_id_ra__fk_id_materia_profesores__fk_id_materia=materia,
+            fk_id_actividad__fk_id_ra__fk_id_periodo_academico__id_periodo=periodo
+        ).exclude(
+            fk_numero_documento_estudiante__fk_tipo_estado__id_tipo_estado=2
+        )
+
+        if not notas_curso.exists():
+            return Response([], status=status.HTTP_200_OK)
+
+        # Serializamos y pasamos por tu función de ponderación
+        serializernota = EstudianteNotasSerializer(notas_curso, many=True)
+
+        # Retornamos los valores limpios calculados
+        return Response(serializernota.data, status=status.HTTP_200_OK)

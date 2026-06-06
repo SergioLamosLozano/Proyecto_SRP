@@ -101,7 +101,6 @@ function DocentesPage() {
           <div className="coordinacion-main-content">{renderContent()}</div>
         </div>
       </div>
-
       <Footer />
     </div>
   );

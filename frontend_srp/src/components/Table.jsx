@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import "../styles/Table.css";
 import {
   BusquedaPorNombre,
@@ -23,89 +23,97 @@ const Table = ({
   salir,
   onClickParaSalir,
   filterOptions = [],
+  parametrobuscar = "",
   onSearch,
   onFilter,
   onAdd,
   addButtonText = "Añadir",
   actions = [], // Array de objetos con estructura: { key: 'accion', label: 'Texto del Botón', onClick: function }
-  filtroParaEstudiantePadres = [],
+  users = [],
   busqueda = [],
   check = [],
+  pageSize = 20, // Paginación: registros por página (configurable)
 }) => {
   const [searchTerm, setSearchTerm] = React.useState("");
   const [filterValue, setFilterValue] = React.useState("");
-  const [usuarios, setUsuarios] = useState([]);
 
-  const buscar = async (letras) => {
-    if (id == "Estudiantes") {
-      try {
-        const response = await BusquedaPorNombre(letras);
-        setUsuarios(response.data);
-      } catch (error) {
-        console.error("Error al buscar estudiante:", error);
-      }
-    } else if (id == "Profesores") {
-      try {
-        const response = await BusquedaPorNombreP(letras);
-        setUsuarios(response.data);
-      } catch (error) {
-        console.error("Error al buscar Profesores:", error);
-      }
-    } else if (id == "Padres") {
-      try {
-        const response = await BusquedaPorNombreA(letras);
-        setUsuarios(response.data);
-      } catch (error) {
-        console.error("Error al buscar Padres:", error);
-      }
-    } else if (id === "EstudiantesAcudientes") {
-      const resultado = filtroParaEstudiantePadres.filter((item) =>
-        item.numero_documento.toString().includes(letras)
-      );
-      setUsuarios(resultado);
-    } else if (id === "Cursos") {
-      try {
-        const response = await BuscarCurso(letras);
-        setUsuarios(response.data);
-      } catch (error) {
-        console.log(error);
-      }
-    } else if (id === "Materias") {
-      try {
-        const response = await BuscarMaterias(letras);
-        setUsuarios(response.data);
-      } catch (error) {
-        console.log(error);
-      }
-    } else if (id === "MateriaA") {
-      try {
-        const response = await BuscarMateriaAsignada(letras);
-        setUsuarios(response.data);
-      } catch (error) {
-        console.log(error);
-      }
-    } else if (id === "EstudianteC") {
-      try {
-        const term = letras.trim();
-        if (term === "") {
-          setUsuarios([]);
-          return;
-        }
-        const response = data.filter((est) =>
-          est.numero_documento_estudiante.toString().includes(term)
-        );
-        setUsuarios(response);
-      } catch (error) {
-        console.log(error);
-      }
+  // === PAGINACIÓN (client-side) ===
+  const [currentPage, setCurrentPage] = useState(1);
+  const safeData = Array.isArray(data) ? data : [];
+
+  // === BÚSQUEDA EN LA TABLA PRINCIPAL ===
+  // Filtra `data` por el `searchTerm` contra los campos indicados en
+  // `busqueda` o, si no se pasaron, contra todas las columnas con `key`.
+  // Soporta llaves anidadas tipo "estudiante.nombre" y arrays (ej. cursos).
+  const obtenerValor = (obj, ruta) => {
+    if (!obj || !ruta) return "";
+    const partes = String(ruta).split(".");
+    let val = obj;
+    for (const p of partes) {
+      if (val == null) return "";
+      val = val[p];
     }
+    if (Array.isArray(val)) {
+      // Concatenar el contenido del array para que sea buscable como texto
+      return val.map((x) => (typeof x === "object" ? JSON.stringify(x) : x)).join(" ");
+    }
+    return val == null ? "" : String(val);
   };
+
+  const camposBusqueda = useMemo(() => {
+    if (Array.isArray(busqueda) && busqueda.length > 0) return busqueda;
+    return (columns || []).map((c) => c.key).filter(Boolean);
+  }, [busqueda, columns]);
+
+  const dataFiltrada = useMemo(() => {
+    const q = (searchTerm || "").trim().toLowerCase();
+    if (!q) return safeData;
+    return safeData.filter((row) =>
+      camposBusqueda.some((campo) =>
+        obtenerValor(row, campo).toLowerCase().includes(q)
+      )
+    );
+  }, [safeData, searchTerm, camposBusqueda]);
+
+  const totalRegistros = dataFiltrada.length;
+  const totalPages = Math.max(1, Math.ceil(totalRegistros / pageSize));
+
+  // Reiniciar a página 1 cuando cambian los datos, el filtro o el tamaño
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [totalRegistros, pageSize, searchTerm]);
+
+  // Asegurar que la página actual sea válida si los datos se reducen
+  useEffect(() => {
+    if (currentPage > totalPages) setCurrentPage(totalPages);
+  }, [currentPage, totalPages]);
+
+  const dataPaginada = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return dataFiltrada.slice(start, start + pageSize);
+  }, [dataFiltrada, currentPage, pageSize]);
+
+  const desde = totalRegistros === 0 ? 0 : (currentPage - 1) * pageSize + 1;
+  const hasta = Math.min(currentPage * pageSize, totalRegistros);
+
+  const irAPagina = (n) => {
+    if (n < 1 || n > totalPages) return;
+    setCurrentPage(n);
+  };
+
+  // Construir un set compacto de números de página a mostrar
+  const numerosVisibles = useMemo(() => {
+    const set = new Set([1, totalPages, currentPage,
+                          currentPage - 1, currentPage + 1]);
+    return [...set]
+      .filter((n) => n >= 1 && n <= totalPages)
+      .sort((a, b) => a - b);
+  }, [currentPage, totalPages]);
 
   const handleSearch = (e) => {
     const value = e.target.value;
     setSearchTerm(value);
     if (onSearch) onSearch(value);
-    buscar(value);
   };
 
   const handleFilter = (e) => {
@@ -192,30 +200,6 @@ const Table = ({
               </select>
             )}
           </div>
-          <div className="contenedor_busqueda2">
-            {searchTerm.length > 0 && (
-              <div className="busqueda_por_nombre">
-                {usuarios.length > 0 ? (
-                  usuarios.map((item, index) => (
-                    <div className="targeta_busqueda" key={index}>
-                      {busqueda.map((parametro, index) => (
-                        <label key={index}>{`${item[parametro]} - `}</label>
-                      ))}
-                      {actions.length > 0 && (
-                        <div style={{ display: "flex", gap: "10px" }}>
-                          {renderActionButtons(item, index)}
-                        </div>
-                      )}
-                    </div>
-                  ))
-                ) : (
-                  <h1 className="Alerta_busqueda">
-                    No se encontró ningún usuario por '{searchTerm}'
-                  </h1>
-                )}
-              </div>
-            )}
-          </div>
         </div>
         {check.map((item, index) => (
           <label key={index} className="switch-container">
@@ -253,23 +237,110 @@ const Table = ({
             </tr>
           </thead>
           <tbody>
-            {data.map((item, index) => (
-              <tr key={index}>
-                {columns.map((column, colIndex) => (
-                  <td key={colIndex} className={column.className || ""}>
-                    {renderCellContent(item, column)}
-                  </td>
-                ))}
-                {actions.length > 0 && (
-                  <td className="table-actions">
-                    {renderActionButtons(item, index)}
-                  </td>
-                )}
+            {dataPaginada.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={columns.length + (actions.length > 0 ? 1 : 0)}
+                  style={{
+                    textAlign: "center",
+                    padding: "1.5rem",
+                    color: "#888",
+                  }}
+                >
+                  No hay registros para mostrar.
+                </td>
               </tr>
-            ))}
+            ) : (
+              dataPaginada.map((item, index) => (
+                <tr key={index}>
+                  {columns.map((column, colIndex) => (
+                    <td key={colIndex} className={column.className || ""}>
+                      {column.key == "estado" ? (
+                        <span>{item.estado}</span>
+                      ) : (
+                        renderCellContent(item, column)
+                      )}
+                    </td>
+                  ))}
+                  {actions.length > 0 && (
+                    <td className="table-actions">
+                      {renderActionButtons(item, index)}
+                    </td>
+                  )}
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
+
+      {/* PAGINACIÓN */}
+      {totalRegistros > 0 && (
+        <div className="table-pagination">
+          <span className="table-pagination-info">
+            Mostrando <strong>{desde}</strong>–<strong>{hasta}</strong> de{" "}
+            <strong>{totalRegistros}</strong>
+          </span>
+          <div className="table-pagination-controls">
+            <button
+              type="button"
+              className="table-page-btn"
+              onClick={() => irAPagina(1)}
+              disabled={currentPage === 1}
+              title="Primera página"
+            >
+              «
+            </button>
+            <button
+              type="button"
+              className="table-page-btn"
+              onClick={() => irAPagina(currentPage - 1)}
+              disabled={currentPage === 1}
+              title="Anterior"
+            >
+              ‹
+            </button>
+
+            {numerosVisibles.map((n, i) => {
+              const prev = numerosVisibles[i - 1];
+              const conGap = prev !== undefined && n - prev > 1;
+              return (
+                <React.Fragment key={n}>
+                  {conGap && <span className="table-page-gap">…</span>}
+                  <button
+                    type="button"
+                    className={`table-page-btn ${
+                      n === currentPage ? "active" : ""
+                    }`}
+                    onClick={() => irAPagina(n)}
+                  >
+                    {n}
+                  </button>
+                </React.Fragment>
+              );
+            })}
+
+            <button
+              type="button"
+              className="table-page-btn"
+              onClick={() => irAPagina(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              title="Siguiente"
+            >
+              ›
+            </button>
+            <button
+              type="button"
+              className="table-page-btn"
+              onClick={() => irAPagina(totalPages)}
+              disabled={currentPage === totalPages}
+              title="Última página"
+            >
+              »
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

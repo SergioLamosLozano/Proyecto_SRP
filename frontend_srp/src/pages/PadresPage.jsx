@@ -10,9 +10,14 @@ import { padresAPI } from "../api/usuarios";
 import {
   Estudiantes_notas,
   Estudiantes_notas_por_periodo,
+  Estudiantes_definitivas,
+  ObtenerEstadoBoletines,
 } from "../api/cursos";
 import { jwtDecode } from "jwt-decode";
 import { Periodos, PeriodoById } from "../api/cursos";
+import { Alert } from "../utils/alert";
+import Swal from "sweetalert2";
+import { nombrePeriodo } from "../utils/periodo";
 
 function PadresPage() {
   const [vista, setVista] = useState("inicio");
@@ -27,7 +32,11 @@ function PadresPage() {
   const [notas, setNotas] = useState([]);
   const [loadingNotas, setLoadingNotas] = useState(false);
   const [actividadesPorMateria, setActividadesPorMateria] = useState({});
-  const [actividadSelPorMateria, setActividadSelPorMateria] = useState({});
+  const [materiaSeleccionada, setMateriaSeleccionada] = useState(null);
+  
+  // Estados para descarga de boletines
+  const [descargaBoletinesHabilitada, setDescargaBoletinesHabilitada] = useState(true);
+  const [loadingBoletin, setLoadingBoletin] = useState(false);
 
   useEffect(() => {
     const cargarEstudiantesVinculados = async () => {
@@ -68,6 +77,21 @@ function PadresPage() {
     cargarEstudiantesVinculados();
   }, []);
 
+  // Cargar estado de descarga de boletines
+  useEffect(() => {
+    const cargarEstadoBoletines = async () => {
+      try {
+        const response = await ObtenerEstadoBoletines();
+        setDescargaBoletinesHabilitada(response.descarga_habilitada);
+      } catch (error) {
+        console.error('Error cargando estado de boletines:', error);
+        // Por defecto, asumir que está habilitado
+      }
+    };
+    
+    cargarEstadoBoletines();
+  }, []);
+
   useEffect(() => {
     const cargarPeriodos = async () => {
       try {
@@ -98,13 +122,16 @@ function PadresPage() {
   const cargarNotas = async (doc, periodoId) => {
     try {
       setLoadingNotas(true);
+      
+      // Cargar notas para las actividades
       const resp = periodoId
         ? await Estudiantes_notas_por_periodo(doc, periodoId)
         : await Estudiantes_notas(doc);
       const data = resp.data || [];
       setNotas(data);
+      
+      // Procesar actividades por materia
       const porMateriaActs = {};
-      const porMateria = {};
       for (const n of data) {
         const act = n.actividad;
         const mat = act?.MateriaProfesores?.materia_nombre || "";
@@ -119,27 +146,35 @@ function PadresPage() {
           porcentaje: porc,
           calificacion: cal,
         });
-        if (!porMateria[mat]) {
-          porMateria[mat] = { suma: 0, totalPorc: 0 };
-        }
-        porMateria[mat].suma += cal * (porc / 100);
-        porMateria[mat].totalPorc += porc;
       }
       setActividadesPorMateria(porMateriaActs);
-      setActividadSelPorMateria((prev) => {
-        const next = { ...prev };
-        Object.keys(porMateriaActs).forEach((m) => {
-          if (!next[m] && porMateriaActs[m].length) {
-            next[m] = porMateriaActs[m][0].id;
-          }
-        });
-        return next;
-      });
-      const resumen = Object.entries(porMateria).map(([materia, v]) => ({
-        materia,
-        definitiva: Number(v.suma.toFixed(2)),
-      }));
-      setCalificaciones(resumen);
+      
+      // Set first subject as selected by default
+      const materias = Object.keys(porMateriaActs);
+      if (materias.length > 0) {
+        setMateriaSeleccionada(materias[0]);
+      }
+      
+      // Cargar definitivas desde la base de datos (única fuente de verdad)
+      // El backend SIEMPRE recalcula desde las notas, así que estos valores
+      // son siempre correctos.
+      if (periodoId) {
+        try {
+          const defResp = await Estudiantes_definitivas(doc, periodoId);
+          const definitivas = defResp.data || [];
+          const resumen = definitivas.map(def => ({
+            materia: def.nombre_materia,
+            definitiva: parseFloat(def.valor_definitiva),
+            estado: def.estado
+          }));
+          setCalificaciones(resumen);
+        } catch (e) {
+          console.error('Error cargando definitivas:', e);
+          setCalificaciones([]);
+        }
+      } else {
+        setCalificaciones([]);
+      }
     } catch (e) {
       setNotas([]);
       setCalificaciones([]);
@@ -181,10 +216,69 @@ function PadresPage() {
     }
   };
 
+  const descargarBoletin = async () => {
+    if (!descargaBoletinesHabilitada) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Descarga no disponible',
+        text: 'La descarga de boletines está temporalmente deshabilitada. Por favor, contacte con la institución.',
+        confirmButtonColor: '#d32f2f'
+      });
+      return;
+    }
+
+    if (!periodoSel) {
+      Alert('warning', 'Por favor seleccione un periodo');
+      return;
+    }
+
+    if (!estudianteSeleccionado) {
+      Alert('warning', 'No hay estudiante seleccionado');
+      return;
+    }
+
+    try {
+      setLoadingBoletin(true);
+      
+      const documento = estudianteSeleccionado.numero_documento || 
+                       estudianteSeleccionado.numero_documento_estudiante;
+      
+      const url = `http://127.0.0.1:8000/api/reportes/boletines-pdf/?periodo=${periodoSel}&estudiante=${documento}&formato=individual`;
+
+      // Necesitamos enviar el token JWT del padre porque el endpoint requiere auth
+      const token = sessionStorage.getItem("token");
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || errorData.detail || 'Error al generar el boletín');
+      }
+
+      const blob = await response.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = `Boletin_${estudianteSeleccionado.nombre_completo}_Periodo_${periodoSel}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(downloadUrl);
+
+      Alert('success', 'Boletín descargado exitosamente');
+    } catch (error) {
+      console.error('Error:', error);
+      Alert('error', error.message || 'Error al descargar el boletín');
+    } finally {
+      setLoadingBoletin(false);
+    }
+  };
+
   return (
     <div className="dashboard padres-page">
       <Logout />
-      <Breadcrumbs />
 
       <div className="dashboard-content-1 padres-content">
         <main className="content padres-scroll">
@@ -265,14 +359,7 @@ function PadresPage() {
                   Estudiante: {estudianteSeleccionado?.nombre_completo} (
                   {estudianteSeleccionado?.numero_documento_estudiante})
                 </p>
-                <div
-                  style={{
-                    display: "flex",
-                    gap: 12,
-                    alignItems: "center",
-                    margin: "12px 0",
-                  }}
-                >
+                <div className="periodo-selector-container">
                   <select
                     className="gestion-academica-select"
                     value={periodoSel || ""}
@@ -295,7 +382,7 @@ function PadresPage() {
                           key={p.id_periodo || p.id}
                           value={p.id_periodo || p.id}
                         >
-                          {p.fecha_inicio} - {p.fecha_fin}
+                          {nombrePeriodo(p, { includeFechas: true })}
                         </option>
                       ))
                     )}
@@ -323,9 +410,75 @@ function PadresPage() {
                     </table>
                   </div>
                 )}
+                
+                {/* Botón de descarga de boletín */}
+                <div style={{ 
+                  marginTop: '1.5rem', 
+                  display: 'flex', 
+                  gap: '1rem',
+                  flexWrap: 'wrap'
+                }}>
+                  <button
+                    onClick={descargarBoletin}
+                    disabled={!descargaBoletinesHabilitada || loadingBoletin || !periodoSel}
+                    style={{
+                      padding: '0.75rem 1.5rem',
+                      backgroundColor: descargaBoletinesHabilitada ? '#d32f2f' : '#ccc',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontSize: '1rem',
+                      fontWeight: '600',
+                      cursor: descargaBoletinesHabilitada && !loadingBoletin && periodoSel ? 'pointer' : 'not-allowed',
+                      opacity: (!descargaBoletinesHabilitada || loadingBoletin || !periodoSel) ? 0.6 : 1,
+                      transition: 'all 0.3s ease',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (descargaBoletinesHabilitada && !loadingBoletin && periodoSel) {
+                        e.target.style.backgroundColor = '#b71c1c';
+                        e.target.style.transform = 'translateY(-2px)';
+                        e.target.style.boxShadow = '0 4px 8px rgba(0,0,0,0.2)';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (descargaBoletinesHabilitada && !loadingBoletin && periodoSel) {
+                        e.target.style.backgroundColor = '#d32f2f';
+                        e.target.style.transform = 'translateY(0)';
+                        e.target.style.boxShadow = 'none';
+                      }
+                    }}
+                  >
+                    <span style={{ fontSize: '1.2rem' }}>📄</span>
+                    {loadingBoletin ? 'Generando boletín...' : 'Descargar Boletín (PDF)'}
+                  </button>
+                  
+                  {!descargaBoletinesHabilitada && (
+                    <div style={{
+                      padding: '0.75rem 1rem',
+                      backgroundColor: '#fff3cd',
+                      border: '1px solid #ffc107',
+                      borderRadius: '8px',
+                      color: '#856404',
+                      fontSize: '0.9rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                      flex: 1,
+                      minWidth: '250px'
+                    }}>
+                      <span>⚠️</span>
+                      <span>La descarga de boletines está temporalmente deshabilitada</span>
+                    </div>
+                  )}
+                </div>
+                
                 <button
-                  className="btn-secondary"
+                  className="btn-volver"
                   onClick={() => setVista("inicio")}
+                  style={{ marginTop: '1rem' }}
                 >
                   Volver
                 </button>
@@ -341,14 +494,7 @@ function PadresPage() {
                   Estudiante: {estudianteSeleccionado?.nombre_completo} (
                   {estudianteSeleccionado?.numero_documento_estudiante})
                 </p>
-                <div
-                  style={{
-                    display: "flex",
-                    gap: 12,
-                    alignItems: "center",
-                    margin: "12px 0",
-                  }}
-                >
+                <div className="periodo-selector-container">
                   <select
                     className="gestion-academica-select"
                     value={periodoSel || ""}
@@ -371,7 +517,7 @@ function PadresPage() {
                           key={p.id_periodo || p.id}
                           value={p.id_periodo || p.id}
                         >
-                          {p.fecha_inicio} - {p.fecha_fin}
+                          {nombrePeriodo(p, { includeFechas: true })}
                         </option>
                       ))
                     )}
@@ -379,65 +525,59 @@ function PadresPage() {
                 </div>
                 {loadingNotas ? (
                   <p>Cargando...</p>
+                ) : Object.keys(actividadesPorMateria).length === 0 ? (
+                  <p>No hay actividades registradas para este periodo.</p>
                 ) : (
-                  <div
-                    className="preview-table-wrapper"
-                    style={{ overflowX: "auto" }}
-                  >
-                    <table className="preview-table">
-                      <thead>
-                        <tr>
-                          <th>Materia</th>
-                          <th>Actividad</th>
-                          <th>Porcentaje</th>
-                          <th>Calificación</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {Object.keys(actividadesPorMateria).map((materia) => {
-                          const acts = actividadesPorMateria[materia] || [];
-                          const selId =
-                            actividadSelPorMateria[materia] || acts[0]?.id;
-                          const seleccionada =
-                            acts.find((a) => String(a.id) === String(selId)) ||
-                            acts[0];
-                          return (
-                            <tr key={materia}>
-                              <td>{materia}</td>
-                              <td>
-                                <select
-                                  className="gestion-academica-select"
-                                  value={selId || ""}
-                                  onChange={(e) => {
-                                    const v = e.target.value;
-                                    setActividadSelPorMateria((prev) => ({
-                                      ...prev,
-                                      [materia]: v,
-                                    }));
-                                  }}
-                                >
-                                  {acts.map((a) => (
-                                    <option key={a.id} value={a.id}>
-                                      {a.nombre}
-                                    </option>
-                                  ))}
-                                </select>
-                              </td>
-                              <td>
-                                {seleccionada ? seleccionada.porcentaje : ""}
-                              </td>
-                              <td>
-                                {seleccionada ? seleccionada.calificacion : ""}
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
+                  <div className="notas-panel-container">
+                    {/* Lista de materias */}
+                    <div className="materias-list">
+                      {Object.keys(actividadesPorMateria).map((materia) => (
+                        <button
+                          key={materia}
+                          className={
+                            materiaSeleccionada === materia
+                              ? "materia-btn active"
+                              : "materia-btn"
+                          }
+                          onClick={() => setMateriaSeleccionada(materia)}
+                        >
+                          {materia}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Actividades de la materia seleccionada */}
+                    {materiaSeleccionada && (
+                      <div className="actividades-detail">
+                        <h4>{materiaSeleccionada}</h4>
+                        <div className="preview-table-wrapper">
+                          <table className="preview-table">
+                            <thead>
+                              <tr>
+                                <th>Actividad</th>
+                                <th>Porcentaje</th>
+                                <th>Calificación</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {actividadesPorMateria[materiaSeleccionada].map(
+                                (actividad) => (
+                                  <tr key={actividad.id}>
+                                    <td>{actividad.nombre}</td>
+                                    <td>{actividad.porcentaje}%</td>
+                                    <td>{actividad.calificacion}</td>
+                                  </tr>
+                                )
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
                 <button
-                  className="btn-secondary"
+                  className="btn-volver btn-with-top-spacing"
                   onClick={() => setVista("inicio")}
                 >
                   Volver

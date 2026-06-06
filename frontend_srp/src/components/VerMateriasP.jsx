@@ -33,11 +33,11 @@ function VerMaterias({ ProfesorSeleccionado = [], titulo, salir }) {
                   style={{ backgroundImage: `url(${fondoRandom})` }}
                 >
                   <div className="targetaV2">
-                    <h2>{item.materia_nombre}</h2>
+                    <h2>{item.materia || item.materia_nombre || "Sin materia"}</h2>
                     <div>
                       <div className="div1">
                         <h3>Curso asignado: </h3>
-                        <label>{item.curso_nombre}</label>
+                        <label>{item.curso || item.curso_nombre || "Sin curso"}</label>
                       </div>
                       <label>Id materia: {item.id_materia_profesores}</label>
                     </div>

@@ -218,7 +218,12 @@ const GestionAcademica = ({ onBack }) => {
   // Datos de ejemplo basados en la estructura de la BD
   const [cursos, setCursos] = useState([]);
   
-  const filtro = cursos.filter((item) => item.estado === "Activo");
+  const filtroCursosActivos = cursos.filter(
+    (item) => String(item.estado).toLowerCase() === "activo"
+  );
+  const filtroCursosInactivos = cursos.filter(
+    (item) => String(item.estado).toLowerCase() === "inactivo"
+  );
 
   const fetchCursos = async () => {
     try {
@@ -276,7 +281,12 @@ const GestionAcademica = ({ onBack }) => {
 
   const [materias, setMaterias] = useState([]);
   const [materiasFiltrados, setMateriasFiltrados] = useState(true);
-  const filtroMaterias = materias.filter((item) => item.estado === "Activo");
+  const filtroMateriasActivos = materias.filter(
+    (item) => String(item.estado).toLowerCase() === "activo"
+  );
+  const filtroMateriasInactivos = materias.filter(
+    (item) => String(item.estado).toLowerCase() === "inactivo"
+  );
 
   const [materiaProfesores, setMateriaProfesores] = useState([]);
 
@@ -300,13 +310,13 @@ const GestionAcademica = ({ onBack }) => {
   const Eliminarcurso = async (item) => {
     if (item.id_curso) {
       const result = await Swal.fire({
-        title: "¿Eliminar curso?",
-        text: "Esta acción eliminará el curso permanentemente.",
+        title: "¿Desactivar curso?",
+        text: "Esta acción cambiará el estado del curso a inactivo.",
         icon: "warning",
         showCancelButton: true,
         confirmButtonColor: "#c41e3a",
         cancelButtonColor: "#c41e3a",
-        confirmButtonText: "Sí, eliminar",
+        confirmButtonText: "Sí, desactivar",
         cancelButtonText: "No, cancelar",
       });
 
@@ -317,7 +327,44 @@ const GestionAcademica = ({ onBack }) => {
           });
           Swal.fire({
             icon: "success",
-            text: "Curso eliminado con éxito",
+            text: "Curso inactivado con éxito",
+            timer: 3000,
+          }).then(() => {
+            fetchCursos();
+          });
+        } catch (error) {
+          console.log(error);
+          Swal.fire({
+            icon: "error",
+            text: "Error en la respuesta del servidor, intente nuevamente",
+            timer: 3000,
+          });
+        }
+      }
+    }
+  };
+
+  const Activarcurso = async (item) => {
+    if (item.id_curso) {
+      const result = await Swal.fire({
+        title: "¿Activar curso?",
+        text: "Esta acción cambiará el estado del curso a activo.",
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonColor: "#28a745",
+        cancelButtonColor: "#c41e3a",
+        confirmButtonText: "Sí, activar",
+        cancelButtonText: "No, cancelar",
+      });
+
+      if (result.isConfirmed) {
+        try {
+          await EditarCurso(item.id_curso, {
+            estado: "Activo",
+          });
+          Swal.fire({
+            icon: "success",
+            text: "Curso activado con éxito",
             timer: 3000,
           }).then(() => {
             fetchCursos();
@@ -501,13 +548,13 @@ const GestionAcademica = ({ onBack }) => {
   const Eliminarmateria = async (item) => {
     if (item.id_materia) {
       const result = await Swal.fire({
-        title: "¿Eliminar curso?",
-        text: "Esta acción eliminará el curso permanentemente.",
+        title: "¿Desactivar materia?",
+        text: "Esta acción cambiará el estado de la materia a inactivo.",
         icon: "warning",
         showCancelButton: true,
         confirmButtonColor: "#c41e3a",
         cancelButtonColor: "#c41e3a",
-        confirmButtonText: "Sí, eliminar",
+        confirmButtonText: "Sí, desactivar",
         cancelButtonText: "No, cancelar",
       });
 
@@ -518,7 +565,44 @@ const GestionAcademica = ({ onBack }) => {
           });
           Swal.fire({
             icon: "success",
-            text: "Materia eliminada con éxito",
+            text: "Materia inactivada con éxito",
+            timer: 3000,
+          }).then(() => {
+            fetchMaterias();
+          });
+        } catch (error) {
+          console.log(error);
+          Swal.fire({
+            icon: "error",
+            text: "Error en la respuesta del servidor, intente nuevamente",
+            timer: 3000,
+          });
+        }
+      }
+    }
+  };
+
+  const Activarmateria = async (item) => {
+    if (item.id_materia) {
+      const result = await Swal.fire({
+        title: "¿Activar materia?",
+        text: "Esta acción cambiará el estado de la materia a activo.",
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonColor: "#28a745",
+        cancelButtonColor: "#c41e3a",
+        confirmButtonText: "Sí, activar",
+        cancelButtonText: "No, cancelar",
+      });
+
+      if (result.isConfirmed) {
+        try {
+          await EditarMateria(item.id_materia, {
+            estado: "Activo",
+          });
+          Swal.fire({
+            icon: "success",
+            text: "Materia activada con éxito",
             timer: 3000,
           }).then(() => {
             fetchMaterias();
@@ -678,8 +762,8 @@ const GestionAcademica = ({ onBack }) => {
   const EliminarEstudianteCurso = async (item) => {
     if (item.id_estudiantes_cursos) {
       const result = await Swal.fire({
-        title: "¿Eliminar curso?",
-        text: "Esta acción eliminará el curso permanentemente.",
+        title: "¿Eliminar asignación?",
+        text: "Esta acción eliminará la asignación de estudiante y curso permanentemente.",
         icon: "warning",
         showCancelButton: true,
         confirmButtonColor: "#c41e3a",
@@ -739,6 +823,7 @@ const GestionAcademica = ({ onBack }) => {
             {modal && (
               <Modal
                 titulo={editar ? "Editar Curso" : "Crear Curso"}
+                SalirM={cerrarModal}
                 inputs={[
                   {
                     nombre: "Nombre del curso",
@@ -776,11 +861,11 @@ const GestionAcademica = ({ onBack }) => {
 
             <Table
               id="Cursos"
-              data={cursosFiltrados ? filtro : cursos}
+              data={cursosFiltrados ? filtroCursosActivos : filtroCursosInactivos}
               busqueda={["fecha_inicio", "fecha_fin", "nombre"]}
               check={[
                 {
-                  title: "Filtro solo activos",
+                  title: "Mostrar solo activos",
                   check: cursosFiltrados,
                   onChange: (e) => setCursosFiltrados(e.target.checked),
                 },
@@ -812,10 +897,15 @@ const GestionAcademica = ({ onBack }) => {
                   variant: "edit",
                   onClick: (item) => AbrirModalConDatos(item),
                 },
-                {
-                  label: "Inactivar 🗑️",
-                  onClick: (item) => Eliminarcurso(item),
-                },
+                cursosFiltrados
+                  ? {
+                      label: "Desactivar 🗑️",
+                      onClick: (item) => Eliminarcurso(item),
+                    }
+                  : {
+                      label: "Activar ✅",
+                      onClick: (item) => Activarcurso(item),
+                    },
               ]}
               searchable={true}
               searchPlaceholder="Buscar cursos..."
@@ -847,6 +937,7 @@ const GestionAcademica = ({ onBack }) => {
             {modal && (
               <Modal
                 titulo={editar ? "Editar Materia" : "Crear Materia"}
+                SalirM={cerrarModal}
                 inputs={[
                   {
                     nombre: "Nombre de la materia",
@@ -901,11 +992,11 @@ const GestionAcademica = ({ onBack }) => {
 
             <Table
               id="Materias"
-              data={materiasFiltrados ? filtroMaterias : materias}
+              data={materiasFiltrados ? filtroMateriasActivos : filtroMateriasInactivos}
               busqueda={["nombre_area_conocimiento", "nombre", "estado"]}
               check={[
                 {
-                  title: "Filtro solo activos",
+                  title: "Mostrar solo activos",
                   check: materiasFiltrados,
                   onChange: (e) => setMateriasFiltrados(e.target.checked),
                 },
@@ -936,12 +1027,17 @@ const GestionAcademica = ({ onBack }) => {
                   variant: "edit",
                   onClick: (item) => AbrirModalConDatosMateria(item),
                 },
-                {
-                  label: "Inactivar 🗑️",
-                  icon: "🗑️",
-                  variant: "delete",
-                  onClick: (item) => Eliminarmateria(item),
-                },
+                materiasFiltrados
+                  ? {
+                      label: "Desactivar 🗑️",
+                      icon: "🗑️",
+                      variant: "delete",
+                      onClick: (item) => Eliminarmateria(item),
+                    }
+                  : {
+                      label: "Activar ✅",
+                      onClick: (item) => Activarmateria(item),
+                    },
               ]}
               searchable={true}
               searchPlaceholder="Buscar materias..."
@@ -997,6 +1093,7 @@ const GestionAcademica = ({ onBack }) => {
               ? modal && (
                   <Modal
                     titulo={editar ? "Editar Asignacion" : "Asignar Materia"}
+                    SalirM={cerrarModal}
                     inputs={[
                       {
                         nombre: "Numero de documento prof.",
@@ -1063,6 +1160,7 @@ const GestionAcademica = ({ onBack }) => {
                         ? "Editar Curso Estudiante"
                         : "Crear Curso Estudiante"
                     }
+                    SalirM={cerrarModal}
                     inputs={[
                       {
                         nombre: "Numero de documento Estudiante.",
@@ -1102,23 +1200,18 @@ const GestionAcademica = ({ onBack }) => {
             {activeAssignmentTab === "materias-profesores" ? (
               <Table
                 id="MateriaA"
-                busqueda={["materia_nombre", "profesor_nombre", "curso_nombre"]}
+                busqueda={["materia", "profe_nombre", "curso"]}
                 data={materiaProfesores}
                 columns={[
                   { key: "id_materia_profesores", label: "ID", sortable: true },
-                  { key: "materia_nombre", label: "Materia", sortable: true },
+                  { key: "materia", label: "Materia", sortable: true },
                   {
-                    key: "profesor_nombre",
+                    key: "profe_nombre",
                     label: "Profesor",
                     sortable: true,
                   },
-                  { key: "curso_nombre", label: "Curso", sortable: true },
-                  { key: "año_electivo_valor", label: "Año", sortable: true },
-                  {
-                    key: "usuario_creacion_nombre",
-                    label: "Creado por",
-                    sortable: true,
-                  },
+                  { key: "curso", label: "Curso", sortable: true },
+                  { key: "fk_id_año_electivo", label: "Año", sortable: true },
                 ]}
                 actions={[
                   {
@@ -1128,7 +1221,7 @@ const GestionAcademica = ({ onBack }) => {
                     onClick: (item) => AbrirModalConDatosMateriaAsignada(item),
                   },
                   {
-                    label: "Inactivar 🗑️",
+                    label: "Eliminar 🗑️",
                     icon: "🗑️",
                     variant: "delete",
                     onClick: (item) => EliminarMateriaA(item),
@@ -1140,11 +1233,16 @@ const GestionAcademica = ({ onBack }) => {
             ) : (
               <Table
                 id="EstudianteC"
-                data={estudianteCursos}
+                data={estudianteCursos.map((item) => ({
+                  ...item,
+                  numero_documento_estudiante: item.estudiante?.numero_documento || "",
+                  nombre_estudiante: item.estudiante?.nombre || "",
+                  estado_curso: item.estado || "",
+                }))}
                 busqueda={[
                   "numero_documento_estudiante",
                   "nombre_estudiante",
-                  "curso_nombre",
+                  "nombre_curso",
                 ]}
                 columns={[
                   { key: "id_estudiantes_cursos", label: "ID", sortable: true },
@@ -1158,12 +1256,7 @@ const GestionAcademica = ({ onBack }) => {
                     label: "Estudiante",
                     sortable: true,
                   },
-                  { key: "curso_nombre", label: "Curso", sortable: true },
-                  {
-                    key: "año_electivo",
-                    label: "Año Electivo",
-                    sortable: true,
-                  },
+                  { key: "nombre_curso", label: "Curso", sortable: true },
                   {
                     key: "fecha_asignacion",
                     label: "Fecha Asignación",
@@ -1171,7 +1264,7 @@ const GestionAcademica = ({ onBack }) => {
                   },
                   {
                     key: "estado_curso",
-                    label: "Estado del curso",
+                    label: "Estado",
                     sortable: true,
                   },
                 ]}
@@ -1183,7 +1276,7 @@ const GestionAcademica = ({ onBack }) => {
                     onClick: (item) => AbrirModalConDatosEstudianteCurso(item),
                   },
                   {
-                    label: "Inactivar🗑️",
+                    label: "Eliminar 🗑️",
                     icon: "🗑️",
                     variant: "delete",
                     onClick: (item) => EliminarEstudianteCurso(item),

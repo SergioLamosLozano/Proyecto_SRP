@@ -14,9 +14,9 @@ function Modal({
       <div className="modal-content">
         <div className="modal-header">
           <h3>{titulo}</h3>
-          <button className="modal-close" onClick={SalirM}>
+          <h1 className="modal-header-close" onClick={SalirM}>
             ×
-          </button>
+          </h1>
         </div>
         <form className="modal-form">
           {inputs.map((item, index) => (

@@ -1,0 +1,234 @@
+.definitivas-contenedor-padre {
+  width: 100%;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  padding-top: 60px;
+}
+
+.definitivas-contenedor {
+  width: 100%;
+  margin: auto;
+  border-radius: 10px;
+  height: auto;
+  box-sizing: border-box;
+  background-color: var(--blanco-puro);
+  box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.15);
+  padding-bottom: 40px;
+  overflow: hidden;
+}
+
+.definitivas-titulo {
+  width: 100%;
+  height: auto;
+  padding: 25px 15px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--rojo-institucional);
+}
+
+.definitivas-titulo h1 {
+  color: var(--blanco-puro);
+  font-size: 28px;
+  margin: 0;
+  font-weight: 600;
+}
+
+.definitivas-titulo p {
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 14px;
+  margin: 0;
+}
+
+/* Panel de Filtros y selectores */
+.definitivas-explicacion-contenedor {
+  width: 95%;
+  margin: 25px auto;
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+  background-color: var(--gris-claro-fondo);
+  padding: 25px;
+  border-radius: 8px;
+  border: 1px solid var(--borde-color);
+  box-sizing: border-box;
+}
+
+.definitivas-filtros-grid {
+  display: flex;
+  gap: 24px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.definitivas-campo-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-width: 250px;
+}
+
+.definitivas-campo-grupo label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gris-principal);
+}
+
+.definitivas-selector-wrapper {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+/* Input simulador y selectores de periodo */
+.definitivas-input-vista {
+  flex: 1;
+  padding: 10px 15px;
+  border-radius: 6px;
+  border: 1px solid var(--borde-color);
+  background-color: var(--blanco-puro);
+  color: var(--gris-principal);
+  font-weight: 600;
+  font-size: 14px;
+  outline: none;
+}
+
+.definitivas-select-periodo {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--borde-color);
+  background-color: var(--blanco-puro);
+  color: var(--gris-principal);
+  font-size: 14px;
+  font-weight: 500;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.definitivas-select-periodo:focus {
+  border-color: var(--rojo-institucional);
+}
+
+/* Botones de acción */
+.definitivas-acciones-wrapper {
+  display: flex;
+  gap: 15px;
+  justify-content: flex-start;
+  margin-top: 5px;
+}
+
+.definitivas-btn {
+  padding: 11px 22px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.definitivas-btn-primario {
+  background-color: var(--rojo-institucional);
+  color: var(--blanco-puro);
+  border: 1px solid var(--rojo-institucional);
+}
+
+.definitivas-btn-primario:hover:not(:disabled) {
+  background-color: var(--rojo-hover);
+  border-color: var(--rojo-hover);
+}
+
+.definitivas-btn-secundario {
+  background-color: var(--blanco-puro);
+  color: var(--gris-principal);
+  border: 1px solid var(--borde-color);
+}
+
+.definitivas-btn-secundario:hover:not(:disabled) {
+  background-color: var(--gris-claro-fondo);
+  color: var(--rojo-institucional);
+  border-color: var(--rojo-institucional);
+}
+
+.definitivas-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Tabla de datos */
+.tabla-definitivas {
+  width: 95%;
+  margin: 10px auto 30px auto;
+  overflow: hidden;
+  border-radius: 8px;
+  background-color: var(--blanco-puro);
+  border: 1px solid var(--borde-color);
+}
+
+.definitivas-html-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.definitivas-html-table th {
+  background-color: var(--gris-claro-fondo);
+  color: var(--gris-principal);
+  font-weight: 700;
+  font-size: 14px;
+  padding: 14px 20px;
+  border-bottom: 2px solid var(--borde-color);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.definitivas-html-table td {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--borde-color);
+  color: #4a5568;
+  font-size: 14px;
+}
+
+.definitivas-html-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.definitivas-html-table tbody tr:hover {
+  background-color: rgba(248, 249, 250, 0.75);
+}
+
+/* Badges estéticos para el estado */
+.definitivas-badge {
+  padding: 5px 12px;
+  border-radius: 50px;
+  font-size: 12px;
+  font-weight: bold;
+  display: inline-block;
+  text-transform: uppercase;
+}
+
+.definitivas-badge.aprobado {
+  background-color: rgba(40, 167, 69, 0.15);
+  color: var(--verde-exito);
+}
+
+.definitivas-badge.reprobado {
+  background-color: rgba(220, 53, 69, 0.15);
+  color: var(--rojo-error);
+}
+
+.definitivas-badge.pendiente {
+  background-color: rgba(255, 193, 7, 0.15);
+  color: #b78700;
+}

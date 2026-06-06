@@ -1,6 +1,16 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import *
+from .reportes_views import GenerarReporteNotasExcelView, GenerarBoletinPDFView
+from .configuracion_views import ConfiguracionBoletinesViewSet
+from .estadisticas_views import (
+    EstadisticasGeneralesView,
+    EstadisticasDemograficasView,
+    EstadisticasAcademicasView,
+    EstadisticasInstitucionalesView,
+    EstadisticasComparativasView,
+    FiltrosDisponiblesView
+)
 from rest_framework_simplejwt.views import TokenRefreshView
 
 
@@ -25,10 +35,12 @@ router.register(r'estudiantes', EstudianteViewSet, basename='Estudiantes')
 router.register(r'profesores', ProfesorViewSet, basename='Profesores')
 router.register(r'acudientes', AcudienteViewSet, basename='Acudientes')
 router.register(r'notas', EstudianteNotasViewSet, basename='Notas')
+router.register(r'definitivas-estudiante', DefinitivasViewSet, basename='Definitivas-Estudiante')
 router.register(r'match-acudientes', AcudienteUserMatchViewSet, basename='match-acudientes')
 router.register(r'estudiantes-acudientes', EstudianteAcudienteViewSet, basename='Estudiante_Acudiente')
+router.register(r'estudiante_cursos', EstudiantesCursosViewSet, basename='Estudiantes_Cursos')
 router.register(r'materias_asignadas', MateriasAsignadasViewSet, basename='Materias_Asignadas')
-router.register(r'estudiantes_cursos', EstudiantesCursosViewSet, basename='Estudiantes_Cursos')
+router.register(r'configuracion/boletines', ConfiguracionBoletinesViewSet, basename='Configuracion_Boletines')
 
 urlpatterns = [
     path('token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
@@ -38,6 +50,29 @@ urlpatterns = [
     path('profesores/template/', ProfesoresTemplateView.as_view(), name='plantilla_profesores'),
     path('estudiantes/bulk-upload/', EstudiantesBulkUploadView.as_view(), name='bulk_estudiantes'),
     path('profesores/bulk-upload/', ProfesoresBulkUploadView.as_view(), name='bulk_profesores'),
+    path('obtener_materias/', ObtenerMaterias.as_view(), name='obtener_materias'),
+    path('estudiantes_cursos/', TraerEstudiantesPorGrado.as_view(), name='estudiantes_cursos'),
+    path('actividades_profesor/', TraerActividadesProfesor.as_view(), name='actividades_profesor'),
+    path('resultados_aprendizaje/', TraerRAprofesor.as_view(), name='resultados_aprendizaje'),
+    path('actividades_ra/', TraerActividadesPorRA.as_view(), name='actividades_ra'),
+    path('calificar_estudiante/', Calificar.as_view(), name='calificar_estudiante'),
+    path('traer_materias_profesor/', TraerMateriaDeProfesor.as_view(), name='traer_materias_profesor'),
+    path('definitivas/', DefinitivasView.as_view(), name='definitivas'),
+    path('promedio/', Promedios.as_view(), name='promedio'),
+    path('traer_todas_las_materias_agrupadas/', TraerTodasLasMateriasAgrupadas.as_view(), name='traer_todas_las_materias_agrupadas'),
+    path('consultar_notas_curso/', ConsultarNotasCursoAPIView.as_view(), name='consultar_notas_curso'),
+    
+    # Endpoints de reportes
+    path('reportes/notas-excel/', GenerarReporteNotasExcelView.as_view(), name='reporte_notas_excel'),
+    path('reportes/boletines-pdf/', GenerarBoletinPDFView.as_view(), name='boletines_pdf'),
+    
+    # Endpoints de estadísticas
+    path('estadisticas/generales/', EstadisticasGeneralesView.as_view(), name='estadisticas_generales'),
+    path('estadisticas/demograficas/', EstadisticasDemograficasView.as_view(), name='estadisticas_demograficas'),
+    path('estadisticas/academicas/', EstadisticasAcademicasView.as_view(), name='estadisticas_academicas'),
+    path('estadisticas/institucionales/', EstadisticasInstitucionalesView.as_view(), name='estadisticas_institucionales'),
+    path('estadisticas/comparativas/', EstadisticasComparativasView.as_view(), name='estadisticas_comparativas'),
+    path('estadisticas/filtros/', FiltrosDisponiblesView.as_view(), name='estadisticas_filtros'),
 ]
 
 urlpatterns += router.urls

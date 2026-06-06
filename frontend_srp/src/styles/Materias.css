@@ -1,0 +1,131 @@
+/* Contenedor base para la vista de MATERIAS (Diseño en Grid moderno) */
+.contenedor-materia {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  background-color: var(--blanco-puro);
+  box-shadow: 0px 10px 25px rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  padding: 30px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Tarjetas de MATERIAS (Estilo institucional refinado) */
+.matematicas-descripcion {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  height: 120px;
+  padding: 20px;
+  border-radius: 8px;
+  background-color: var(--rojo-institucional);
+  box-shadow: 0px 4px 12px rgba(196, 30, 58, 0.2);
+  gap: 6px;
+  color: var(--blanco-puro);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.matematicas-descripcion:hover {
+  background-color: var(--rojo-hover);
+  transform: translateY(-4px);
+  box-shadow: 0px 8px 20px rgba(160, 23, 41, 0.35);
+}
+
+.matematicas-descripcion span {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+.matematicas-descripcion label {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+/* Contenedor específico para la vista de CURSOS (Diseño en columna completa) */
+.contenedor-cursos-columna {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background-color: var(--blanco-puro);
+  box-shadow: 0px 10px 25px rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  padding: 30px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Filas alargadas para los CURSOS (Estilo lista premium) */
+.curso-fila-alargada {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 25px;
+  border-radius: 8px;
+  background-color: var(--blanco-puro);
+  border: 1px solid var(--borde-color);
+  border-left: 5px solid var(--rojo-institucional); /* Distintivo lateral */
+  transition: all 0.2s ease;
+  cursor: pointer;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.curso-fila-alargada:hover {
+  background-color: var(--gris-claro-fondo);
+  border-color: var(--rojo-institucional);
+  transform: translateX(6px); /* Efecto de desplazamiento hacia la derecha */
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.curso-fila-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.curso-fila-icono {
+  font-size: 22px;
+  background-color: rgba(196, 30, 58, 0.08);
+  padding: 8px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.curso-fila-texto-principal {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--gris-principal);
+}
+
+.curso-fila-badge {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--gris-secundario);
+  background-color: #eed9dc;
+  color: var(--rojo-institucional);
+  padding: 4px 12px;
+  border-radius: 50px;
+  text-transform: uppercase;
+}
+
+/* Contenedor de la Tabla de estudiantes */
+.contenedor-materia2 {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--blanco-puro);
+  box-shadow: 0px 10px 25px rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  padding: 20px;
+  width: 100%;
+  box-sizing: border-box;
+}

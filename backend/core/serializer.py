@@ -86,9 +86,18 @@ class DepartamentoSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class PeriodoSerializer(serializers.ModelSerializer):
+    # Nombre derivado: si no hay 'nombre' explícito devolvemos uno legible
+    nombre_display = serializers.SerializerMethodField()
+    año_electivo = serializers.IntegerField(
+        source='fk_id_año_electivo.id_año_electivo', read_only=True
+    )
+
     class Meta:
         model = Periodo
         fields = '__all__'
+
+    def get_nombre_display(self, obj):
+        return obj.nombre or f"Periodo {obj.id_periodo}"
 
 class CiudadSerializer(serializers.ModelSerializer):
     # Removemos departamento_nombre temporalmente para evitar el error
@@ -109,6 +118,8 @@ class AcudienteSerializer(serializers.ModelSerializer):
     nombre_completo = serializers.ReadOnlyField()
     tipo_documento_desc = serializers.CharField(source='fk_id_tipo_documento.descripcion', read_only=True)
     ciudad_nombre = serializers.CharField(source='fk_codigo_municipio.nombre', read_only=True)
+    estado = serializers.CharField(source='fk_id_estado.descripcion', read_only=True)
+    estado_desc = serializers.CharField(source='fk_id_estado.descripcion', read_only=True)
     
     class Meta:
         model = Acudiente
@@ -161,57 +172,69 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         return token
 
 class MateriasAsignadasSerializer(serializers.ModelSerializer):
-    profesor_nombre = serializers.SerializerMethodField()
-    materia_nombre = serializers.CharField(source='fk_id_materia.nombre', read_only=True)
-    curso_nombre = serializers.CharField(source='fk_id_curso.nombre', read_only=True)
-    año_electivo_valor = serializers.CharField(source='fk_id_año_electivo.id_año_electivo', read_only=True)
-    usuario_creacion_nombre = serializers.CharField(source='fk_usuario_creacion.username', read_only=True)
 
-    def get_profesor_nombre(self, obj):
-        prof = obj.fk_numero_documento_profesor
-        return f"{prof.nombre1 or ''} {prof.nombre2 or ''}".strip()
+    profe_nombre = serializers.SerializerMethodField()
+    materia = serializers.CharField(source='fk_id_materia.nombre', read_only=True)
+    curso = serializers.CharField(source='fk_id_curso.nombre', read_only=True)
 
     class Meta:
         model = MateriasAsignadas
         fields = '__all__'
-        read_only_fields = [
-            'profesor_nombre',
-            'materia_nombre',
-            'curso_nombre',
-            'año_electivo_valor',
-            'usuario_creacion_nombre'
-        ]
+    
+    def get_profe_nombre(self, obj):
+        profesor = obj.fk_numero_documento_profesor
+
+        nombre_completo = f'{profesor.nombre1} {profesor.nombre2} {profesor.apellido1} {profesor.apellido2}'
+
+        return nombre_completo.strip()
+    
 
 class ActividadesSerializer(serializers.ModelSerializer):
-    MateriaProfesores = MateriasAsignadasSerializer(read_only=True, source='fk_id_materia_profesores')
     Tipo_Actividad = serializers.CharField(read_only=True, source='fk_id_tipo_actividad.descripcion')
+    curso = serializers.CharField(read_only=True, source='fk_id_ra.fk_id_materia_profesores.fk_id_curso.nombre')
+    materia = serializers.CharField(read_only=True, source='fk_id_ra.fk_id_materia_profesores.fk_id_materia.nombre')
+    id_curso = serializers.CharField(read_only=True, source='fk_id_ra.fk_id_materia_profesores.fk_id_curso')
+
+    def validate_porcentaje(self, value):
+        if value < 1 or value > 100:
+            raise serializers.ValidationError("el porcentaje debe estar entre 1 y 100")
+        return value
+
     class Meta:
         model = Actividades
         fields = '__all__'
         read_only_fields = [
-            'Tipo_Actividad'
+            'Tipo_Actividad',
+            'curso',
+            'materia',
+            'id_curso'
         ]
 
 
+
 class EstudiantesCursosSerializer(serializers.ModelSerializer):
-    nombre_estudiante = serializers.SerializerMethodField()
-    curso_nombre = serializers.CharField(source='id_curso.nombre', read_only=True)
-    año_electivo = serializers.CharField(source='id_curso.fk_id_año_electivo.id_año_electivo', read_only=True)
-    estado_curso = serializers.CharField(source='id_curso.estado', read_only=True)
+    estudiante = serializers.SerializerMethodField()
+    nombre_curso = serializers.CharField(read_only=True, source="id_curso.nombre")
 
     class Meta:
         model = Estudiantes_cursos
         fields = '__all__'
         read_only_fields = [
-            'nombre_estudiante',
-            'curso_nombre',
-            'año_electivo',
-            'estado_curso'
+            "nombre_curso"
         ]
-
-    def get_nombre_estudiante(self, obj):
+    
+    def get_estudiante(self, obj):
         est = obj.numero_documento_estudiante
-        return f"{est.nombre1} {est.nombre2 or ''} {est.apellido1} {est.apellido2 or ''}".strip()
+
+        estudiante = {
+            "numero_documento": est.numero_documento_estudiante,
+            "nombre": f"{est.nombre1} {est.nombre2 or ""} {est.apellido1} {est.apellido2 or ""}",
+            "correo": est.correo,
+            "telefono": est.telefono,
+            "estado": est.fk_tipo_estado.descripcion
+        }
+
+        return estudiante
 
 class EstudiantesSerializer(serializers.ModelSerializer):
     nombre_completo = serializers.SerializerMethodField()
@@ -253,10 +276,170 @@ class ProfesoresSerializer(serializers.ModelSerializer):
     def get_nombre_completo(self, obj):
         return f"{obj.nombre1} {obj.nombre2 or ''} {obj.apellido1} {obj.apellido2 or ''}".strip()
     
+class ActividadDetalleSerializer(serializers.ModelSerializer):
+    """Serializer para actividades con información completa"""
+    MateriaProfesores = serializers.SerializerMethodField()
+    fk_id_periodo_academico = serializers.SerializerMethodField()
+    
+    def get_MateriaProfesores(self, obj):
+        try:
+            if obj.fk_id_ra and obj.fk_id_ra.fk_id_materia_profesores:
+                mp = obj.fk_id_ra.fk_id_materia_profesores
+                return {
+                    'id_materia_profesores': mp.id_materia_profesores,
+                    'materia_nombre': mp.fk_id_materia.nombre if mp.fk_id_materia else None,
+                    'curso_nombre': mp.fk_id_curso.nombre if mp.fk_id_curso else None,
+                }
+        except Exception:
+            pass
+        return None
+    
+    def get_fk_id_periodo_academico(self, obj):
+        try:
+            if obj.fk_id_ra and obj.fk_id_ra.fk_id_periodo_academico:
+                return obj.fk_id_ra.fk_id_periodo_academico.id_periodo
+        except Exception:
+            pass
+        return None
+    
+    class Meta:
+        model = Actividades
+        fields = ['id_actividades', 'nombre', 'descripcion', 'porcentaje', 
+                  'fecha_inicio', 'fecha_fin', 'MateriaProfesores', 'fk_id_periodo_academico']
+
+
 class EstudianteNotasSerializer(serializers.ModelSerializer):
-    estudiante = EstudiantesSerializer(read_only=True, source='fk_numero_documento_estudiante')
-    actividad = ActividadesSerializer(read_only=True, source='fk_id_actividad')
+    # Campos adicionales para compatibilidad con frontend web
+    nombre_actividad = serializers.SerializerMethodField()
+    descripcion_actividad = serializers.SerializerMethodField()
+    periodo = serializers.SerializerMethodField()
+    nombre_materia = serializers.SerializerMethodField()
+    id_materia = serializers.SerializerMethodField()
+    nombre_grado = serializers.SerializerMethodField()
+    nombre_completo_estudiante = serializers.CharField(read_only=True, source="fk_numero_documento_estudiante.nombre_completo")
+    porcentaje_ra = serializers.SerializerMethodField()
+    porcentaje_actividad = serializers.SerializerMethodField()
+    
+    # Actividad completa anidada para el frontend web
+    actividad = ActividadDetalleSerializer(source='fk_id_actividad', read_only=True)
+
+    def get_nombre_actividad(self, obj):
+        return obj.fk_id_actividad.nombre if obj.fk_id_actividad else None
+    
+    def get_descripcion_actividad(self, obj):
+        return obj.fk_id_actividad.descripcion if obj.fk_id_actividad else None
+    
+    def get_periodo(self, obj):
+        try:
+            if obj.fk_id_actividad and obj.fk_id_actividad.fk_id_ra and obj.fk_id_actividad.fk_id_ra.fk_id_periodo_academico:
+                return obj.fk_id_actividad.fk_id_ra.fk_id_periodo_academico.id_periodo
+        except Exception:
+            pass
+        return None
+    
+    def get_nombre_materia(self, obj):
+        try:
+            if (obj.fk_id_actividad and 
+                obj.fk_id_actividad.fk_id_ra and 
+                obj.fk_id_actividad.fk_id_ra.fk_id_materia_profesores and
+                obj.fk_id_actividad.fk_id_ra.fk_id_materia_profesores.fk_id_materia):
+                return obj.fk_id_actividad.fk_id_ra.fk_id_materia_profesores.fk_id_materia.nombre
+        except Exception:
+            pass
+        return None
+    
+    def get_id_materia(self, obj):
+        try:
+            if (obj.fk_id_actividad and 
+                obj.fk_id_actividad.fk_id_ra and 
+                obj.fk_id_actividad.fk_id_ra.fk_id_materia_profesores and
+                obj.fk_id_actividad.fk_id_ra.fk_id_materia_profesores.fk_id_materia):
+                return obj.fk_id_actividad.fk_id_ra.fk_id_materia_profesores.fk_id_materia.id_materia
+        except Exception:
+            pass
+        return None
+    
+    def get_nombre_grado(self, obj):
+        try:
+            if (obj.fk_id_actividad and 
+                obj.fk_id_actividad.fk_id_ra and 
+                obj.fk_id_actividad.fk_id_ra.fk_id_materia_profesores and
+                obj.fk_id_actividad.fk_id_ra.fk_id_materia_profesores.fk_id_curso):
+                return obj.fk_id_actividad.fk_id_ra.fk_id_materia_profesores.fk_id_curso.nombre
+        except Exception:
+            pass
+        return None
+    
+    def get_porcentaje_ra(self, obj):
+        try:
+            if obj.fk_id_actividad and obj.fk_id_actividad.fk_id_ra:
+                return obj.fk_id_actividad.fk_id_ra.porcentaje
+        except Exception:
+            pass
+        return None
+    
+    def get_porcentaje_actividad(self, obj):
+        return obj.fk_id_actividad.porcentaje if obj.fk_id_actividad else None
+
+    def validate_calificacion(self, value):
+        # Bug fix: antes usaba "return" en vez de "raise", la validación nunca se aplicaba.
+        if value is None:
+            raise serializers.ValidationError("La calificación es requerida")
+        try:
+            v = float(value)
+        except (TypeError, ValueError):
+            raise serializers.ValidationError("La calificación debe ser numérica")
+        if v < 0 or v > 5.0:
+            raise serializers.ValidationError("La calificación debe estar entre 0 y 5")
+        return value
 
     class Meta:
         model = EstudianteNotas
         fields = '__all__'
+        read_only_fields = [
+            'nombre_completo_estudiante',
+        ]
+
+class RASerializer(serializers.ModelSerializer):
+    materia = serializers.CharField(read_only=True, source="fk_id_materia_profesores.fk_id_materia.nombre")
+    curso = serializers.CharField(read_only=True, source="fk_id_materia_profesores.fk_id_curso.nombre")
+    class Meta:
+        model = RA
+        fields = '__all__'
+        read_only_fileds = [
+            "materia"
+        ]
+
+class NotaHistorialSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NotaHistorial
+        fields = '__all__'
+
+class DefinitivaSerializer(serializers.ModelSerializer):
+    nombre_estudiante = serializers.CharField(read_only=True, source="fk_id_estudiantes_cursos.numero_documento_estudiante.nombre_completo")
+    nombre_materia = serializers.CharField(read_only=True, source="fk_id_materia.nombre")
+
+    class Meta:
+        model = Definitivas
+        fields = "__all__"
+        read_only_fields = [
+            'nombre_estudiante',
+            'nombre_materia'
+        ]
+
+
+class ConfiguracionBoletinesSerializer(serializers.ModelSerializer):
+    """
+    Serializer para la configuración de descarga de boletines
+    """
+    usuario_modificacion_nombre = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = ConfiguracionBoletines
+        fields = '__all__'
+        read_only_fields = ['fecha_modificacion']
+    
+    def get_usuario_modificacion_nombre(self, obj):
+        if obj.fk_usuario_modificacion:
+            return f"{obj.fk_usuario_modificacion.first_name} {obj.fk_usuario_modificacion.last_name}".strip() or obj.fk_usuario_modificacion.username
+        return None

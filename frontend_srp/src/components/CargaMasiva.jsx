@@ -3,6 +3,7 @@ import Swal from "sweetalert2";
 import { estudiantesAPI, profesoresAPI } from "../api/usuarios";
 import * as XLSX from "xlsx";
 import "../styles/CargaMasiva.css";
+import { Alert } from "../utils/alert";
 
 const CargaMasiva = ({ CargarEstudiante }) => {
   const [tipo, setTipo] = useState("estudiantes");
@@ -131,7 +132,7 @@ const CargaMasiva = ({ CargarEstudiante }) => {
     const allCols = Object.keys(rows[0] || {});
     const nonEmptyHeaderCols = allCols.filter((c) => !/^__EMPTY/.test(c));
     const cols = nonEmptyHeaderCols.filter((c) =>
-      rows.some((r) => String(r[c] ?? "").trim() !== "")
+      rows.some((r) => String(r[c] ?? "").trim() !== ""),
     );
     const tableWidth = Math.max(cols.length * 160, 900);
     return (
@@ -193,12 +194,12 @@ const CargaMasiva = ({ CargarEstudiante }) => {
         <>
           {renderTable(
             "Previsualización Estudiantes (primeros 25)",
-            preview.estudiantes
+            preview.estudiantes,
           )}
 
           {renderTable(
             "Previsualización Acudientes (primeros 25)",
-            preview.acudientes
+            preview.acudientes,
           )}
         </>
       )}
@@ -206,7 +207,7 @@ const CargaMasiva = ({ CargarEstudiante }) => {
       {tipo === "profesores" &&
         renderTable(
           "Previsualización Profesores (primeros 25)",
-          preview.profesores
+          preview.profesores,
         )}
 
       {result && (

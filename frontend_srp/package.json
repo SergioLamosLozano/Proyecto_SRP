@@ -4,15 +4,17 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@handsontable/react": "^16.2.0",
     "axios": "^1.11.0",
     "boxicons": "^2.1.4",
     "chart.js": "^4.5.0",
+    "handsontable": "^17.0.1",
     "jwt-decode": "^4.0.0",
     "react": "^19.1.1",
     "react-chartjs-2": "^5.3.0",

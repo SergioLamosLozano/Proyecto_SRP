@@ -19,3 +19,8 @@ dist/
 .vscode/
 .idea/
 .DS_Store
+.claude/
+
+# Documentación de desarrollo
+INSTRUCCIONES_PRUEBA.md
+MODULO_ESTADISTICAS_README.md

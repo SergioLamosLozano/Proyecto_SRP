@@ -1,288 +1,477 @@
 import React, { useEffect, useState } from "react";
 import Breadcrumbs from "./Breadcrumbs";
-import "../styles/Dashboard.css";
-import "../styles/CoordinacionPage.css";
+import "../styles/Materias.css";
 import { jwtDecode } from "jwt-decode";
-import { BuscarMateriasAsignadas } from "../api/cursos";
-import { EstudiantesGET } from "../api/usuarios";
+import { TraerMateriasProfesor, Estudiante_id_curso } from "../api/cursos";
+import { estudiantesAPI } from "../api/usuarios";
 import Table from "./Table";
+import Modal from "./modal";
+import Swal from "sweetalert2";
 
 function DocentesMaterias({ onBack }) {
-  const [currentSubSection, setCurrentSubSection] = useState(null);
-  const [currentSubSection2, setCurrentSubSection2] = useState(null);
-  const [estudiantes, setEstudiantes] = useState([]);
-  const [listaPorCurso, setListaPorCurso] = useState([]);
+  const [caso, setcaso] = useState(0); // 0: Materias, 1: Cursos, 2: Tabla Estudiantes
   const [materias, setMaterias] = useState([]);
+  const [materiaSeleccionada, setMateriaSeleccionada] = useState(null);
+  const [cursoSeleccionadoTexto, setCursoSeleccionadoTexto] = useState("");
+  const [estudiantes, setEstudiantes] = useState([]);
+  const [estudianteSeleccionado, setEstudianteSeleccionado] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [estudianteCompleto, setEstudianteCompleto] = useState(null);
+  const [cargandoEstudiante, setCargandoEstudiante] = useState(false);
 
-  const listaDeColores = [
-    "rgba(156, 1, 1, 0.9)", // un poco más fuerte
-    "rgba(156, 1, 1, 0.7)", // un poco más suave
-    "rgba(176, 10, 10, 0.85)", // tono ligeramente más claro
-    "rgba(136, 0, 0, 0.85)", // tono ligeramente más oscuro
-    "rgba(180, 20, 20, 0.8)", // más brillante
-    "rgba(120, 0, 0, 0.8)", // más oscuro
-    "rgba(200, 40, 40, 0.75)", // menos saturado y más claro
-    "rgba(100, 0, 0, 0.9)", // más profundo
-    "rgba(160, 20, 20, 0.6)", // rojo suave
-    "rgba(140, 0, 0, 0.95)", // casi sólido
-  ];
+  const cargarMaterias = async (idProfesor) => {
+    try {
+      const res = await TraerMateriasProfesor(idProfesor);
+      setMaterias(res.data);
+    } catch (error) {
+      console.error("Error cargando materias agrupadas:", error);
+    }
+  };
 
   useEffect(() => {
     const token = sessionStorage.getItem("token");
-    if (!token) {
-      console.log("error al obtener el token");
-      return;
-    } else {
-      const decoded = jwtDecode(token);
-      const Cedula = decoded.username;
-      cargarMaterias(Cedula);
+    if (token) {
+      const decod = jwtDecode(token);
+      cargarMaterias(decod.username);
     }
   }, []);
 
-  const cargarMaterias = async (cedula) => {
-    if (cedula) {
-      try {
-        const response = await BuscarMateriasAsignadas(cedula);
-        const response2 = await EstudiantesGET();
-        const materiasAgrupadas = response.data.reduce((acc, item) => {
-          const existente = acc.find(
-            (mat) => mat.materia_nombre === item.materia_nombre
-          );
-
-          if (existente) {
-            if (!existente.cursos.includes(item.curso_nombre)) {
-              existente.cursos.push(item.curso_nombre);
-            }
-          } else {
-            acc.push({
-              materia_nombre: item.materia_nombre,
-              profesor_nombre: item.profesor_nombre,
-              cursos: [item.curso_nombre],
-              año_electivo_valor: item.año_electivo_valor,
-            });
-          }
-
-          return acc;
-        }, []);
-        setMaterias(materiasAgrupadas);
-        setEstudiantes(response2.data);
-      } catch (err) {
-        console.log(err);
-      }
-    }
-  };
-
-  const FiltrarEstudiantes = (grado) => {
-    if (!grado) return null;
-    const estudiantesFiltrados = estudiantes.filter(
-      (est) =>
-        est.estado === "Activo" &&
-        est.cursos?.some(
-          (curso) =>
-            curso.curso_nombre == grado && curso.estado_curso == "Activo"
-        )
-    );
-    setListaPorCurso(estudiantesFiltrados);
-    console.log(estudiantesFiltrados);
-  };
-
-  // MIGAS REALES
+  // 1. Configuración de rutas estables en el Breadcrumb para cada caso
   const breadcrumbItems = [
     { label: "Inicio", path: "/docentes" },
-    { label: "Pagina Docentes", path: "/docentes" },
-    { label: "materias Asignadas", path: "/docentes/materias" },
-    ...(currentSubSection
+    { label: "Página Docentes", path: "/docentes" },
+    { label: "Materias Asignadas", path: "/docentes/materias" },
+    ...(caso >= 1 && materiaSeleccionada
       ? [
           {
-            label: currentSubSection,
-            path: `/docentes/materias/${currentSubSection}`,
+            label: materiaSeleccionada.nombre_materia,
+            path: "/docentes/materias/cursos",
           },
         ]
       : []),
-    ...(currentSubSection2
+    ...(caso === 2 && cursoSeleccionadoTexto
       ? [
           {
-            label: currentSubSection2,
-            path: `/docentes/materias/${currentSubSection2}`,
+            label: cursoSeleccionadoTexto,
+            path: "/docentes/materias/estudiantes",
           },
         ]
       : []),
   ];
 
+  // 2. Control inteligente del retorno de pestañas usando los Paths establecidos arriba
   const handleNavigate = (path) => {
-    if (path === "/docentes") {
-      onBack();
-    } else if (path === "/docentes/materias") {
-      setCurrentSubSection(null);
-      setCurrentSubSection2(null);
-    } else if (path === `/docentes/materias/${currentSubSection}`) {
-      setCurrentSubSection2(null);
+    if (path === "/docentes/materias") {
+      // Regresa al catálogo global de tus materias asignadas
+      setcaso(0);
+      setMateriaSeleccionada(null);
+    } else if (path === "/docentes/materias/cursos") {
+      // Si estás en los estudiantes y pisas la materia, te devuelve a sus cursos
+      setcaso(1);
     } else {
-      const subsection = path.split("/").pop();
-      if (["materias", "actividades"].includes(subsection)) {
-        setCurrentSubSection(subsection);
-        setCurrentSubSection2(subsection);
+      // Si pisas cualquier ruta externa, se sale al módulo principal de docentes
+      onBack();
+    }
+  };
+
+  const handleSeleccionarMateria = (materiaObjeto) => {
+    setMateriaSeleccionada(materiaObjeto);
+    setcaso(1);
+  };
+
+  const AccederAlGrado = async (idCurso, nombreCurso) => {
+    try {
+      const res = await Estudiante_id_curso(idCurso);
+      setCursoSeleccionadoTexto(nombreCurso);
+
+      if (!res || !res.data || res.data.length === 0) {
+        setEstudiantes(null);
+        setcaso(2);
+        return;
       }
+
+      const estudiantesFormateados = res.data.map((item) => ({
+        documento: item.estudiante.numero_documento,
+        nombre: item.estudiante.nombre,
+        correo: item.estudiante.correo,
+        telefono: item.estudiante.telefono,
+        estado: item.estudiante.estado,
+      }));
+
+      setEstudiantes(estudiantesFormateados);
+      setcaso(2);
+    } catch (error) {
+      console.error("Error al traer estudiantes por id_curso:", error);
+      setEstudiantes(null);
+      setcaso(2);
     }
   };
 
-  const render = () => {
-    if (currentSubSection2) {
-      return (
-        <Table
-          id="EstudiantesC"
-          busqueda={["numero_documento_estudiante"]}
-          title="Gestión de Estudiantes"
-          description="Registro manual de estudiantes."
-          columns={[
-            { key: "nombre_completo", label: "NOMBRE" },
-            {
-              key: "numero_documento_estudiante",
-              label: "IDENTIFICACIÓN",
-            },
-            {
-              key: "curso",
-              label: "CURSO",
-              render: (row) => row.cursos?.[0]?.curso_nombre ?? "Sin curso",
-            },
-            { key: "estado", label: "ESTADO" },
-          ]}
-          data={listaPorCurso}
-          searchPlaceholder="Buscar por Documento..."
-        />
-      );
+  const handleVerEstudiante = async (estudiante) => {
+    setEstudianteSeleccionado(estudiante);
+    setModalVisible(true);
+    setCargandoEstudiante(true);
+    
+    try {
+      const response = await estudiantesAPI.getById(estudiante.documento);
+      if (response && response.data) {
+        setEstudianteCompleto(response.data);
+      }
+    } catch (error) {
+      console.error("Error cargando información del estudiante:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "No se pudo cargar la información completa del estudiante",
+        timer: 3000,
+      });
+    } finally {
+      setCargandoEstudiante(false);
     }
   };
 
-  const handleSectionClick = () => {
-    switch (currentSubSection) {
-      case "Matemáticas":
-        return currentSubSection2 ? (
-          render()
-        ) : (
-          <div className="contenedoMatematicas">
-            <h2 className="TituloMateriasAsignadas">{currentSubSection}</h2>
-            <div className="CursosMaterias">
-              {materias &&
-                materias
-                  .filter((mat) => mat.materia_nombre === "Matemáticas")
-                  .flatMap((mat) => mat.cursos)
-                  .map((curso, index) => (
-                    <div
-                      key={index}
-                      className="tarjeta-curso"
-                      onClick={() => {
-                        setCurrentSubSection2(curso);
-                        FiltrarEstudiantes(curso);
-                      }}
-                    >
-                      <label>&gt;</label>
-                      <p>{curso}</p>
-                    </div>
-                  ))}
-            </div>
-          </div>
-        );
-      case "ingles":
-        return currentSubSection2 ? (
-          render()
-        ) : (
-          <div className="contenedoMatematicas">
-            <h2 className="TituloMateriasAsignadas">{currentSubSection}</h2>
-            <div className="CursosMaterias">
-              {materias &&
-                materias
-                  .filter((mat) => mat.materia_nombre === "ingles")
-                  .flatMap((mat) => mat.cursos)
-                  .map((curso, index) => (
-                    <div
-                      key={index}
-                      className="tarjeta-curso"
-                      onClick={() => {
-                        setCurrentSubSection2(curso);
-                        FiltrarEstudiantes(curso);
-                      }}
-                    >
-                      <label>&gt;</label>
-                      <p>{curso}</p>
-                    </div>
-                  ))}
-            </div>
-          </div>
-        );
-      case "Ed Fisica":
-        return currentSubSection2 ? (
-          render()
-        ) : (
-          <div className="contenedoMatematicas">
-            <h2 className="TituloMateriasAsignadas">{currentSubSection}</h2>
-            <div className="CursosMaterias">
-              {materias &&
-                materias
-                  .filter((mat) => mat.materia_nombre === "Ed Fisica")
-                  .flatMap((mat) => mat.cursos)
-                  .map((curso, index) => (
-                    <div
-                      key={index}
-                      className="tarjeta-curso"
-                      onClick={() => {
-                        setCurrentSubSection2(curso);
-                        FiltrarEstudiantes(curso);
-                      }}
-                    >
-                      <label>&gt;</label>
-                      <p>{curso}</p>
-                    </div>
-                  ))}
-            </div>
-          </div>
-        );
-    }
+  const cerrarModal = () => {
+    setModalVisible(false);
+    setEstudianteSeleccionado(null);
+    setEstudianteCompleto(null);
   };
 
-  return (
-    <div className="page-wrapper">
-      {/* ← AQUI SI RENDERIZA CORRECTAMENTE */}
+  // VISTA 0: Mapeo de Materias Únicas
+  const VistaMaterias = () => (
+    <div>
       <Breadcrumbs items={breadcrumbItems} onNavigate={handleNavigate} />
-
-      <div className="Container-Principal-Docentes">
-        {currentSubSection ? (
-          handleSectionClick()
-        ) : (
-          <>
-            <h1 className="TituloMateriasAsignadas">Materias Asignadas</h1>
-
-            <div className="navigation-cardsD">
-              {materias.length > 0 ? (
-                materias.map((item, index) => {
-                  const ColorAlAzar =
-                    listaDeColores[
-                      Math.floor(Math.random() * listaDeColores.length)
-                    ];
-                  return (
-                    <div
-                      key={index}
-                      onClick={() => {
-                        setCurrentSubSection(item.materia_nombre);
-                      }}
-                      className="MateriasAsiganadaD"
-                      style={{ backgroundColor: `${ColorAlAzar}` }}
-                    >
-                      <p>{item.materia_nombre}</p>
-                    </div>
-                  );
-                })
-              ) : (
-                <h1 className="TituloMateriasAsignadas">
-                  No se encontarron materias, asiganadas
-                </h1>
-              )}
+      <div
+        className="definitivas-titulo"
+        style={{ marginBottom: "25px", borderRadius: "10px 10px 0 0" }}
+      >
+        <h1>Asignaturas Asignadas</h1>
+        <p>Selecciona una materia para desplegar y gestionar sus cursos.</p>
+      </div>
+      <div className="contenedor-materia">
+        {materias.length > 0 ? (
+          materias.map((item, index) => (
+            <div
+              key={index}
+              className="matematicas-descripcion"
+              onClick={() => handleSeleccionarMateria(item)}
+            >
+              <span>{item.nombre_materia}</span>
+              <label>
+                {item.cursos.length}{" "}
+                {item.cursos.length === 1
+                  ? "Curso asignado"
+                  : "Cursos asignados"}
+              </label>
             </div>
-          </>
+          ))
+        ) : (
+          <div className="no-datos-mensaje">
+            No tienes materias asignadas en este periodo.
+          </div>
         )}
       </div>
     </div>
   );
+
+  // VISTA 1: Desglose de los Cursos
+  const VistaCursosPorMateria = () => (
+    <div>
+      <Breadcrumbs items={breadcrumbItems} onNavigate={handleNavigate} />
+      <div
+        className="definitivas-titulo"
+        style={{ marginBottom: "25px", borderRadius: "10px 10px 0 0" }}
+      >
+        <h1>{materiaSeleccionada?.nombre_materia}</h1>
+        <p>
+          Cursos asignados a esta asignatura. Selecciona uno para ver
+          estudiantes.
+        </p>
+      </div>
+
+      <div className="contenedor-cursos-columna">
+        {materiaSeleccionada?.cursos.map((item2, index2) => {
+          const idCursoReal =
+            item2.id_curso || item2.fk_id_curso || item2.id_cursos;
+          return (
+            <div
+              key={index2}
+              className="curso-fila-alargada"
+              onClick={() => AccederAlGrado(idCursoReal, item2.nombre_curso)}
+            >
+              <div className="curso-fila-info">
+                <div className="curso-fila-icono">🏫</div>
+                <div className="curso-fila-texto-principal">
+                  {item2.nombre_curso}
+                </div>
+              </div>
+              <div className="curso-fila-badge">Grupo Académico</div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+
+  // VISTA 2: Tabla de Estudiantes
+  const VistaEstudiantesMateria = () => (
+    <div>
+      <Breadcrumbs items={breadcrumbItems} onNavigate={handleNavigate} />
+      <div className="contenedor-materia2">
+        {estudiantes != null ? (
+          <Table
+            id="Estudiantes"
+            data={estudiantes}
+            users={estudiantes}
+            parametrobuscar="documento"
+            busqueda={["documento", "nombre"]}
+            title={`Estudiantes de ${materiaSeleccionada?.nombre_materia}`}
+            description={`Listado oficial asignado a ${cursoSeleccionadoTexto}.`}
+            columns={[
+              { key: "nombre", label: "NOMBRE" },
+              { key: "documento", label: "IDENTIFICACIÓN" },
+              { key: "correo", label: "CORREO" },
+              { key: "telefono", label: "TELEFONO" },
+              { key: "estado", label: "ESTADO" },
+            ]}
+            searchPlaceholder="Buscar por documento o nombre..."
+            addButtonText="Añadir estudiante"
+            actions={[
+              {
+                label: "Ver 👀",
+                onClick: (estudiante) => handleVerEstudiante(estudiante),
+              },
+            ]}
+          />
+        ) : (
+          <div
+            className="definitivas-explicacion-contenedor"
+            style={{ textAlign: "center", padding: "40px" }}
+          >
+            <h2>No hay estudiantes registrados</h2>
+            <p>Este grado no cuenta con alumnos matriculados actualmente.</p>
+            <button
+              className="definitivas-btn definitivas-btn-primario"
+              onClick={() => setcaso(1)}
+              style={{ marginTop: "15px" }}
+            >
+              Volver a Cursos
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  // Modal de información del estudiante
+  const ModalEstudiante = () => {
+    if (!modalVisible) return null;
+
+    const est = estudianteCompleto || {};
+    
+    // Mapeo de valores para mostrar
+    const getEstadoText = (fk) => {
+      if (fk === 1) return "Activo";
+      if (fk === 2) return "Inactivo";
+      return "N/A";
+    };
+
+    const getGeneroText = (fk) => {
+      const generos = {
+        1: "Masculino",
+        2: "Femenino",
+        3: "No binario",
+        4: "Prefiere no decirlo",
+        5: "Otro"
+      };
+      return generos[fk] || "N/A";
+    };
+
+    const getTipoDocumentoText = (fk) => {
+      const tipos = {
+        1: "Cédula de ciudadanía",
+        2: "Tarjeta de Identidad",
+        3: "Cédula de extranjería",
+        4: "Pasaporte",
+        5: "DNI extranjero"
+      };
+      return tipos[fk] || "N/A";
+    };
+
+    return (
+      <Modal
+        titulo="Información del Estudiante"
+        SalirM={cerrarModal}
+        inputs={[
+          {
+            nombre: "Documento",
+            type: "text",
+            value: est.numero_documento_estudiante || estudianteSeleccionado?.documento || "",
+            disabled: true,
+          },
+          {
+            nombre: "Primer Nombre",
+            type: "text",
+            value: est.nombre1 || "",
+            disabled: true,
+          },
+          {
+            nombre: "Segundo Nombre",
+            type: "text",
+            value: est.nombre2 || "",
+            disabled: true,
+          },
+          {
+            nombre: "Primer Apellido",
+            type: "text",
+            value: est.apellido1 || "",
+            disabled: true,
+          },
+          {
+            nombre: "Segundo Apellido",
+            type: "text",
+            value: est.apellido2 || "",
+            disabled: true,
+          },
+          {
+            nombre: "Correo",
+            type: "email",
+            value: est.correo || estudianteSeleccionado?.correo || "",
+            disabled: true,
+          },
+          {
+            nombre: "Teléfono",
+            type: "text",
+            value: est.telefono || estudianteSeleccionado?.telefono || "",
+            disabled: true,
+          },
+          {
+            nombre: "Dirección",
+            type: "text",
+            value: est.direccion || "",
+            disabled: true,
+          },
+          {
+            nombre: "Institución de procedencia",
+            type: "text",
+            value: est.institucion_procedencia || "",
+            disabled: true,
+          },
+          {
+            nombre: "Edad",
+            type: "number",
+            value: est.edad || "",
+            disabled: true,
+          },
+          {
+            nombre: "Fecha de nacimiento",
+            type: "date",
+            value: est.fecha_nacimiento || "",
+            disabled: true,
+          },
+          {
+            nombre: "Estado",
+            type: "text",
+            value: getEstadoText(est.fk_tipo_estado),
+            disabled: true,
+          },
+          {
+            nombre: "Género",
+            type: "text",
+            value: getGeneroText(est.fk_id_genero),
+            disabled: true,
+          },
+          {
+            nombre: "Tipo de Documento",
+            type: "text",
+            value: getTipoDocumentoText(est.fk_id_tipo_documento),
+            disabled: true,
+          },
+          {
+            nombre: "Tipo de Sangre",
+            type: "text",
+            value: est.tipo_sangre || "N/A",
+            disabled: true,
+          },
+          {
+            nombre: "Religión",
+            type: "text",
+            value: est.religion || "N/A",
+            disabled: true,
+          },
+          {
+            nombre: "Sisbén",
+            type: "text",
+            value: est.tipo_sisben || "N/A",
+            disabled: true,
+          },
+          {
+            nombre: "Discapacidad",
+            type: "text",
+            value: est.tipo_discapacidad || "N/A",
+            disabled: true,
+          },
+          {
+            nombre: "Alergias",
+            type: "text",
+            value: est.tipo_alergia || "N/A",
+            disabled: true,
+          },
+          {
+            nombre: "Ciudad",
+            type: "text",
+            value: est.municipio || "N/A",
+            disabled: true,
+          },
+          {
+            nombre: "Materia",
+            type: "text",
+            value: materiaSeleccionada?.nombre_materia || "",
+            disabled: true,
+          },
+          {
+            nombre: "Curso",
+            type: "text",
+            value: cursoSeleccionadoTexto || "",
+            disabled: true,
+          },
+        ]}
+        acciones={[
+          { nombre: "Cerrar", click: cerrarModal },
+        ]}
+      />
+    );
+  };
+
+  switch (caso) {
+    case 0:
+      return (
+        <>
+          <VistaMaterias />
+          <ModalEstudiante />
+        </>
+      );
+    case 1:
+      return (
+        <>
+          <VistaCursosPorMateria />
+          <ModalEstudiante />
+        </>
+      );
+    case 2:
+      return (
+        <>
+          <VistaEstudiantesMateria />
+          <ModalEstudiante />
+        </>
+      );
+    default:
+      return (
+        <>
+          <VistaMaterias />
+          <ModalEstudiante />
+        </>
+      );
+  }
 }
 
 export default DocentesMaterias;

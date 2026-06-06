@@ -332,19 +332,6 @@ class Profesores(models.Model):
         return f"{nombres} {apellidos}"
 
 
-class TipoAcudiente(models.Model):
-    id_tipo_acudiente = models.IntegerField(primary_key=True)
-    descripcion = models.CharField(max_length=100)
-
-    class Meta:
-        db_table = 'tipo_acudiente'
-        verbose_name = 'Tipo de Acudiente'
-        verbose_name_plural = 'Tipos de Acudiente'
-
-    def __str__(self):
-        return self.descripcion
-
-
 class Acudiente(models.Model):
     numero_documento_acudiente = models.CharField(primary_key=True, max_length=20)
     fk_id_tipo_documento = models.ForeignKey(
@@ -367,6 +354,14 @@ class Acudiente(models.Model):
         db_column='FK_codigo_municipio', 
         blank=True, 
         null=True
+    )
+    fk_id_estado = models.ForeignKey(
+        TipoEstado,
+        on_delete=models.SET_NULL,
+        db_column='FK_id_estado',
+        blank=True,
+        null=True,
+        help_text="Estado del acudiente (Activo/Inactivo)"
     )
 
     class Meta:
@@ -431,7 +426,7 @@ class TipoActividad(models.Model):
         return self.descripcion
     
 class ano_electivo(models.Model) :
-    id_año_electivo = models.IntegerField(primary_key=True, max_length=10)
+    id_año_electivo = models.IntegerField(primary_key=True)
     fecha_inicio = models.DateField(blank= True, null=True)
     fecha_fin = models.DateField(blank= True, null=True)
 
@@ -454,7 +449,7 @@ class Cursos(models.Model) :
         return str(self.id_curso)
 
 class Area_conocimiento(models.Model) :
-    id_area_conocimiento = models.AutoField(primary_key=True, max_length=10)
+    id_area_conocimiento = models.AutoField(primary_key=True)
     nombre = models.CharField(max_length=100, blank= True, null=True)
 
     class Meta:
@@ -487,6 +482,9 @@ class MateriasAsignadas(models.Model) :
 
     class Meta:
         db_table = "materia_profesores"
+        unique_together = (
+            ('fk_numero_documento_profesor', 'fk_id_materia', 'fk_id_curso', 'fk_id_año_electivo'),
+        )
 
     def __str__(self) :
         return self.id_materia_profesores
@@ -496,17 +494,33 @@ class Estudiantes_cursos(models.Model) :
     numero_documento_estudiante = models.ForeignKey(Estudiantes, on_delete=models.CASCADE, db_column="numero_documento_estudiante")
     id_curso = models.ForeignKey(Cursos, on_delete=models.CASCADE, db_column="id_curso")
     fecha_asignacion = models.DateField(auto_now_add=True, blank=True, null=True)
+    estado = models.CharField(max_length=50, default="activo")
 
     class Meta:
         db_table = "estudiantes_cursos"
+        unique_together = (
+            ('numero_documento_estudiante', 'id_curso'),
+        )
 
     def __str__(self) :
         return self.id_estudiantes_cursos
 
 class Periodo(models.Model):
     id_periodo = models.AutoField(primary_key=True)
+    nombre = models.CharField(max_length=100, blank=True, null=True,
+                              help_text="Nombre descriptivo del periodo (ej: 'Primer Trimestre 2026')")
     fecha_inicio = models.DateField()
     fecha_fin = models.DateField()
+    estado = models.CharField(max_length=20, default="activo",
+                              help_text="activo | inactivo (soft-delete)")
+    fk_id_año_electivo = models.ForeignKey(
+        ano_electivo,
+        on_delete=models.CASCADE,
+        db_column='FK_id_año_electivo',
+        blank=True,
+        null=True,
+        help_text="Año electivo al que pertenece el periodo"
+    )
 
     class Meta:
         db_table = 'periodo'
@@ -514,20 +528,15 @@ class Periodo(models.Model):
         verbose_name_plural = 'Periodos'
 
     def __str__(self):
+        if self.nombre:
+            return self.nombre
         return f"Periodo {self.id_periodo}: {self.fecha_inicio} - {self.fecha_fin}"
 
-class Actividades(models.Model):
-    id_actividades = models.AutoField( primary_key=True)
-    nombre = models.CharField(max_length=100)
-    descripcion = models.TextField(blank=True, null=True)
-    porcentaje = models.DecimalField(max_digits=5 , decimal_places=2,blank=True, null=True)
-    fecha_inicio = models.DateField(blank=True, null=True)
-    fecha_fin = models.DateField(blank=True, null=True)
-    fk_id_tipo_actividad = models.ForeignKey(
-        TipoActividad, 
-        on_delete=models.CASCADE, 
-        db_column='FK_id_tipo_actividad'
-    )
+class RA(models.Model):
+    id_ra = models.AutoField( primary_key=True)
+    nombre_ra = models.CharField(max_length=50, default="Sin Nombre")
+    porcentaje = models.DecimalField(max_digits=5 , decimal_places=2)
+    numero_ra = models.IntegerField()
     fk_id_periodo_academico = models.ForeignKey(
         Periodo, 
         on_delete=models.CASCADE, 
@@ -535,10 +544,39 @@ class Actividades(models.Model):
     )
     fk_id_materia_profesores = models.ForeignKey(
         MateriasAsignadas, 
-        on_delete=models.SET_NULL, 
+        on_delete=models.CASCADE,
         db_column='FK_id_materia_profesores', 
         blank=True, 
         null=True
+    )
+    class Meta:
+        db_table = 'resultados_aprendizaje'
+        verbose_name = 'resultados_aprendizaje'
+        verbose_name_plural = 'resultados_aprendizaje'
+        unique_together = (
+            ('fk_id_materia_profesores', 'fk_id_periodo_academico', 'numero_ra'),
+        )
+
+    def __str__(self):
+        return f"RA {self.numero_ra}"
+    
+
+class Actividades(models.Model):
+    id_actividades = models.AutoField( primary_key=True)
+    nombre = models.CharField(max_length=100)
+    descripcion = models.TextField(blank=True, null=True)
+    porcentaje = models.DecimalField(max_digits=5 , decimal_places=2)
+    fecha_inicio = models.DateField()
+    fecha_fin = models.DateField(blank=True, null=True)
+    fk_id_tipo_actividad = models.ForeignKey(
+        TipoActividad, 
+        on_delete=models.CASCADE, 
+        db_column='FK_id_tipo_actividad'
+    )
+    fk_id_ra = models.ForeignKey(
+        RA,
+        on_delete=models.CASCADE,
+        db_column='FK_id_ra',
     )
 
     class Meta:
@@ -547,7 +585,7 @@ class Actividades(models.Model):
         verbose_name_plural = 'Actividades'
 
     def __str__(self):
-        return self.id_actividades
+        return self.nombre
 
 class EstudianteNotas(models.Model):
     id_estudiante_notas = models.AutoField(primary_key=True)
@@ -569,3 +607,75 @@ class EstudianteNotas(models.Model):
 
     def __str__(self):
         return f"{self.fk_numero_documento_estudiante} - {self.fk_id_actividad} : {self.calificacion}"
+
+class NotaHistorial(models.Model):
+    id_nota_historial = models.AutoField(primary_key=True)
+    nota_anterior = models.DecimalField(max_digits=3, decimal_places=2)
+    nota_nueva = models.DecimalField(max_digits=3, decimal_places=2)
+    motivo_cambio = models.CharField(max_length=200)
+    fecha_cambio = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    fk_nota_estudiante = models.ForeignKey(EstudianteNotas, on_delete=models.CASCADE, db_column="fk_nota_estudiante")
+
+    class Meta:
+        db_table = "notas_historial"
+        verbose_name = 'Notas_Historial'
+        verbose_name_plural = "notashistorial"
+    
+    def __str__(self):
+        return f"historial nota {self.id_nota_historial}"
+    
+class Definitivas(models.Model):
+    id_definitiva = models.AutoField(primary_key=True)
+    valor_definitiva = models.DecimalField(max_digits=4, decimal_places=2)
+    fk_id_estudiantes_cursos = models.ForeignKey(Estudiantes_cursos, on_delete=models.CASCADE, db_column="fk_id_estudiantes_cursos", null=True)
+    fk_id_materia = models.ForeignKey(Materias, on_delete=models.CASCADE, db_column="fk_id_materia")
+    estado = models.CharField(max_length=50)
+    fk_id_periodo = models.ForeignKey(Periodo, on_delete=models.CASCADE, db_column="fk_id_periodo", null=True)
+
+    class Meta:
+        db_table = "definitiva"
+        unique_together = (
+            ('fk_id_estudiantes_cursos', 'fk_id_materia', 'fk_id_periodo'),
+        )
+    
+    def __str__(self):
+        return f'la definitiva es de definitiva {self.valor_definitiva}'
+
+
+class ConfiguracionBoletines(models.Model):
+    """
+    Modelo para controlar la habilitación/deshabilitación de descarga de boletines
+    para padres/acudientes. Solo debe existir un registro en esta tabla.
+    """
+    id_configuracion = models.AutoField(primary_key=True)
+    descarga_habilitada = models.BooleanField(default=True, help_text="Habilita o deshabilita la descarga de boletines para padres/acudientes")
+    fecha_modificacion = models.DateTimeField(auto_now=True, help_text="Fecha de última modificación")
+    fk_usuario_modificacion = models.ForeignKey(
+        User, 
+        on_delete=models.SET_NULL, 
+        db_column="fk_usuario_modificacion", 
+        null=True, 
+        blank=True,
+        help_text="Usuario que realizó la última modificación"
+    )
+
+    class Meta:
+        db_table = "configuracion_boletines"
+        verbose_name = "Configuración de Boletines"
+        verbose_name_plural = "Configuración de Boletines"
+    
+    def __str__(self):
+        estado = "Habilitada" if self.descarga_habilitada else "Deshabilitada"
+        return f"Descarga de boletines: {estado}"
+    
+    @classmethod
+    def get_configuracion(cls):
+        """
+        Obtiene o crea la configuración única de boletines
+        """
+        config, created = cls.objects.get_or_create(
+            id_configuracion=1,
+            defaults={'descarga_habilitada': True}
+        )
+        return config
+
