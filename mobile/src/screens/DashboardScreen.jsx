@@ -195,11 +195,6 @@ const DashboardScreen = ({ navigation }) => {
                                     {activePeriodoNombre ? `Promedio ${activePeriodoNombre}` : 'Promedio Gral.'}
                                 </Text>
                             </View>
-                            <View style={styles.divider} />
-                            <View style={styles.statItem}>
-                                <Text style={styles.statValue}>100%</Text>
-                                <Text style={styles.statLabel}>Asistencia</Text>
-                            </View>
                         </TouchableOpacity>
                     </View>
                 </SafeAreaView>
@@ -351,32 +346,29 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         backgroundColor: colors.white,
         borderRadius: 20,
-        paddingVertical: 20,
+        paddingVertical: 22,
+        paddingHorizontal: 30,
         shadowColor: colors.shadow,
         shadowOffset: { width: 0, height: 10 },
         shadowOpacity: 0.1,
         shadowRadius: 15,
         elevation: 5,
         alignItems: 'center',
+        justifyContent: 'center',
     },
     statItem: {
-        flex: 1,
         alignItems: 'center',
     },
     statValue: {
-        fontSize: 24,
-        fontWeight: '800',
+        fontSize: 32,
+        fontWeight: '900',
         color: colors.primary,
     },
     statLabel: {
-        fontSize: 13,
+        fontSize: 14,
         color: colors.textMuted,
-        marginTop: 3,
-    },
-    divider: {
-        width: 1,
-        height: 40,
-        backgroundColor: colors.border,
+        marginTop: 4,
+        fontWeight: '500',
     },
     scrollContent: {
         padding: 25,
