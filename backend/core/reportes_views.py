@@ -417,7 +417,12 @@ class GenerarBoletinPDFView(APIView):
         return response
 
     def _crear_boletin_pdf(self, buffer, estudiante, periodo):
-        """Crea el contenido del boletín en PDF"""
+        """Crea el contenido del boletín en PDF.
+
+        Incluye las notas del periodo seleccionado y de todos los periodos
+        anteriores del mismo año electivo, para que el boletín refleje el
+        progreso acumulado del estudiante.
+        """
         doc = SimpleDocTemplate(buffer, pagesize=letter, topMargin=0.5*inch, bottomMargin=0.5*inch)
         elements = []
         styles = getSampleStyleSheet()
@@ -451,14 +456,46 @@ class GenerarBoletinPDFView(APIView):
             numero_documento_estudiante=estudiante,
             estado='activo'
         ).select_related('id_curso').first()
-        
+
+        # Determinar la lista de periodos a mostrar: todos los anteriores del
+        # mismo año electivo que ya iniciaron antes del actual + el actual.
+        # Si no hay año electivo asociado se usa el año calendario de la
+        # fecha_inicio como fallback razonable.
+        periodos_previos_qs = Periodo.objects.filter(
+            estado='activo',
+            fecha_inicio__lt=periodo.fecha_inicio,
+        )
+        if periodo.fk_id_año_electivo_id:
+            periodos_previos_qs = periodos_previos_qs.filter(
+                fk_id_año_electivo=periodo.fk_id_año_electivo_id
+            )
+        else:
+            periodos_previos_qs = periodos_previos_qs.filter(
+                fecha_inicio__year=periodo.fecha_inicio.year
+            )
+
+        periodos_a_mostrar = list(
+            periodos_previos_qs.order_by('fecha_inicio', 'id_periodo')
+        )
+        # Asegurar que el actual no se duplique y quede al final
+        periodos_a_mostrar = [p for p in periodos_a_mostrar if p.id_periodo != periodo.id_periodo]
+        periodos_a_mostrar.append(periodo)
+
+        def _label_periodo(p):
+            return p.nombre or f"Periodo {p.id_periodo}"
+
         info_data = [
             ["Estudiante:", estudiante.nombre_completo],
             ["Documento:", estudiante.numero_documento_estudiante],
             ["Grado:", est_curso.id_curso.nombre if est_curso else "N/A"],
-            ["Periodo:", f"{periodo.nombre or f'Periodo {periodo.id_periodo}'} ({periodo.fecha_inicio} - {periodo.fecha_fin})"]
+            ["Periodo:", f"{_label_periodo(periodo)} ({periodo.fecha_inicio} - {periodo.fecha_fin})"],
         ]
-        
+        if len(periodos_a_mostrar) > 1:
+            info_data.append([
+                "Periodos incluidos:",
+                ", ".join(_label_periodo(p) for p in periodos_a_mostrar),
+            ])
+
         info_table = Table(info_data, colWidths=[2*inch, 4*inch])
         info_table.setStyle(TableStyle([
             ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
@@ -472,49 +509,176 @@ class GenerarBoletinPDFView(APIView):
         elements.append(Paragraph("CALIFICACIONES", styles['Heading2']))
         elements.append(Spacer(1, 0.1*inch))
         
-        # Obtener definitivas del estudiante
+        # Obtener definitivas del estudiante para todos los periodos a mostrar
         if est_curso:
-            definitivas = Definitivas.objects.filter(
+            periodos_ids = [p.id_periodo for p in periodos_a_mostrar]
+
+            definitivas_qs = Definitivas.objects.filter(
                 fk_id_estudiantes_cursos=est_curso,
-                fk_id_periodo=periodo
-            ).select_related('fk_id_materia').order_by('fk_id_materia__nombre')
-            
-            notas_data = [["Materia", "Calificación", "Estado"]]
-            total_notas = []
-            
-            for definitiva in definitivas:
-                nota = float(definitiva.valor_definitiva)
-                total_notas.append(nota)
-                estado = "Aprobado" if nota >= 3.0 else "Reprobado"
-                notas_data.append([
-                    definitiva.fk_id_materia.nombre,
-                    f"{nota:.2f}",
-                    estado
-                ])
-            
-            # Promedio
-            promedio = sum(total_notas) / len(total_notas) if total_notas else 0
-            notas_data.append(["", "", ""])
-            notas_data.append(["PROMEDIO GENERAL", f"{promedio:.2f}", "Aprobado" if promedio >= 3.0 else "Reprobado"])
-            
-            notas_table = Table(notas_data, colWidths=[3.5*inch, 1.5*inch, 1.5*inch])
-            notas_table.setStyle(TableStyle([
+                fk_id_periodo_id__in=periodos_ids,
+            ).select_related('fk_id_materia', 'fk_id_periodo')
+
+            # Agrupar por materia: { id_materia: { 'nombre': str, 'notas': {id_periodo: nota} } }
+            materias_map = {}
+            for definitiva in definitivas_qs:
+                mat = definitiva.fk_id_materia
+                if mat is None:
+                    continue
+                slot = materias_map.setdefault(
+                    mat.id_materia,
+                    {'nombre': mat.nombre, 'notas': {}}
+                )
+                slot['notas'][definitiva.fk_id_periodo_id] = float(definitiva.valor_definitiva)
+
+            # Ordenar materias alfabéticamente
+            materias_ordenadas = sorted(
+                materias_map.values(), key=lambda m: (m['nombre'] or '').lower()
+            )
+
+            # Encabezado dinámico: Materia | P1 | P2 | ... | Acumulado | Estado
+            # Las columnas usan etiquetas cortas (P1, P2, ...) para no romper
+            # el layout del PDF cuando los nombres de periodo son largos.
+            header = ["Materia"]
+            header += [f"P{i + 1}" for i in range(len(periodos_a_mostrar))]
+            mostrar_acumulado = len(periodos_a_mostrar) > 1
+            if mostrar_acumulado:
+                header.append("Acumulado")
+            header.append("Estado")
+
+            notas_data = [header]
+            promedios_por_periodo = {p.id_periodo: [] for p in periodos_a_mostrar}
+            promedios_acumulados_estudiante = []  # promedio del estudiante en todo el año (por materia)
+
+            for mat in materias_ordenadas:
+                fila = [mat['nombre']]
+                notas_validas = []
+                for p in periodos_a_mostrar:
+                    nota = mat['notas'].get(p.id_periodo)
+                    if nota is None:
+                        fila.append("-")
+                    else:
+                        fila.append(f"{nota:.2f}")
+                        notas_validas.append(nota)
+                        promedios_por_periodo[p.id_periodo].append(nota)
+
+                # Promedio acumulado de la materia en los periodos mostrados
+                if notas_validas:
+                    acumulado_materia = sum(notas_validas) / len(notas_validas)
+                    promedios_acumulados_estudiante.append(acumulado_materia)
+                else:
+                    acumulado_materia = None
+
+                if mostrar_acumulado:
+                    fila.append(f"{acumulado_materia:.2f}" if acumulado_materia is not None else "-")
+
+                # Estado: usa la nota del periodo actual si existe; si no, el acumulado
+                nota_actual = mat['notas'].get(periodo.id_periodo)
+                referencia = nota_actual if nota_actual is not None else acumulado_materia
+                if referencia is None:
+                    estado = "Sin nota"
+                else:
+                    estado = "Aprobado" if referencia >= 3.0 else "Reprobado"
+                fila.append(estado)
+
+                notas_data.append(fila)
+
+            # Fila separadora y promedios por periodo + acumulado general
+            if materias_ordenadas:
+                # Separador en blanco
+                notas_data.append([""] * len(header))
+
+                # Fila de promedio por periodo
+                fila_promedios = ["PROMEDIO PERIODO"]
+                for p in periodos_a_mostrar:
+                    notas_p = promedios_por_periodo[p.id_periodo]
+                    if notas_p:
+                        prom = sum(notas_p) / len(notas_p)
+                        fila_promedios.append(f"{prom:.2f}")
+                    else:
+                        fila_promedios.append("-")
+
+                if mostrar_acumulado:
+                    if promedios_acumulados_estudiante:
+                        prom_general = (
+                            sum(promedios_acumulados_estudiante)
+                            / len(promedios_acumulados_estudiante)
+                        )
+                        fila_promedios.append(f"{prom_general:.2f}")
+                    else:
+                        fila_promedios.append("-")
+
+                # Estado del promedio (basado en el periodo actual o acumulado)
+                notas_actual = promedios_por_periodo.get(periodo.id_periodo, [])
+                if notas_actual:
+                    prom_actual = sum(notas_actual) / len(notas_actual)
+                    estado_general = "Aprobado" if prom_actual >= 3.0 else "Reprobado"
+                elif promedios_acumulados_estudiante:
+                    prom_general = (
+                        sum(promedios_acumulados_estudiante)
+                        / len(promedios_acumulados_estudiante)
+                    )
+                    estado_general = "Aprobado" if prom_general >= 3.0 else "Reprobado"
+                else:
+                    estado_general = "Sin nota"
+                fila_promedios.append(estado_general)
+
+                notas_data.append(fila_promedios)
+            else:
+                # No hay materias con notas registradas
+                fila_vacia = ["Sin calificaciones"] + ["-"] * (len(header) - 2) + ["Sin nota"]
+                notas_data.append(fila_vacia)
+
+            # Calcular anchos: la columna Materia algo más ancha
+            num_periodos = len(periodos_a_mostrar)
+            cols_extra = 1 + (1 if mostrar_acumulado else 0)  # estado (+ acumulado)
+            ancho_total_disponible = 6.5 * inch
+            ancho_materia = 1.8 * inch
+            ancho_estado = 1.0 * inch
+            ancho_acumulado = 0.9 * inch if mostrar_acumulado else 0.0
+            ancho_restante = ancho_total_disponible - ancho_materia - ancho_estado - ancho_acumulado
+            ancho_periodo = max(0.55 * inch, ancho_restante / max(num_periodos, 1))
+
+            col_widths = [ancho_materia]
+            col_widths += [ancho_periodo] * num_periodos
+            if mostrar_acumulado:
+                col_widths.append(ancho_acumulado)
+            col_widths.append(ancho_estado)
+
+            notas_table = Table(notas_data, colWidths=col_widths, repeatRows=1)
+            estilo_tabla = [
                 # Encabezado
                 ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#D32F2F')),
                 ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
                 ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                ('FONTSIZE', (0, 0), (-1, 0), 11),
+                ('FONTSIZE', (0, 0), (-1, 0), 10),
                 ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
                 # Contenido
                 ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
-                ('FONTSIZE', (0, 1), (-1, -1), 10),
+                ('FONTSIZE', (0, 1), (-1, -1), 9),
                 ('ALIGN', (1, 1), (-1, -1), 'CENTER'),
-                ('GRID', (0, 0), (-1, -2), 1, colors.grey),
-                # Fila de promedio
-                ('BACKGROUND', (0, -1), (-1, -1), colors.HexColor('#FFEBEE')),
-                ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),
-                ('LINEABOVE', (0, -1), (-1, -1), 2, colors.HexColor('#D32F2F')),
-            ]))
+                ('ALIGN', (0, 1), (0, -1), 'LEFT'),
+                ('GRID', (0, 0), (-1, -3 if materias_ordenadas else -1), 0.5, colors.grey),
+                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ]
+
+            if materias_ordenadas:
+                # Resaltar la columna del periodo actual
+                col_actual_idx = 1 + (num_periodos - 1)  # último periodo = actual
+                estilo_tabla.append(
+                    ('BACKGROUND', (col_actual_idx, 0), (col_actual_idx, 0), colors.HexColor('#B71C1C'))
+                )
+                # Fila de promedios
+                estilo_tabla.append(
+                    ('BACKGROUND', (0, -1), (-1, -1), colors.HexColor('#FFEBEE'))
+                )
+                estilo_tabla.append(
+                    ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold')
+                )
+                estilo_tabla.append(
+                    ('LINEABOVE', (0, -1), (-1, -1), 1.5, colors.HexColor('#D32F2F'))
+                )
+
+            notas_table.setStyle(TableStyle(estilo_tabla))
             elements.append(notas_table)
         else:
             elements.append(Paragraph("No hay calificaciones registradas", styles['Normal']))

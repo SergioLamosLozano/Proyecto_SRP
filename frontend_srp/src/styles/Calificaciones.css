@@ -125,3 +125,261 @@
 .calificaciones-back-button:hover {
   background-color: #6c7b7d;
 }
+
+/* =====================================================
+   Tabla de Notas CNO - Scroll horizontal y vertical
+   ===================================================== */
+
+/* Wrapper externo: se queda dentro del contenido principal */
+.cno-tabla-wrapper {
+  width: 100%;
+  margin-top: 1rem;
+  /* Necesario para que un descendiente con overflow active el scroll
+     dentro de un padre flex (evita que crezca con el contenido). */
+  min-width: 0;
+}
+
+/* Caja con scroll: aquí ocurre el desplazamiento horizontal y vertical */
+.cno-tabla-scroll {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: auto;
+  /* Altura limitada para activar scroll vertical en pantallas pequeñas
+     sin obligar a hacer scroll de toda la página */
+  max-height: 70vh;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  /* Scroll suave en iOS y mejor visibilidad de la barra */
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: #b71c1c #f1f1f1;
+}
+
+.cno-tabla-scroll::-webkit-scrollbar {
+  height: 10px;
+  width: 10px;
+}
+
+.cno-tabla-scroll::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 8px;
+}
+
+.cno-tabla-scroll::-webkit-scrollbar-thumb {
+  background: #b71c1c;
+  border-radius: 8px;
+}
+
+.cno-tabla-scroll::-webkit-scrollbar-thumb:hover {
+  background: #8e1414;
+}
+
+/* Tabla en sí */
+.cno-tabla {
+  width: 100%;
+  /* Importante: deja que la tabla crezca según contenido para que
+     overflow-x: auto del padre funcione correctamente */
+  min-width: 720px;
+  border-collapse: separate;
+  border-spacing: 0;
+  background-color: #fff;
+}
+
+.cno-tabla thead th {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: linear-gradient(90deg, #b71c1c, #d32f2f);
+  color: #fff;
+  font-weight: 600;
+  padding: 0.85rem 1rem;
+  text-align: center;
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+  white-space: nowrap;
+}
+
+.cno-tabla thead th.cno-th-doc {
+  text-align: left;
+  left: 0;
+  z-index: 4; /* por encima del resto de headers cuando hace scroll horizontal */
+  min-width: 130px;
+}
+
+.cno-tabla thead th.cno-th-nombre {
+  text-align: left;
+  min-width: 220px;
+}
+
+.cno-tabla thead th.cno-th-actividad {
+  min-width: 130px;
+}
+
+.cno-tabla thead th.cno-th-promedio {
+  background: #b71c1c;
+  min-width: 110px;
+}
+
+.cno-tabla tbody td {
+  padding: 0.75rem 1rem;
+  border-right: 1px solid #eee;
+  border-bottom: 1px solid #eee;
+  white-space: nowrap;
+}
+
+.cno-tabla tbody td.cno-td-doc {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  font-weight: 500;
+  /* El color de fondo se asigna inline según fila par/impar */
+}
+
+.cno-tabla tbody td.cno-td-nota,
+.cno-tabla tbody td.cno-td-promedio {
+  text-align: center;
+  font-weight: 600;
+}
+
+.cno-tabla tbody td.cno-td-promedio {
+  font-weight: 700;
+}
+
+/* Paginación */
+.cno-paginacion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  margin-top: 8px;
+  background: #fafafa;
+  border-radius: 8px;
+  border: 1px solid #eee;
+}
+
+.cno-paginacion-info {
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.cno-paginacion-info strong {
+  color: #b71c1c;
+}
+
+.cno-paginacion-controles {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.cno-paginacion-pagina {
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  color: #333;
+}
+
+/* Leyenda */
+.cno-leyenda {
+  margin-top: 1rem;
+  padding: 1rem;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+}
+
+.cno-leyenda h4 {
+  margin: 0 0 0.75rem 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.cno-leyenda-items {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.cno-leyenda-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cno-leyenda-color {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.cno-leyenda-nota {
+  margin: 0.75rem 0 0 0;
+  font-size: 0.85rem;
+  color: #666;
+  font-style: italic;
+}
+
+/* Ajustes responsive para que el scroll se note y la tabla siga usable */
+@media (max-width: 768px) {
+  .cno-tabla-scroll {
+    max-height: 65vh;
+    border-radius: 6px;
+  }
+
+  .cno-tabla thead th,
+  .cno-tabla tbody td {
+    padding: 0.6rem 0.75rem;
+    font-size: 0.88rem;
+  }
+
+  .cno-tabla thead th.cno-th-doc {
+    min-width: 110px;
+  }
+
+  .cno-tabla thead th.cno-th-nombre {
+    min-width: 180px;
+  }
+}
+
+@media (max-width: 480px) {
+  .cno-tabla-scroll {
+    max-height: 60vh;
+  }
+
+  .cno-tabla thead th,
+  .cno-tabla tbody td {
+    padding: 0.5rem 0.6rem;
+    font-size: 0.82rem;
+  }
+
+  .cno-tabla thead th.cno-th-doc {
+    min-width: 95px;
+  }
+
+  .cno-tabla thead th.cno-th-nombre {
+    min-width: 150px;
+  }
+
+  .cno-tabla thead th.cno-th-actividad,
+  .cno-tabla thead th.cno-th-promedio {
+    min-width: 90px;
+  }
+
+  .cno-paginacion {
+    padding: 10px 12px;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .cno-paginacion-controles {
+    justify-content: center;
+  }
+
+  .cno-leyenda-items {
+    gap: 0.75rem 1rem;
+  }
+}

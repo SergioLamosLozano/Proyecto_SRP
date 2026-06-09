@@ -469,191 +469,101 @@ const TablaNotasCNO = ({ notas }) => {
     return (suma / notasValidas.length).toFixed(2);
   };
 
+  // Determinar colores según el rango de la nota
+  const getColors = (valor) => {
+    if (valor === 0) {
+      return { bg: "#f5f5f5", text: "#999" }; // Sin calificar
+    } else if (valor < 3.0) {
+      return { bg: "#ffebee", text: "#d32f2f" }; // Insuficiente
+    } else if (valor >= 3.0 && valor < 4.0) {
+      return { bg: "#fff9c4", text: "#f57f17" }; // Aceptable
+    } else {
+      return { bg: "#e8f5e9", text: "#2e7d32" }; // Excelente
+    }
+  };
+
   return (
-    <div style={{ overflowX: "auto", marginTop: "1rem" }}>
-      <table
-        style={{
-          width: "100%",
-          borderCollapse: "collapse",
-          backgroundColor: "#fff",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-          borderRadius: "8px",
-          overflow: "hidden",
-        }}
-      >
-        <thead>
-          <tr style={{ 
-            background: "linear-gradient(90deg, #b71c1c, #d32f2f)", 
-            color: "#fff" 
-          }}>
-            <th
-              style={{
-                padding: "1rem",
-                textAlign: "left",
-                fontWeight: "600",
-                borderRight: "1px solid rgba(255,255,255,0.2)",
-                position: "sticky",
-                left: 0,
-                background: "linear-gradient(90deg, #b71c1c, #d32f2f)",
-                zIndex: 2,
-              }}
-            >
-              Documento
-            </th>
-            <th
-              style={{
-                padding: "1rem",
-                textAlign: "left",
-                fontWeight: "600",
-                borderRight: "1px solid rgba(255,255,255,0.2)",
-                minWidth: "200px",
-              }}
-            >
-              Nombre Completo
-            </th>
-            {actividades.map((actividad) => (
-              <th
-                key={actividad.id}
-                style={{
-                  padding: "1rem",
-                  textAlign: "center",
-                  fontWeight: "600",
-                  borderRight: "1px solid rgba(255,255,255,0.2)",
-                  minWidth: "120px",
-                }}
-                title={actividad.nombre}
-              >
-                {actividad.nombre.length > 15
-                  ? actividad.nombre.substring(0, 15) + "..."
-                  : actividad.nombre}
-              </th>
-            ))}
-            <th
-              style={{
-                padding: "1rem",
-                textAlign: "center",
-                fontWeight: "600",
-                backgroundColor: "#b71c1c",
-              }}
-            >
-              Promedio
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {estudiantesPaginados.map((estudiante, index) => (
-            <tr
-              key={estudiante.documento}
-              style={{
-                backgroundColor: index % 2 === 0 ? "#f9f9f9" : "#fff",
-                borderBottom: "1px solid #eee",
-              }}
-            >
-              <td
-                style={{
-                  padding: "0.75rem 1rem",
-                  borderRight: "1px solid #eee",
-                  fontWeight: "500",
-                  position: "sticky",
-                  left: 0,
-                  backgroundColor: index % 2 === 0 ? "#f9f9f9" : "#fff",
-                  zIndex: 1,
-                }}
-              >
-                {estudiante.documento}
-              </td>
-              <td
-                style={{
-                  padding: "0.75rem 1rem",
-                  borderRight: "1px solid #eee",
-                }}
-              >
-                {estudiante.nombre}
-              </td>
-              {actividades.map((actividad) => {
-                const nota = estudiante.notas[actividad.id];
-                const notaValor = nota !== undefined && nota !== null ? parseFloat(nota) : 0;
-                
-                // Determinar colores según el rango
-                const getColors = (valor) => {
-                  if (valor === 0) {
-                    return { bg: "#f5f5f5", text: "#999" }; // Sin calificar
-                  } else if (valor < 3.0) {
-                    return { bg: "#ffebee", text: "#d32f2f" }; // Insuficiente
-                  } else if (valor >= 3.0 && valor < 4.0) {
-                    return { bg: "#fff9c4", text: "#f57f17" }; // Aceptable
-                  } else {
-                    return { bg: "#e8f5e9", text: "#2e7d32" }; // Excelente
-                  }
-                };
+    <div className="cno-tabla-wrapper">
+      <div className="cno-tabla-scroll">
+        <table className="cno-tabla">
+          <thead>
+            <tr>
+              <th className="cno-th-doc">Documento</th>
+              <th className="cno-th-nombre">Nombre Completo</th>
+              {actividades.map((actividad) => (
+                <th
+                  key={actividad.id}
+                  className="cno-th-actividad"
+                  title={actividad.nombre}
+                >
+                  {actividad.nombre.length > 15
+                    ? actividad.nombre.substring(0, 15) + "..."
+                    : actividad.nombre}
+                </th>
+              ))}
+              <th className="cno-th-promedio">Promedio</th>
+            </tr>
+          </thead>
+          <tbody>
+            {estudiantesPaginados.map((estudiante, index) => {
+              const filaBg = index % 2 === 0 ? "#f9f9f9" : "#fff";
+              const promedioValor = parseFloat(
+                calcularPromedio(estudiante.notas)
+              );
+              const promedioColors = getColors(promedioValor);
 
-                const colors = getColors(notaValor);
-
-                return (
+              return (
+                <tr key={estudiante.documento} style={{ backgroundColor: filaBg }}>
                   <td
-                    key={actividad.id}
+                    className="cno-td-doc"
+                    style={{ backgroundColor: filaBg }}
+                  >
+                    {estudiante.documento}
+                  </td>
+                  <td>{estudiante.nombre}</td>
+                  {actividades.map((actividad) => {
+                    const nota = estudiante.notas[actividad.id];
+                    const notaValor =
+                      nota !== undefined && nota !== null ? parseFloat(nota) : 0;
+                    const colors = getColors(notaValor);
+
+                    return (
+                      <td
+                        key={actividad.id}
+                        className="cno-td-nota"
+                        style={{
+                          backgroundColor: colors.bg,
+                          color: colors.text,
+                        }}
+                      >
+                        {notaValor.toFixed(2)}
+                      </td>
+                    );
+                  })}
+                  <td
+                    className="cno-td-promedio"
                     style={{
-                      padding: "0.75rem 1rem",
-                      textAlign: "center",
-                      borderRight: "1px solid #eee",
-                      backgroundColor: colors.bg,
-                      color: colors.text,
-                      fontWeight: "600",
+                      backgroundColor: promedioColors.bg,
+                      color: promedioColors.text,
                     }}
                   >
-                    {notaValor.toFixed(2)}
+                    {calcularPromedio(estudiante.notas)}
                   </td>
-                );
-              })}
-              <td
-                style={{
-                  padding: "0.75rem 1rem",
-                  textAlign: "center",
-                  fontWeight: "700",
-                  backgroundColor: (() => {
-                    const promedio = parseFloat(calcularPromedio(estudiante.notas));
-                    if (promedio < 3.0) return "#ffebee"; // Rojo claro
-                    if (promedio >= 3.0 && promedio < 4.0) return "#fff9c4"; // Amarillo claro
-                    return "#e8f5e9"; // Verde claro
-                  })(),
-                  color: (() => {
-                    const promedio = parseFloat(calcularPromedio(estudiante.notas));
-                    if (promedio < 3.0) return "#d32f2f"; // Rojo
-                    if (promedio >= 3.0 && promedio < 4.0) return "#f57f17"; // Amarillo oscuro
-                    return "#2e7d32"; // Verde oscuro
-                  })(),
-                }}
-              >
-                {calcularPromedio(estudiante.notas)}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
 
       {/* Paginación */}
       {estudiantes.length > 0 && (
-        <div
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: "12px",
-            padding: "12px 16px",
-            marginTop: "8px",
-            background: "#fafafa",
-            borderRadius: "8px",
-            border: "1px solid #eee",
-          }}
-        >
-          <span style={{ fontSize: "0.9rem", color: "#555" }}>
-            Mostrando <strong style={{ color: "#b71c1c" }}>{desde}</strong>–
-            <strong style={{ color: "#b71c1c" }}>{hasta}</strong> de{" "}
-            <strong style={{ color: "#b71c1c" }}>{estudiantes.length}</strong>{" "}
-            estudiantes
+        <div className="cno-paginacion">
+          <span className="cno-paginacion-info">
+            Mostrando <strong>{desde}</strong>–<strong>{hasta}</strong> de{" "}
+            <strong>{estudiantes.length}</strong> estudiantes
           </span>
-          <div style={{ display: "flex", gap: "4px" }}>
+          <div className="cno-paginacion-controles">
             <button
               type="button"
               onClick={() => setPagina(1)}
@@ -670,15 +580,7 @@ const TablaNotasCNO = ({ notas }) => {
             >
               ‹
             </button>
-            <span
-              style={{
-                padding: "0 12px",
-                display: "flex",
-                alignItems: "center",
-                fontWeight: 600,
-                color: "#333",
-              }}
-            >
+            <span className="cno-paginacion-pagina">
               Página {pagina} de {totalPaginas}
             </span>
             <button
@@ -702,71 +604,49 @@ const TablaNotasCNO = ({ notas }) => {
       )}
 
       {/* Leyenda */}
-      <div
-        style={{
-          marginTop: "1rem",
-          padding: "1rem",
-          backgroundColor: "#f5f5f5",
-          borderRadius: "8px",
-        }}
-      >
-        <h4 style={{ marginTop: 0, marginBottom: "0.75rem", fontSize: "0.95rem", fontWeight: "600" }}>
-          Sistema de Calificación por Colores:
-        </h4>
-        <div style={{ display: "flex", gap: "2rem", flexWrap: "wrap" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+      <div className="cno-leyenda">
+        <h4>Sistema de Calificación por Colores:</h4>
+        <div className="cno-leyenda-items">
+          <div className="cno-leyenda-item">
             <div
-              style={{
-                width: "20px",
-                height: "20px",
-                backgroundColor: "#2e7d32",
-                borderRadius: "4px",
-              }}
-            ></div>
-            <span><strong>Excelente:</strong> 4.0 - 5.0</span>
+              className="cno-leyenda-color"
+              style={{ backgroundColor: "#2e7d32" }}
+            />
+            <span>
+              <strong>Excelente:</strong> 4.0 - 5.0
+            </span>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+          <div className="cno-leyenda-item">
             <div
-              style={{
-                width: "20px",
-                height: "20px",
-                backgroundColor: "#f57f17",
-                borderRadius: "4px",
-              }}
-            ></div>
-            <span><strong>Aceptable:</strong> 3.0 - 3.9</span>
+              className="cno-leyenda-color"
+              style={{ backgroundColor: "#f57f17" }}
+            />
+            <span>
+              <strong>Aceptable:</strong> 3.0 - 3.9
+            </span>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+          <div className="cno-leyenda-item">
             <div
-              style={{
-                width: "20px",
-                height: "20px",
-                backgroundColor: "#d32f2f",
-                borderRadius: "4px",
-              }}
-            ></div>
-            <span><strong>Insuficiente:</strong> &lt; 3.0</span>
+              className="cno-leyenda-color"
+              style={{ backgroundColor: "#d32f2f" }}
+            />
+            <span>
+              <strong>Insuficiente:</strong> &lt; 3.0
+            </span>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+          <div className="cno-leyenda-item">
             <div
-              style={{
-                width: "20px",
-                height: "20px",
-                backgroundColor: "#999",
-                borderRadius: "4px",
-              }}
-            ></div>
-            <span><strong>Sin calificar:</strong> 0.00</span>
+              className="cno-leyenda-color"
+              style={{ backgroundColor: "#999" }}
+            />
+            <span>
+              <strong>Sin calificar:</strong> 0.00
+            </span>
           </div>
         </div>
-        <p style={{ 
-          marginTop: "0.75rem", 
-          marginBottom: 0, 
-          fontSize: "0.85rem", 
-          color: "#666",
-          fontStyle: "italic" 
-        }}>
-          * Este sistema de colores aplica a todas las calificaciones y promedios de la tabla.
+        <p className="cno-leyenda-nota">
+          * Este sistema de colores aplica a todas las calificaciones y
+          promedios de la tabla.
         </p>
       </div>
     </div>
